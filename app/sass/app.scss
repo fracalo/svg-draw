@@ -1,0 +1,204 @@
+
+@import "partials/_base";
+@import "partials/_colorpicker";
+
+
+/* *{
+	transition: all 0.3s;
+} */
+body {
+  height: 100vh;
+  display:flex;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  //flex-direction:;
+  flex-flow:  column nowrap;
+  justify-content: space-between;
+  	
+  	&:after {
+		  display:table;
+		  content:'';
+		  clear:both;
+	}
+}
+
+
+/* wrapping in three rows with flex */
+.top, .sketch, .bottom{}
+
+h2{
+	font-size:4vh;
+	line-height:1.6;
+	display:inline-block;	
+
+}
+
+section{
+	display: flex;
+	justify-content: space-between;
+	margin: 0 4vw;
+}
+
+
+/* animations */
+.upsidedown{
+	transform: rotate(180deg);
+
+}
+.arrow{
+	/*position:absolute;	right:18px; 	bottom:10px	;*/
+}
+
+	
+/* template.header */
+.top{
+    position: relative;
+	
+
+  	&:after {
+	  display:table;
+	  content:'';
+	  clear:both;
+	}
+
+}
+
+/* navbar */
+.navbar{
+	// reset bootstrap navbar
+	min-height: 0; 
+    margin-bottom: 0;
+    //---------//
+
+	display:flex;
+
+	>li {
+		line-height: 6vh;
+		margin: 0 4vw;
+		
+	}
+	.glyphicon{
+		line-height: 5.5vh;
+	}
+
+}
+
+/* template.sketch */
+.sketch{
+    flex:2 50vh;
+	display:flex;
+	background:tan;
+	
+		& > *{
+			flex:1;
+		}
+		.tools{
+			background: #cdcdcd;
+			fieldset{
+				margin-bottom: 10px;
+				padding:4px
+			}
+			input{
+				display:inline-block;
+				width:50%;
+			}
+
+
+		}
+		.artboard{
+			flex-basis:50vw
+
+		}
+}
+
+table{
+	background:white
+
+}
+tr{
+	border:2px dotted red;
+	&> td:first-of-type{
+		background:tomato;
+		width:8px;
+		font-size: 70%;
+	}
+	&> td:nth-of-type(2){
+		width:13px
+	}
+}
+td{
+	border:1px solid 
+}
+th{
+	padding:4px 2px;
+	font-size:66%;
+	font-weight:700;
+}
+/* template bottom */
+.bottom{
+	line-height: 24px;
+    
+    form{
+    	width:100%;
+    	padding:10px;
+    	textarea{
+    		width:100%
+    	}
+    }
+    code{
+	   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+
+}
+
+
+/* draw path */
+g > path{
+	pointer-events:none
+}
+/* section{
+	background:#eee;
+	
+	text-align: center;
+	padding-bottom: 24px;
+	
+
+}
+
+.arrow{
+	//display:inline-block;
+	position:absolute;
+	right:18px;
+
+}
+
+.glyphicon{}
+
+.upsidedown{
+	transform: rotate(180deg);
+
+}
+
+.scaleout{
+	font-size:0;
+	margin:0;
+	transition: all 0.6s;
+}
+.repos > li{
+	list-style: none;
+	border-bottom: 1px solid #ccc;
+}
+.repos > li:last-child{
+	
+	border-bottom: 0;
+}
+
+.sketch{
+	flex:0 1;
+	needs to be set with js
+}
+.sketch > .row , .sketch > .row > .artboard{
+	height:100%;
+}
+.sketch > .row > .artboard{
+	background: tan;
+} */

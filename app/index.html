@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" ng-app="svgFiddle"><!-- phonecatApp -->
+<head>
+  <meta charset="utf-8">
+  <title>SVG</title>
+<!--   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css"> -->  
+ <link rel="stylesheet" href="css/app.css">
+  <script src="bower_components/angular/angular.js"></script>
+	<!--   <script src="bower_components/angular-route/angular-route.js"></script> -->
+	  <script src="js/app.js"></script>
+	  <script src="js/controllers.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/bootstrap-colorpicker-module.js"></script>
+	  <script src="bower_components/angular-animate/angular-animate.js"></script>
+</head>
+
+<body ng-controller="HomeCtrl as dr">
+<div class='top' ng-include="dr.template.header">one</div>
+
+<div class='sketch'  >
+        
+
+        <svg draw-events  id="artboard"  class="artboard">
+        <g draw-path ></g>
+
+
+        <g draw-points points='drw.artboard.points'></g>
+          
+        </svg> 
+
+ 
+
+        
+
+        <div class="tools" >
+
+<!--    <div class="tools" ng-controller='DrawCtrl as tl'>
+                
+        <ng-form>
+
+        <fieldset>
+        <label for='fill'>Fill</label>
+        <input colorpicker='rgba' id='fill' name='fill' ng-model='tl.attr.style.fill' >
+        </fieldset>
+
+        <fieldset>
+        <label for='stroke'>Stroke</label>
+        <input colorpicker='rgba' id='stroke' name='stroke' ng-model='tl.attr.style.stroke'>
+        </fieldset>
+
+        <fieldset>
+        <label for='stroke-width'>Stroke-width</label>
+        <input id='stroke-width' type='number' name='stroke-width' ng-model='tl.attr.style.strokeWidth'>
+        </fieldset>
+                
+        </ng-form> -->
+
+        <draw-points-list></draw-points-list>
+
+        </div>   
+
+
+        
+</div>
+
+
+<div class='bottom'>
+<section>
+      
+<form name='coding' ng-class="{'fade scaleout':dr.glyphTrans}" novalidate>
+               
+  <draw-textarea></draw-textarea>
+
+</form>
+              
+</section>
+</div>
+
+
+
+  
+
+
+</body>
+</html>
+<!-- ng-include="template.header" -->
+<!-- <div class='sketch' ng-include="template.sketch"></div> --><!-- ng-include="template.sketch" -->
+<!-- <div class='bottom' ng-include="template.code" ></div> --><!-- ng-include="template.code" -->
+  <!-- <svg><path d='M 100 66 L 300 100 L 200 300 z' fill="none" stroke="yellow" stroke-width="3"></path> </svg>  -->
