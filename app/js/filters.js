@@ -6,7 +6,6 @@ var svgFiddleFilters=angular.module('svgFiddleFilters',[]);
 /*from array of points to dval*/
 svgFiddleFilters.filter('arrayToSVG',function(){ 
 	return function(ar){
-    console.log(ar)
       if (ar.length == 0)
       return '';
      
@@ -28,7 +27,6 @@ svgFiddleFilters.filter('arrayToDVal',function(){
   return function(ar){
       if (ar.length == 0)
       return '';
-     console.log(ar)
     var res = ar.reduce(function(ac,x,i,ar){
           ac += x.type;
           var tr = x.map(e=> e.join(' '));
@@ -36,7 +34,6 @@ svgFiddleFilters.filter('arrayToDVal',function(){
           ac += tr.join(',') + ' ';
           return ac;
         },'');
-    console.log(res.trim())
     return res.trim(); 
     }
 });

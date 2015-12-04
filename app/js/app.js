@@ -33,13 +33,27 @@ svgFiddle.directive('drawPointsList',function(){
       template:'<table>\
       <tr ng-repeat="point in drw.artboard.points track by $index">\
       <td><p>{{$index}}:</p></td>\
-      <td><fieldset><input ng-model="point.type"></fieldset></td>\
+      <td><fieldset>\
+      <label for="type">{{point.type}}</label>\
+      <input type="text" name="type" ng-model="point.type">\
+      </fieldset></td>\
       <td ng-repeat="p in point">\
       <fieldset><label for="x">X<sup>{{$index}}</sup></label><input name="x" ng-model="p[0]"></fieldset>\
       <fieldset><label for="y">Y<sup>{{$index}}</sup></label><input name="y" ng-model="p[1]"></fieldset>\
       </td>\
       </tr>\
       </table>',
+
+      link:function(scope){
+        
+        scope.isLast = function(){
+        return scope.drw.artboard.points
+       }                        
+        scope.$watch(scope.isLast,function(){
+          console.log(scope)
+       });
+
+      }
     /* <tr>\
       <th>#</th>\
       <th>type</th>\
@@ -91,9 +105,9 @@ svgFiddle.directive('drawPointsList',function(){
           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
              scope.drw.artboard.mouseupLine(e);
              
-          }else{ 
+          }/*else{ 
             scope.drw.artboard.mouseupCurve(e)
-          };
+          };*/
 
         scope.$digest();
         el.off('mousemove',mousemove);

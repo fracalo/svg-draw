@@ -33,10 +33,10 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
             if(!e.target.offsetLeft)
             var boundClientRect = e.target.getBoundingClientRect();
 
-		    point[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;//boundClientRect.x
+			//coercing int with bitwise for FF support
+		    point[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;
 			point[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
 
-			 
 			// we temporarly set type to 'M' for rendering point
 			point.type='M';
 
@@ -48,7 +48,7 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		// if (e.target instanceof SVGCircleElement)
 		// 	return;
 		// e.stopPropagation();
-		    console.log(e)	
+
 
 			
 			var pointLen = obj.points.length;
@@ -76,8 +76,6 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			topOffset  =  boundClientRect.top;
 			}
 
-			// console.log(e.pageX - leftOffset);
-			// console.log(e.pageY - topOffset)
 
 		//if it's the first point just move around M point and return
 		if (pointLen == 1)
@@ -93,11 +91,10 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			    obj.points[pointLen - 1].type  = 'Q';
 				
 			
-			//update position of vector
+			//update position of vector																//coercing paseInt with bitwise
+     		//coercing to int with bitwise
 			obj.points[pointLen - 1][0][0] = e.pageX - leftOffset |0;
 			obj.points[pointLen - 1][0][1] = e.pageY - topOffset  |0;
-			console.log(obj.points)
-			
 	};
 	obj.mousemove.back = function(e){
 			var pointLen = obj.points.length;
@@ -110,7 +107,6 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 					    //change type of point
 			var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    obj.points[pointLen - 1].type = typeOfPoint;
-		    console.log( obj.points[pointLen - 1] )
 
 	};
 
@@ -118,30 +114,28 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 
 
 
-	obj.mouseupCurve = function(e){
-			 console.log('ser mouseupline',e )
+	// obj.mouseupCurve = function(e){
+	// 		 console.log('ser mouseupCURVE',e )
 
-			 var  pointLen = obj.points.length;
+	// 		 var  pointLen = obj.points.length;
 			
-			// var typeOfPoint = (pointLen <= 1)?'M':'Q';
+	// 		// var typeOfPoint = (pointLen <= 1)?'M':'Q';
 			
-			if(pointLen <= 1)
-			return; 
-			/*	moved this part on mousemove()		
-			// if(pointLen > 0){
-			var qPoint = [];
-			qPoint[0]=e.clientX - e.target.offsetLeft;
-			qPoint[1]=e.clientY - e.target.offsetTop;
+	// 		if(pointLen <= 1)
+	// 		return; 
+	// 			moved this part on mousemove()		
+	// 		// if(pointLen > 0){
+	// 		var qPoint = [];
+	// 		qPoint[0]=e.clientX - e.target.offsetLeft;
+	// 		qPoint[1]=e.clientY - e.target.offsetTop;
 
-			//inserts point in the last point array
-			obj.points[pointLen - 1].unshift(qPoint);
-			*/
-			//set correct point type
-			//obj.points[pointLen - 1].type = 'Q';
-		
+	// 		//inserts point in the last point array
+	// 		obj.points[pointLen - 1].unshift(qPoint);
+			
+	// 		//set correct point type
+	// 		//obj.points[pointLen - 1].type = 'Q';
+	// }
 
-
-	}
 	obj.getPoints = function(){
 		return obj.points
 	};
