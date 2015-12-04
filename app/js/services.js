@@ -25,19 +25,23 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		  
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
-//sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
+			//sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
             var point = [];
             point[0]=[];
-		    point[0][0]=e.pageX - e.target.offsetLeft;
-			point[0][1]=e.pageY - e.target.offsetTop;
+
+            //polyfill for FF
+            if(!e.target.offsetLeft)
+            var boundClientRect = e.target.getBoundingClientRect();
+
+		    point[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;//boundClientRect.x
+			point[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
+
 			 
 			// we temporarly set type to 'M' for rendering point
 			point.type='M';
 
 			//inserts point
 			obj.points.push(point);
-			
-			console.log(obj.points)
 			
 	};
 	obj.mouseupLine = function(e){
@@ -61,13 +65,24 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			return;
 
 		var pointLen = obj.points.length;
+
 		var leftOffset =  e.target.offsetLeft,
 			topOffset  =  e.target.offsetTop ;
 
+		//polyfill for target.offsetLeft in FF
+            if(e.target.offsetLeft == null){
+         	var boundClientRect = e.target.getBoundingClientRect();
+        	leftOffset =  boundClientRect.left;
+			topOffset  =  boundClientRect.top;
+			}
+
+			// console.log(e.pageX - leftOffset);
+			// console.log(e.pageY - topOffset)
+
 		//if it's the first point just move around M point and return
 		if (pointLen == 1)
-	return obj.points[0][0][0] = e.pageX - leftOffset,
-		   obj.points[0][0][1] = e.pageY - topOffset;
+		 return obj.points[0][0][0] = e.pageX - leftOffset |0,
+		   		obj.points[0][0][1] = e.pageY - topOffset  |0;
 
 			
 
@@ -79,8 +94,9 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 				
 			
 			//update position of vector
-			obj.points[pointLen - 1][0][0] = e.pageX - leftOffset;
-			obj.points[pointLen - 1][0][1] = e.pageY - topOffset;
+			obj.points[pointLen - 1][0][0] = e.pageX - leftOffset |0;
+			obj.points[pointLen - 1][0][1] = e.pageY - topOffset  |0;
+			console.log(obj.points)
 			
 	};
 	obj.mousemove.back = function(e){
@@ -97,6 +113,10 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		    console.log( obj.points[pointLen - 1] )
 
 	};
+
+
+
+
 
 	obj.mouseupCurve = function(e){
 			 console.log('ser mouseupline',e )

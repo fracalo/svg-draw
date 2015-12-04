@@ -31,17 +31,22 @@ svgFiddle.directive('drawPointsList',function(){
       controller: 'DrawCtrl',
       controllerAs:'drw',
       template:'<table>\
-      <tr>\
-      <th>index</th>\
-      <th>type</th>\
-      <th>point</th>\
-      </tr>\
       <tr ng-repeat="point in drw.artboard.points track by $index">\
-      <td>{{$index}}:</td>\
-      <td> <input ng-model="point.type"></td>\
-      <td ng-repeat="p in point"><input ng-model="p[0]"><input ng-model="p[1]"></td>\
+      <td><p>{{$index}}:</p></td>\
+      <td><fieldset><input ng-model="point.type"></fieldset></td>\
+      <td ng-repeat="p in point">\
+      <fieldset><label for="x">X<sup>{{$index}}</sup></label><input name="x" ng-model="p[0]"></fieldset>\
+      <fieldset><label for="y">Y<sup>{{$index}}</sup></label><input name="y" ng-model="p[1]"></fieldset>\
+      </td>\
       </tr>\
       </table>',
+    /* <tr>\
+      <th>#</th>\
+      <th>type</th>\
+      <th colspan="2">point</th>\
+      </tr>\*/
+
+
 
       }
 
@@ -70,8 +75,9 @@ svgFiddle.directive('drawPointsList',function(){
         };
 
         function mousemove(e){
-          if( Math.sqrt( Math.pow(e.x-down.x , 2) + Math.pow(e.y-down.y , 2) ) > tollerance){
           
+          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
+         
               scope.drw.artboard.mousemove(e);
               scope.$digest();
           }else{
@@ -82,7 +88,7 @@ svgFiddle.directive('drawPointsList',function(){
 
         
         function mouseup(e){
-          if( Math.sqrt( Math.pow(e.x-down.x , 2) + Math.pow(e.y-down.y , 2) ) <= tollerance){
+          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
              scope.drw.artboard.mouseupLine(e);
              
           }else{ 
