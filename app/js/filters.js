@@ -4,7 +4,7 @@
 var svgFiddleFilters=angular.module('svgFiddleFilters',[]);
 
 /*from array of points to dval*/
-svgFiddleFilters.filter('arrayToSVG',function(){ 
+/*svgFiddleFilters.filter('arrayToSVG',function(){ 
 	return function(ar){
       if (ar.length == 0)
       return '';
@@ -19,7 +19,7 @@ svgFiddleFilters.filter('arrayToSVG',function(){
       },'');
     return res 
     }
-});
+});*/
 
 /*from obj of path points and controlPoints to dval*/
 //sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
@@ -29,7 +29,7 @@ svgFiddleFilters.filter('arrayToDVal',function(){
       return '';
     var res = ar.reduce(function(ac,x,i,ar){
           ac += x.type;
-          var tr = x.map(e=> e.join(' '));
+          var tr = x.list.map(e=> e.join(' '));
           
           ac += tr.join(',') + ' ';
           return ac;
@@ -60,7 +60,9 @@ svgFiddleFilters.filter('dValToArray', function(){
 
     var res = [];
     str.replace(pat,function(a){
-      var p=[];
+      var p={
+        list:[]
+      };
       p.type=a.slice(0,1);
 
      
@@ -68,7 +70,7 @@ svgFiddleFilters.filter('dValToArray', function(){
       
       points.forEach(function(x){
  
-            p.push( x.split(' ').map( item =>Number(item) ) );
+            p.list.push( x.split(' ').map( item =>Number(item) ) );
       });
       res.push(p)
 

@@ -76,7 +76,7 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
             artboard.setPoints(res);
           };
   });
-
+  this.curveOp=['M','L','Q']
  
 
 }]);

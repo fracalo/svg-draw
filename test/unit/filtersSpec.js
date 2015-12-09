@@ -26,7 +26,7 @@ describe('filter', function() {
 			var f = $filter('dValToArray');
 			expect(f('M33 33').length).toBe( 1 );
 			expect(f('M33 33')[0].type).toBe('M' );
-			expect(f('M33 33')[0][0]).toEqual( [33,33] );
+			expect(f('M33 33')[0].list[0]).toEqual( [33,33] );
 			 // expect(f('M0 0,33 33 L44 11.2')).toBe( [ [[0,0], [33,33]], [[44,11]] ] );
 		})
 
@@ -42,8 +42,8 @@ describe('filter', function() {
 		it('converts an array to dValue',function(){
 			var f= $filter('arrayToDVal');
 			var test=[
-				[ [41,42]  ],
-				[ [11,12],[13,14],[15,16]  ],
+				{ list:[ [41,42] ] },
+				{ list:[ [11,12],[13,14],[15,16] ] }
 				];
 				test[0].type='M';
 				test[1].type='C';

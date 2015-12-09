@@ -1409,106 +1409,112 @@ section {
 .sketch .tools input {
   display: inline-block;
 }
-/* line 110, ../sass/app.scss */
+/* line 111, ../sass/app.scss */
 .sketch .artboard {
   flex-basis: 50vw;
 }
 
-/* line 116, ../sass/app.scss */
+/* line 117, ../sass/app.scss */
 table {
   margin-left: 10px;
-  /* fieldset, p{
-  	float:left;
-  } */
 }
-/* line 119, ../sass/app.scss */
+/* line 120, ../sass/app.scss */
 table input {
   box-sizing: border-box;
   text-align: center;
+  -moz-appearance: none;
+  appearance: none;
+}
+/* line 127, ../sass/app.scss */
+table select {
+  background: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
-/* line 131, ../sass/app.scss */
+/* line 138, ../sass/app.scss */
 tr p {
   font-size: 80%;
   font-weight: 700;
 }
-/* line 135, ../sass/app.scss */
+/* line 142, ../sass/app.scss */
 tr label {
   color: #666;
   font-size: 70%;
   letter-spacing: 1px;
   padding-left: 4px;
 }
-/* line 141, ../sass/app.scss */
-tr input {
+/* line 148, ../sass/app.scss */
+tr input, tr select {
   width: 100%;
   font-size: 80%;
 }
-/* line 145, ../sass/app.scss */
+/* line 152, ../sass/app.scss */
 tr fieldset {
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 3px;
 }
-/* line 149, ../sass/app.scss */
+/* line 156, ../sass/app.scss */
 tr fieldset + fieldset {
-  margin-right: 6px;
-  margin-left: 0;
+  margin-right: 3px;
+  margin-left: 2px;
 }
-/* line 154, ../sass/app.scss */
+/* line 161, ../sass/app.scss */
 tr > td {
   font-size: 80%;
   vertical-align: baseline;
 }
-/* line 159, ../sass/app.scss */
+/* line 166, ../sass/app.scss */
 tr > td fieldset {
   width: 27px;
 }
-/* line 162, ../sass/app.scss */
+/* line 169, ../sass/app.scss */
 tr > td:nth-of-type(2) fieldset {
-  width: 13px;
-  margin-right: 6px;
+  width: 15px;
+  margin-right: 8px;
 }
 
-/* line 169, ../sass/app.scss */
+/* line 176, ../sass/app.scss */
 th {
   padding: 4px 2px;
   font-size: 66%;
   font-weight: 700;
 }
 
-/* line 174, ../sass/app.scss */
+/* line 181, ../sass/app.scss */
 sup {
   vertical-align: super;
   font-size: smaller;
 }
 
 /* template bottom */
-/* line 179, ../sass/app.scss */
+/* line 186, ../sass/app.scss */
 .bottom {
   background-color: #3d3d3d;
   color: snow;
   line-height: 24px;
 }
-/* line 184, ../sass/app.scss */
+/* line 191, ../sass/app.scss */
 .bottom form {
   width: 100%;
   padding-bottom: 10px;
 }
-/* line 187, ../sass/app.scss */
+/* line 194, ../sass/app.scss */
 .bottom form textarea {
   width: 100%;
 }
-/* line 190, ../sass/app.scss */
+/* line 197, ../sass/app.scss */
 .bottom form label {
   font-size: 70%;
 }
-/* line 194, ../sass/app.scss */
+/* line 201, ../sass/app.scss */
 .bottom code {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 /* draw path */
-/* line 202, ../sass/app.scss */
+/* line 209, ../sass/app.scss */
 g > path {
   pointer-events: none;
 }

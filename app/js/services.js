@@ -26,16 +26,20 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
 			//sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
-            var point = [];
-            point[0]=[];
+			//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
+            var point = {
+            	type:'',
+            	list :[]
+            };
+            point.list[0]=[];
 
             //polyfill for FF
             if(!e.target.offsetLeft)
             var boundClientRect = e.target.getBoundingClientRect();
 
 			//coercing int with bitwise for FF support
-		    point[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;
-			point[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
+		    point.list[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;
+			point.list[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
 
 			// we temporarly set type to 'M' for rendering point
 			point.type='M';
@@ -79,31 +83,30 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 
 		//if it's the first point just move around M point and return
 		if (pointLen == 1)
-		 return obj.points[0][0][0] = e.pageX - leftOffset |0,
-		   		obj.points[0][0][1] = e.pageY - topOffset  |0;
+		 return obj.points[0].list[0][0] = e.pageX - leftOffset |0,
+		   		obj.points[0].list[0][1] = e.pageY - topOffset  |0;
 
 			
 
 			//if no vector exist create one andinsert it on index 1
 			// and change type of point if needed
-			if (obj.points[pointLen - 1].length < 2)
-				obj.points[pointLen -1].unshift([]),
+			if (obj.points[pointLen - 1].list.length < 2)
+				obj.points[pointLen -1].list.unshift([]),
 			    obj.points[pointLen - 1].type  = 'Q';
-				
 			
 			//update position of vector																//coercing paseInt with bitwise
      		//coercing to int with bitwise
-			obj.points[pointLen - 1][0][0] = e.pageX - leftOffset |0;
-			obj.points[pointLen - 1][0][1] = e.pageY - topOffset  |0;
+			obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
+			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
 	};
 	obj.mousemove.back = function(e){
 			var pointLen = obj.points.length;
 
-			if(obj.points[pointLen - 1].length < 2)
+			if(obj.points[pointLen - 1].list.length < 2)
 				return;
 
 
-			obj.points[pointLen - 1].shift();
+			obj.points[pointLen - 1].list.shift();
 					    //change type of point
 			var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    obj.points[pointLen - 1].type = typeOfPoint;

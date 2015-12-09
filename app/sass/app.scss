@@ -102,6 +102,7 @@ section{
 			}
 			input{
 				display:inline-block;
+				//border-width:0.1em;
 				
 			}
 
@@ -118,11 +119,17 @@ table{
 	margin-left:10px;
 	input{
 		box-sizing:border-box;
-		text-align: center
+		text-align: center;
+		// -webkit-appearance: none;
+		-moz-appearance:none;
+		appearance:none;
 	}
-	/* fieldset, p{
-		float:left;
-	} */
+	select{
+		background:transparent;
+		-webkit-appearance: none;
+		-moz-appearance:none;
+		appearance:none;
+	}
 
 }
 
@@ -138,17 +145,17 @@ tr{
 		letter-spacing: 1px;
 		padding-left: 4px;
 	}
-	input{
+	input, select{
 		width:100%;
 		font-size: 80%;
 	}
 	fieldset{
 		display:inline-block;
-		margin-left:6px;
+		margin-left:3px;
 	}
 	fieldset+fieldset{
-		margin-right:6px;
-		margin-left:0;
+		margin-right:3px;
+		margin-left:2px;
 	}
 	
 	&> td{
@@ -160,8 +167,8 @@ tr{
 		width:27px;
 	}
 	&> td:nth-of-type(2) fieldset{
-		width:13px;
-		margin-right:6px;
+		width:15px;
+		margin-right:8px;
 	}
 
 }
