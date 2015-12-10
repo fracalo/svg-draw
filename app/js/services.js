@@ -146,8 +146,8 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		return $filter('arrayToDVal')(obj.points);
 
 	};
-	obj.code=function(){
-	 return $filter('attrsToMarkup')($filter('arrayToDVal')(obj.points));
+	obj.code=function(attributes){
+	 return $filter('attrsToMarkup')(attributes);
 	};
 
 	return obj;

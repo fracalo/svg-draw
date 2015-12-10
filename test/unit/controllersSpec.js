@@ -71,32 +71,22 @@
 
       describe('attr.style coming from service',function(){
 
-          it('should return attribute styles from toolsAttr service',function(){
-            expect($controller.attr.style)
-            .toEqual({
-              fill :'rgba(222,0,222,0.5)',
-              stroke :'green',
-              strokeWidth:5,
-            })
-          });
+
 
 
 
           it('should return attribute change styles depending on form input',function(){
-              $controller.attr.style.fill='green';
-              $scope.$digest();
-              expect($controller.attr.style)
-              .toEqual({
-                fill :'green',
-                stroke :'green',
-                strokeWidth:5,
-              });
-              expect($controller.toolsAttr.getAttr())
+              /*$controller.attr.stroke='green';
+              $scope.$digest();*/
+              expect($controller.attr.stroke)
+              .toEqual('green');
+
+/*              expect($controller.toolsAttr.getAttr())
               .toEqual({
               fill :'green',
               stroke :'green',
               strokeWidth:5,
-              })
+              })*/
           });
 
       })

@@ -39,14 +39,30 @@ svgFiddleFilters.filter('arrayToDVal',function(){
 });
 /*from (attrs) dval to explicit markup*/
 svgFiddleFilters.filter('attrsToMarkup',function(){ 
-	return function(str){
+	return function(obj){
+    var str = '';
+    
+
+    if (obj === {}){
+      console.log(obj,21);
       
-		return '<path d="'+str + '" ></path>';
     }
+
+    for (var k in obj){
+/*      if(k !== 'style') 
+*/      str+= k + '="' + obj[k] + '" ';
+    };
+    /*for (var k in obj.style){
+      str+= k + '="' + obj.style[k] + '" ';
+   
+    };*/
+    
+		return '<path '+str + '></path>';
+  }
+  
 });
 svgFiddleFilters.filter('markupToAttrs',function(){ 
 	return function(str){
-		//http://stackoverflow.com/questions/2402797/regex-find-characters-between
       var pattern= /d\s*=\s*"\s*(.*?)\s*"/;
       var res = str.match(pattern);
 
@@ -77,4 +93,17 @@ svgFiddleFilters.filter('dValToArray', function(){
     });
     return res;
 	}
+});
+
+svgFiddleFilters.filter('parseMarkup',function(){
+  return function(str){
+    var obj = Object.create(null);
+    var pat = /([a-zA-Z]+)\s*=\s*"\s*(.*?)\s*"/g;
+
+    str.replace(pat,function(match, k, v){
+      obj[k]=v
+    })
+
+    return obj
+  } 
 })

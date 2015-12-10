@@ -46,33 +46,38 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
   };
 
   //since toolAttr is used in input ng-model digest will trigger (no need to manual $watch toolsAttr)
-  this.attr.style = drw.toolsAttr.getAttr();
+  var styleAttributes = drw.toolsAttr.getAttr();
+  for (var s in styleAttributes){
+    drw.attr[s]= styleAttributes[s]
+  }
 
  
 
  // this watch for click/mouse events coming from service
    $scope.$watch('drw.artboard.lastPointType()', function(){
-         	drw.attr.dValue= artboard.dValue();
-            drw.code = artboard.code();
+         	drw.attr.d= artboard.dValue();
+            drw.code = artboard.code(drw.attr);
 
 	});
    //this watch for point movements might blend with watch above
    $scope.$watch('drw.artboard.points', function(){
-         	drw.attr.dValue= artboard.dValue();
-            drw.code = artboard.code();
+         	drw.attr.d= artboard.dValue();
+           drw.code = artboard.code(drw.attr);
 
 	},true);
 
    // this watch for events coming from textArea directive
-  $scope.$watch('drw.code', function(n) {
+$scope.$watch('drw.code', function(n) {
             
             
           //update dValue according using filter
-           drw.attr.dValue = (n)?$filter('markupToAttrs')(n):'';
+          console.log(drw.attr.d)
+           drw.attr = (n)?$filter('parseMarkup')(n):'';
+
             
           //update points in artboard service
-          if(drw.attr.dValue.length>0){
-           var res = $filter('dValToArray')(drw.attr.dValue) ; 
+          if(drw.attr.d && drw.attr.d.length>0){
+           var res = $filter('dValToArray')(drw.attr.d) ; 
             artboard.setPoints(res);
           };
   });

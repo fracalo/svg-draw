@@ -98,10 +98,10 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       controller: 'DrawCtrl',
       controllerAs:'drw',
       template: function(tElement, tAttrs){
-      var  tEl ='<path ng-attr-d={{drw.attr.dValue}} ' +
-      			'fill={{drw.attr.style.fill}} '+
-      			'stroke={{drw.attr.style.stroke}} '+
-      			'stroke-width={{drw.attr.style.strokeWidth}}></path>';
+      var  tEl ='<path ng-attr-d={{drw.attr.d}} ' +
+      			'fill={{drw.attr.fill}} '+
+      			'stroke={{drw.attr.stroke}} '+
+      			'stroke-width={{drw.attr.strokeWidth}}></path>';
       return tEl;
       },
       link: function(scope, el, attrs, ngModel){
@@ -228,50 +228,44 @@ svgFiddleDirectives.directive('drawTextarea',function(){
       //scope: {},
       template:  "<label name='code'>SVG-Code </label>\
       <textarea name='code' ng-model='drw.code' ></textarea>",
-     
+     //draw-code-valid
       link: function(scope, element, attrs, ngModel) {
-      	if (!ngModel) {console.log(42); return;}
+      	
 
-        console.log(scope)
+       
       }
     }
 
 });
 svgFiddleDirectives.directive('drawCodeValid', function($filter){
 	return{
-		restrict:'A',
+		restrict:'A',																																												
 		require:'ngModel',
 		link: function(scope, element, attrs, ngModel) {
-	      	if (!ngModel)
+	      	/*if (!ngModel)
 	      		return;
+	      	scope.checkAttributes = function(){
+	      		return scope.drw.attr
+	      	}*/
 
-	        ngModel.$formatters.unshift(function(v) {
-				return $filter('attrsToMarkup')(v);
-	      	});
+	  //    scope.$watch( scope.checkAttributes , function(){
+			// console.log(scope.drw.attr);
+			// console.log(ngModel);
+			// // ngModel.($filter('attrsToMarkup')(ngModel.$modelValue))
+
+			// 	// console.log(v);
+				
+			// 	// return $filter('attrsToMarkup')(ngModel.$modelValue);
+	  //  //   	 });
+	  //    },true);
+
+	   
+	      	// ngModel.$parsers.unshift(function(x) {
+	      	// 	return $filter('MarkupToAttrs')(x)
+	      	// })
 	  	}
 
 	  }
 })
 
-svgFiddleDirectives.directive('ngFocus', [function() {
-	var FOCUS_CLASS = "ng-focused";
-	return {
-		restrict: 'A',
-		require: 'ngModel',
-		link: function(scope, element, attrs, ctrl) {
-			ctrl.$focused = false;
-			element.bind('focus', function(evt) {
-				element.addClass(FOCUS_CLASS);
-				scope.$apply(function() {
-				ctrl.$focused = true;
-				});
-			}).bind('blur', function(evt) {
-				element.removeClass(FOCUS_CLASS);
-				scope.$apply(function() {
-				ctrl.$focused = false;
-				});
-			});
-		}
-	}
-}]);
 

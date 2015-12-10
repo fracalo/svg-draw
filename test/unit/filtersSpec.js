@@ -13,13 +13,29 @@ describe('filter', function() {
 		$filter= _$filter_;
 	}));
 
-	describe('attrsToMarkup',function(){
+/*	describe('attrsToMarkup',function(){
 
 		it('converts dVal attrsToMarkup',function(){
 			var f = $filter('attrsToMarkup');
 			expect(f('m22 22')).toEqual('<path d="m22 22" ></path>')
 		})
-	});
+	});*/
+
+    describe('attrsToMarkup',function(){
+    	it('converts all path attributes in correct markup',function(){
+    		var data = {
+				   d:'M301 134 L460 149',
+				   fill :'rgba(222,0,222,0.5)',
+				   stroke :'green'
+						/*strokeWidth:5,*/
+				   
+				  };
+   			var f = $filter('attrsToMarkup');
+   			expect(f(data)).toEqual('<path d="M301 134 L460 149" '+
+   			'fill="rgba(222,0,222,0.5)" stroke="green" ></path>');
+
+    	})
+    })
 
 	describe('dValToArray',function(){
 		it('converts dvalue into array of points', function(){
@@ -27,7 +43,6 @@ describe('filter', function() {
 			expect(f('M33 33').length).toBe( 1 );
 			expect(f('M33 33')[0].type).toBe('M' );
 			expect(f('M33 33')[0].list[0]).toEqual( [33,33] );
-			 // expect(f('M0 0,33 33 L44 11.2')).toBe( [ [[0,0], [33,33]], [[44,11]] ] );
 		})
 
 	});
