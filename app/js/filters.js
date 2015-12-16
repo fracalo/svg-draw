@@ -43,19 +43,12 @@ svgFiddleFilters.filter('attrsToMarkup',function(){
     var str = '';
     
 
-    if (obj === {}){
-      console.log(obj,21);
-      
-    }
 
     for (var k in obj){
-/*      if(k !== 'style') 
-*/      str+= k + '="' + obj[k] + '" ';
+
+      str+= k + '="' + obj[k] + '" ';
     };
-    /*for (var k in obj.style){
-      str+= k + '="' + obj.style[k] + '" ';
-   
-    };*/
+
     
 		return '<path '+str + '></path>';
   }
@@ -98,12 +91,17 @@ svgFiddleFilters.filter('dValToArray', function(){
 svgFiddleFilters.filter('parseMarkup',function(){
   return function(str){
     var obj = Object.create(null);
-    var pat = /([a-zA-Z]+)\s*=\s*"\s*(.*?)\s*"/g;
+    var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
 
     str.replace(pat,function(match, k, v){
+ 
+
       obj[k]=v
     })
 
+
     return obj
   } 
-})
+});
+
+svgFiddleFilters.filter('')

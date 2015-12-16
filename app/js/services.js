@@ -8,7 +8,9 @@ var svgFiddleServices = angular.module('svgFiddleServices',[]);
 svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 
 	var obj={};
-	obj.points = [] ;
+
+		//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
+		obj.points = [] ;
 
 	obj.lastPointType=function(){
 		// console.log(obj.points[obj.points.length - 1]);
@@ -25,8 +27,7 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		  
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
-			//sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
-			//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
+
             var point = {
             	type:'',
             	list :[]
@@ -149,6 +150,8 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 	obj.code=function(attributes){
 	 return $filter('attrsToMarkup')(attributes);
 	};
+	 // options fot point types
+ 	obj.curveOp=['M','L','Q','C']
 
 	return obj;
 
@@ -162,7 +165,8 @@ var obj={
 		attributes:{
 			fill :'rgba(222,0,222,0.5)',
 			stroke :'green',
-			strokeWidth:5,
+			['stroke-width']:5
+			
 		},
 
 		setAttr : function(swapObj){
@@ -172,6 +176,7 @@ var obj={
 	    	return obj.attributes;
 	  	}
 	};
+	//obj.attributes['stroke-width']=5;
 
 return obj;
 

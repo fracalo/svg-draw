@@ -19,7 +19,7 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       	'<td><fieldset>'+
       		'<label for="typeP">PT</label>'+
       		'<select name="typeP" '+
-      		'ng-options="option for option in  drw.curveOp "'+
+      		'ng-options="option for option in  drw.artboard.curveOp "'+
       		'ng-model="point.type"></select>'+
       	'</fieldset></td>'+
       	'<td ng-repeat="p in point.list"><fieldset>'+
@@ -97,21 +97,34 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       restrict:'AE',
       controller: 'DrawCtrl',
       controllerAs:'drw',
-      template: function(tElement, tAttrs){
-      var  tEl ='<path ng-attr-d={{drw.attr.d}} ' +
-      			'fill={{drw.attr.fill}} '+
-      			'stroke={{drw.attr.stroke}} '+
-      			'stroke-width={{drw.attr.strokeWidth}}></path>';
-      return tEl;
-      },
+      template: '<path></path>',
       link: function(scope, el, attrs, ngModel){
-       
+      	var path = el.find('path')[0];
+      	
+      	//dinamically include all attributes in the attr {}
+      	function updateAttr (){
+      		
+      		//reset attributes
+  		    while(path.attributes.length > 0)
+  		 	path.removeAttribute( path.attributes[0].name );
+
+      		//repopulate atributes
+      		for ( var a in scope.drw.attr){
+      	     	path.setAttribute(a , scope.drw.attr[a] )
+      		};
+      	};
+
+      	scope.watchAttr = function (){
+      		return scope.drw.attr
+      	};
+
+      	scope.$watchCollection( scope.watchAttr, updateAttr	);
+
         scope.$on('pointMove', function (e, msg) {
           scope.drw.artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
-           // console.log(scope.drw.artboard.points[msg[1]] );
           scope.$digest();
-         
         });
+        
       }
     }
 });

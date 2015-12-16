@@ -34,23 +34,25 @@
     <div class="tools" >
 
          <draw-points-list></draw-points-list> 
-    <!-- <div class="tools" ng-controller='DrawCtrl as tl'>
+
+         <!-- need to set up a watch on form || currently not working!! -->
+   <!--  <div class="tools" ng-controller='DrawCtrl as tl'>
                 
         <ng-form>
 
         <fieldset>
         <label for='fill'>Fill</label>
-        <input colorpicker='rgba' id='fill' name='fill' ng-model='tl.attr.style.fill' >
+        <input type='color' id='fill' name='fill' ng-model='tl.attr.fill' >
         </fieldset>
 
         <fieldset>
         <label for='stroke'>Stroke</label>
-        <input colorpicker='rgba' id='stroke' name='stroke' ng-model='tl.attr.style.stroke'>
+        <input colorpicker='rgba' id='stroke' name='stroke' ng-model='tl.attr.stroke'>
         </fieldset>
 
         <fieldset>
         <label for='stroke-width'>Stroke-width</label>
-        <input id='stroke-width' type='number' name='stroke-width' ng-model='tl.attr.style.strokeWidth'>
+        <input id='stroke-width' name='stroke-width' ng-model='tl.attr["stroke-width"]'>
         </fieldset>
                 
         </ng-form> -->

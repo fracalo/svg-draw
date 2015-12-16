@@ -38,7 +38,6 @@ describe('directives testing', function() {
                     expect(element[0].getAttribute('cy')).toBe('11');
                     expect(element[0].getAttribute('fill')).toBe('black');
 
-                    console.log(scope.$parent.$last)
                    });
 
                    it('should change color when vector', function(){
@@ -56,12 +55,67 @@ describe('directives testing', function() {
             beforeEach(inject(function($rootScope,$compile){
 
               scope = $rootScope.$new();
-              element = $compile('<draw-point-list></draw-point-list>')
+              element = $compile('<draw-point-list></draw-point-list>');
 
-            }))
+              }))
 
 
-       })
+       });
+
+      describe('drawPath',function(){
+        
+        var  path;
+
+        beforeEach(
+          inject(function($rootScope,$compile){
+            scope = $rootScope.$new();
+            element = angular.element('<g draw-path></g>');
+            var compiled = $compile(element);
+            
+            compiled(scope);
+            scope.$digest();
+
+                
+        }));
+        
+        beforeEach(function(){
+            scope.drw={
+                attr:{
+                  d:'M12 12',
+                  fill:'red'
+                }
+              };
+
+            path = element.find('path')[0];
+          
+           
+        })
+
+          it('inherits attributes from attr {}',function(){
+            scope.$digest();
+            expect(path.getAttribute('fill')).toEqual('red');
+            
+          })
+
+          it('attributes can dinamically be added and removed',function(){
+            scope.drw.attr['stroke-dasharray']='6,8';
+            scope.$digest();
+
+            expect(path.getAttribute('stroke-dasharray')).toEqual('6,8');
+
+            delete scope.drw.attr['stroke-dasharray'];
+            scope.$digest();
+
+            expect(path.getAttribute('stroke-dasharray')).toBe(null);
+
+          });
+
+          xit('removes all attributes from the element not present in attr {}')
+
+
+            
+
+      })
 
 });
 
