@@ -104,4 +104,86 @@ svgFiddleFilters.filter('parseMarkup',function(){
   } 
 });
 
-svgFiddleFilters.filter('')
+svgFiddleFilters.filter('normalizePointType',function(){
+   function createP(bef , aft, n){
+      
+      var res = [];
+      
+      var dividers =
+        (n==2)?
+        [1.667, 2.5]:
+        [ 2 ];
+        
+    
+
+      dividers.forEach(i =>{
+        var p = [];
+        p[0] = (bef[0] + aft[0])/i |0;
+        p[1] = (bef[1] + aft[1])/i |0;
+        res.push(p);
+      })
+      
+      
+      return res;
+
+   }
+  return function(arr){
+    arr.forEach( function(x,i,arr){
+         if ((x.type === 'M' || x.type === 'L') && x.list.length !== 1){
+            x.list = x.list.splice(-1 , 1 );
+          }
+
+         if (x.type === 'Q' && x.list.length != 2){
+              if ( ! (arr[i-1]) ){
+                x.type = 'M';
+                return;
+              }
+
+              if(x.list.length<2){
+                  var before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
+                  var after = x.list[0]
+                  var p = createP(before,after);
+                  
+                   x.list.unshift( p[0] )
+              }else{
+                  x.list = x.list.splice(-2 , 2 );
+              }
+
+          };
+
+          if (x.type === 'C' && x.list.length !== 3){
+              if ( ! (arr[i-1]) ){
+                x.type = 'M';
+                return;
+              }
+              //it seems er're adding some points to list
+               var before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
+               var after = x.list[0]
+ 
+              if (x.list.length === 2){
+                  var p = createP(before,after);
+                  x.list.unshift( p[0] )
+              }
+              if (x.list.length === 1){
+                  var p = createP(before,after,2);
+                  x.list = p.concat(x.list);
+                  
+              }
+
+
+          }
+
+        
+        
+        });
+       
+        return arr
+        
+
+
+      };
+    
+
+  
+
+})

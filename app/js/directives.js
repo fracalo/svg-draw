@@ -34,7 +34,7 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       '</tr>'+
       '</table>',
 
-      link:function(scope){}
+      link:function(scope){},
      }
 });
 
@@ -124,7 +124,7 @@ svgFiddleDirectives.directive('drawPointsList',function(){
           scope.drw.artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
           scope.$digest();
         });
-        
+
       }
     }
 });

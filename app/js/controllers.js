@@ -52,15 +52,19 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
  
 
  // this watch for click/mouse events coming from service
-   $scope.$watch('drw.artboard.lastPointType()', function(){
+ /*  $scope.$watch('drw.artboard.lastPointType()', function(){
          	drw.attr.d= artboard.dValue();
           drw.code = artboard.code(drw.attr);
 
-	});
-   //this watch for point movements might blend with watch above
+	});*/
+   //this watch for point movements might blend with watch above (using true)
+   //watch point type changes
    $scope.$watch('drw.artboard.points', function(){
          	drw.attr.d= artboard.dValue();
           drw.code = artboard.code(drw.attr);
+          
+          //filter the output correcting pointType
+          
 
 	},true);
 
@@ -75,10 +79,30 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
           //update points in artboard service
           if(drw.attr.d && drw.attr.d.length>0){
            var res = $filter('dValToArray')(drw.attr.d) ; 
+
+           //notmalize 
+               res = $filter('normalizePointType')(res);
           
             artboard.setPoints(res);
           };
     });
+
+    
+/*    $scope.watchPType = function(){
+          return drw.artboard.points.map(
+            x => x.type
+    )};
+
+
+    $scope.$watchCollection( $scope.watchPType, function(n,o,res){
+          //console.log(n);
+          var res;
+          for(var i = 0 ; i< n.length;  i++){
+              if(n[i] !== o[i])
+              res = i;
+          };
+          console.log(21 , '  ', res)
+        })*/
 
 
  

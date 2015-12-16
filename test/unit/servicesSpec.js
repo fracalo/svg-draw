@@ -107,7 +107,6 @@ it('should populate the array with an Fragment "Q" when mouseup an mousedown(if 
 		// second point - dragging creates a fragment "Q"
 		artboard.mousedown(e2);
 		artboard.mousemove(e);
-        console.log(artboard.points[1].list)
 		expect(artboard.points[1].type).toEqual('Q')
 
 

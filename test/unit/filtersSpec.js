@@ -65,6 +65,61 @@ describe('filter', function() {
 			expect( f(test) ).toEqual('M41 42 C11 12,13 14,15 16')
 		});
 
+	 });
+
+	describe('normalizePointType', function(){
+		var f,test;
+
+		beforeEach(function(){
+			f= $filter('normalizePointType');
+			test=[
+				{
+					type:'M',
+					list:[ [41,42] ]
+				},
+				{
+					type:'C',
+					list:[ [11,12],[13,14],[15,16] ] 
+				},
+				{
+					type:'L',
+					list:[ [21,22] ] 
+				}
+				];
+
+		});
+
+		it('with point.type== L || M , it leaves just one item(the last) in point.list ',function(){
+
+			test[1].type='L';
+
+			expect( f(test)[1].list.length ).toBe(1);
+			expect( f(test)[1].list[0][0] ).toEqual(15)
+		});
+
+		it('with point.type== Q, it leaves just two item in point.list ',function(){
+
+			test[1].type='Q';
+
+			expect( f(test)[1].list.length ).toBe(2);
+			expect( f(test)[1].list[0] ).toEqual([13,14])
+		});
+
+		it('with point.type== Q, it will add a point if needed ',function(){
+
+			test[2].type='Q';
+
+			expect( f(test)[2].list.length ).toBe(2);
+			expect( f(test)[2].list[0] ).toEqual([18,19])
+		});
+		it('with point.type== C, it can add 1 or 2 points if needed ',function(){
+
+			test[2].type='C';
+
+			expect( f(test)[2].list.length ).toBe(3);
+		});
+
+
 	 })
 
 
