@@ -75,7 +75,7 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			topOffset  =  e.target.offsetTop ;
 
 		//polyfill for target.offsetLeft in FF
-            if(e.target.offsetLeft == null){
+            if(!e.target.offsetLeft || e.target.offsetLeft == undefined){
          	var boundClientRect = e.target.getBoundingClientRect();
         	leftOffset =  boundClientRect.left;
 			topOffset  =  boundClientRect.top;
@@ -165,7 +165,7 @@ var obj={
 		attributes:{
 			fill :'rgba(222,0,222,0.5)',
 			stroke :'green',
-			['stroke-width']:5
+			//['stroke-width']:5
 			
 		},
 
@@ -176,7 +176,7 @@ var obj={
 	    	return obj.attributes;
 	  	}
 	};
-	//obj.attributes['stroke-width']=5;
+	obj.attributes['stroke-width']=5;
 
 return obj;
 
