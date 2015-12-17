@@ -1,11 +1,5 @@
 module.exports = function(config){
-
-  if(process.env.TRAVIS){
-    configuration.browsers = ['Chrome_travis_ci'];
-  }
-
-
-  config.set({
+  var configuration ={
 
     basePath : '../',
 
@@ -41,5 +35,12 @@ module.exports = function(config){
       suite: 'unit'
     }
 
-  });
+  };
+  
+  if(process.env.TRAVIS){
+    configuration.browsers = ['Chrome_travis_ci'];
+  }
+
+
+  config.set(configuration);
 };
