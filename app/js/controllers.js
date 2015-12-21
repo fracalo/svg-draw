@@ -28,7 +28,8 @@ svgFiddleControllers.controller('HomeCtrl',	[
 
 
 
-svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','artboard', 'toolsAttr',  function($scope, $filter, $timeout, artboard, toolsAttr) {
+svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','artboard', 'toolsAttr', 'vectorAttr',
+  function($scope, $filter, $timeout, artboard, toolsAttr, vectorAttr) {
     
   var drw = this;
 
@@ -49,19 +50,27 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
   for (var s in styleAttributes){
     drw.attr[s]= styleAttributes[s]
   };
+
+
+ this.vectorAttr={
+   /* all attributes coming from services*/
+  };
+  var vectorAttributes = vectorAttr.getAttr();
+  for (var s in vectorAttributes){
+    drw.vectorAttr[s]= vectorAttributes[s]
+  };
+
+
  
 
- // this watch for click/mouse events coming from service
- /*  $scope.$watch('drw.artboard.lastPointType()', function(){
-         	drw.attr.d= artboard.dValue();
-          drw.code = artboard.code(drw.attr);
-
-	});*/
+ 
    //this watch for point movements might blend with watch above (using true)
    //watch point type changes
    $scope.$watch('drw.artboard.points', function(){
-         	drw.attr.d= artboard.dValue();
+         	drw.attr.d =  artboard.dValue();
           drw.code = artboard.code(drw.attr);
+
+          drw.vectorAttr.d = artboard.vectorDValue();
           
           //filter the output correcting pointType
           
@@ -80,31 +89,96 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
           if(drw.attr.d && drw.attr.d.length>0){
            var res = $filter('dValToArray')(drw.attr.d) ; 
 
-           //notmalize 
-               res = $filter('normalizePointType')(res);
+           //normalize 
+            res = $filter('normalizePointType')(res);
           
             artboard.setPoints(res);
           };
     });
 
-    
-/*    $scope.watchPType = function(){
-          return drw.artboard.points.map(
-            x => x.type
-    )};
-
-
-    $scope.$watchCollection( $scope.watchPType, function(n,o,res){
-          //console.log(n);
-          var res;
-          for(var i = 0 ; i< n.length;  i++){
-              if(n[i] !== o[i])
-              res = i;
-          };
-          console.log(21 , '  ', res)
-        })*/
 
 
  
 
 }]);
+
+svgFiddleControllers.controller('DrawEventsCtrl', function($scope, $element, $attrs, $transclude, $rootScope, artboard){
+        var tollerance = 20;
+        var down =Object.create(null);
+
+
+        
+        $element.on('mousedown',mousedown);
+
+        function mousedown(e){
+          artboard.mousedown(e)
+          $scope.$digest();
+          
+          down.x = e.clientX;
+          down.y = e.clientY;
+        $element.on('mousemove',mousemove);
+        $element.on('mouseup',mouseup);
+
+        };
+
+        function mousemove(e){
+          
+          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
+         
+              artboard.mousemove(e);
+              $scope.$digest();
+          }else{
+              artboard.mousemove.back(e);
+              $scope.$digest();
+          }
+        }
+
+        
+        function mouseup(e){
+          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
+             artboard.mouseupLine(e);
+             
+          }
+
+        $scope.$digest();
+        $element.off('mousemove',mousemove);
+        $element.off('mouseup',mouseup);
+        
+        };
+        $rootScope.$on('pointMove', function (e, msg) {
+          artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
+          $scope.$digest();
+
+        });
+
+      });
+
+/*svgFiddleControllers.controller('DrawTextareaCtrl',
+function($scope, $element, $attrs, $transclude, $rootScope, artboard,toolsAttr){
+
+ var textarea = this;
+
+  this.attr={
+   /* all attributes coming from services*/
+  /*};
+
+  //digest will trigger (no need to manual $watch toolsAttr)
+  var styleAttributes = toolsAttr.getAttr();
+  for (var s in styleAttributes){
+    textarea.attr[s]= styleAttributes[s]
+  };
+  $scope.watchPoints =function(){
+    return artboard.points
+  };
+
+  $scope.$watch($scope.watchPoints, function(n){
+          textarea.attr.d= artboard.dValue();
+          textarea.code = artboard.code(textarea.attr);
+          
+          console.log(n)
+          //filter the output correcting pointType
+          
+
+  });
+
+})*/

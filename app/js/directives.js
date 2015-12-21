@@ -12,14 +12,18 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       restrict:'E',
       controller: 'DrawCtrl',
       controllerAs:'drw',
+      scope:{
+        pointsArray:'=',
+        pointsType:'@'
+      },
       template:
       '<table>'+
-      '<tr ng-repeat="point in drw.artboard.points track by $index">'+
+      '<tr ng-repeat="point in pointsArray track by $index">'+
       	'<td><p>{{$index}}:</p></td>'+
       	'<td><fieldset>'+
       		'<label for="typeP">PT</label>'+
       		'<select name="typeP" '+
-      		'ng-options="option for option in  drw.artboard.curveOp "'+
+      		'ng-options="option for option in {{pointsType}}"'+
       		'ng-model="point.type"></select>'+
       	'</fieldset></td>'+
       	'<td ng-repeat="p in point.list"><fieldset>'+
@@ -34,69 +38,50 @@ svgFiddleDirectives.directive('drawPointsList',function(){
       '</tr>'+
       '</table>',
 
-      link:function(scope){},
+      link:function(scope){console.log(scope)},
      }
 });
 
 
-// directive for dealing events on artboard 
+// directive for dealing events on artboard
+
   svgFiddleDirectives.directive('drawEvents',function(){
     return{
       restrict:'A',
-      link: function(scope, el, attrs){
-        var tollerance = 20;
-        var down =Object.create(null);
-        el.on('mousedown',mousedown);
+      controller: 'DrawEventsCtrl',
 
-        function mousedown(e){
-          scope.drw.artboard.mousedown(e)
-          scope.$digest();
-          
-          down.x = e.clientX;
-          down.y = e.clientY;
-        el.on('mousemove',mousemove);
-        el.on('mouseup',mouseup);
-
-        };
-
-        function mousemove(e){
-          
-          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
-         
-              scope.drw.artboard.mousemove(e);
-              scope.$digest();
-          }else{
-              scope.drw.artboard.mousemove.back(e);
-              scope.$digest();
-          }
-        }
-
-        
-        function mouseup(e){
-          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
-             scope.drw.artboard.mouseupLine(e);
-             
-          }/*else{ 
-            scope.drw.artboard.mouseupCurve(e)
-          };*/
-
-        scope.$digest();
-        el.off('mousemove',mousemove);
-        el.off('mouseup',mouseup);
-        
-        }
-      }
-    }
+      
+      
+    };
   });
 
+// directive for vectors
+svgFiddleDirectives.directive('drawVectors',function(){
 
+  return{
+    restrict:'A',
+    template: '<path></path>',
+
+    link: function(scope, el, attrs){
+      var vectorArray
+      
+     scope.$watch(scope.drw.artboard.getPoints, function(){
+
+      vectorArray = scope.drw.artboard.vectors();
+      // console.log(vectorArray);
+      })
+
+    }
+  }
+})
 //directive for path template
   svgFiddleDirectives.directive('drawPath',function(){
 
    return {
-      restrict:'AE',
-      controller: 'DrawCtrl',
-      controllerAs:'drw',
+      restrict:'A',
+      scope:{
+        attr:'=attributes'
+      },
       template: '<path></path>',
       link: function(scope, el, attrs, ngModel){
       	var path = el.find('path')[0];
@@ -109,21 +94,18 @@ svgFiddleDirectives.directive('drawPointsList',function(){
   		 	path.removeAttribute( path.attributes[0].name );
 
       		//repopulate atributes
-      		for ( var a in scope.drw.attr){
-      	     	path.setAttribute(a , scope.drw.attr[a] )
+      		for ( var a in scope.attr){
+      	     	path.setAttribute(a , scope.attr[a] )
       		};
       	};
 
       	scope.watchAttr = function (){
-      		return scope.drw.attr
+      		return scope.attr
       	};
 
       	scope.$watchCollection( scope.watchAttr, updateAttr	);
 
-        scope.$on('pointMove', function (e, msg) {
-          scope.drw.artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
-          scope.$digest();
-        });
+  
 
       }
     }
@@ -133,38 +115,41 @@ svgFiddleDirectives.directive('drawPointsList',function(){
 svgFiddleDirectives.directive('drawPoints',function(){
     return {
       restrict:'EA',
-      replace: true,
+      //replace: true,
       scope:{
         points:'='
       },
       //controller:function($scope,$element,$attrs){},
-      template:'<svg ng-repeat="point in points track by $index" >\
-      <g ng-repeat="p in point.list track by $index" >\
+      template:'<g ng-repeat="segment in points track by $index" >\
+      <g ng-repeat="p in segment.list track by $index" >\
       <draw-single-point point="p" ></draw-single-point>\
       </g>\
-      </svg>',
+      </g>',
       link: function(scope, el, attrs, ctrl){},
     }
 });
 
-svgFiddleDirectives.directive('drawSinglePoint',function($document){
+svgFiddleDirectives.directive('drawSinglePoint',function($document,$rootScope){
   return {
     restrict:'AE',
     replace:true,
+      // controller: 'DrawCtrl',
+      // controllerAs:'drw',
     // type:'svg',
     scope:{
       point:'=',
     },
+    require: '?^drawPath',
     template:'<circle \
     ng-mousedown="$event.stopPropagation()" ng-attr-cx={{point[0]}} ng-attr-cy="{{ point[1] }}"\
     r="3" fill="black">',
   
-    link:function(scope,el,attr){
+    link:function(scope,el,attr,drawPath){
      var startX, startY ;
      var sketchEl = $document;
      var grannyIndex = scope.$parent.$parent.$index;
      var parentIndex = scope.$parent.$index;
-
+     console.log(scope.$parent.$parent.$parent)
      	//change pointer when onover
      	 el.on('mouseover',function(ev){
      	 	el.css({
@@ -205,9 +190,12 @@ svgFiddleDirectives.directive('drawSinglePoint',function($document){
         var moveY = ev.pageY - startY;
         el.attr('cx', moveX);
         el.attr('cy', moveY);
+        //scope.point= [ moveX , moveY ];
     //drawPath.artboard.points[scope.$parent.$index]=[moveX,moveY];//rather pass this in the message
-        scope.$emit("pointMove", [[ Number(el.attr('cx')) , Number(el.attr('cy')) ] , grannyIndex, parentIndex ]);
+         //we're going to shoot the move coordinates in the air
+         $rootScope.$emit("pointMove", [[ Number(el.attr('cx')) , Number(el.attr('cy')) ] , grannyIndex, parentIndex ]);
 
+         
       };
        function mouseup(ev) {
         ev.stopPropagation();
@@ -236,21 +224,17 @@ svgFiddleDirectives.directive('drawTextarea',function(){
    return {
       restrict:'AE',
       replace: false,
-      controller: 'DrawCtrl',
-      controllerAs:'drw',
-      //scope: {},
+      scope: {
+        code:'='
+      },
       template:  "<label name='code'>SVG-Code </label>\
-      <textarea name='code' ng-model='drw.code' ></textarea>",
-     //draw-code-valid
-      link: function(scope, element, attrs, ngModel) {
-      	
-
-       
+      <textarea name='code' ng-model='code' ></textarea>",
       }
-    }
 
 });
-svgFiddleDirectives.directive('drawCodeValid', function($filter){
+
+
+/*svgFiddleDirectives.directive('drawCodeValid', function($filter){
 	return{
 		restrict:'A',																																												
 		require:'ngModel',
@@ -276,9 +260,9 @@ svgFiddleDirectives.directive('drawCodeValid', function($filter){
 	      	// ngModel.$parsers.unshift(function(x) {
 	      	// 	return $filter('MarkupToAttrs')(x)
 	      	// })
-	  	}
+	  // 	}
 
-	  }
-})
+	  // }
+//})
 
 

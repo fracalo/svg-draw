@@ -42,6 +42,7 @@ describe('service', function() {
 
 	});
 
+
 	it('should have a method named "mousedown"',function() {
 		expect(angular.isFunction(artboard.mousedown)).toBeTruthy
 	});
@@ -117,11 +118,47 @@ it('should populate the array with an Fragment "Q" when mouseup an mousedown(if 
 
 
 	it('should set points array through setter setPoints(a)',function(){
-		var testArray=[[11,12],[31,32],[44,42]];
+		var testArray={type:'C', list:[ [22,33],[34,42],[66,88] ] };
 		artboard.setPoints(testArray);
 		expect(artboard.points).toEqual(testArray);
 
 
+	})
+
+	describe('vectors method',function(){
+			beforeEach(function(){		
+				var test=[
+				{
+					type:'M',
+					list:[ [41,42] ]
+				},
+				{
+					type:'Q',
+					list:[ [11,12],[13,14] ] 
+				},
+				{
+					type:'L',
+					list:[ [21,22] ] 
+				},
+				{
+					type:'C',
+					list:[ [11,12],[13,14],[15,16] ] 
+				}
+				];
+
+				artboard.setPoints(test);
+	
+
+			});
+
+			it('should get the vectors',function(){
+				/*var res=[ arr[i-1].list[arr[i-1].list.length-1] , x.list[0] ],
+						[ x.list[0] , x.list[1] ]*/
+				expect(artboard.vectors()).toEqual( [
+					 [ [41,42],[11,12] ] , [ [11,12],[13,14] ] ,   //first point vectors
+				     [ [21,22],[11,12] ] , [ [13,14],[15,16] ]    //second point vector
+				  ] )
+			})
 	})
 
 });

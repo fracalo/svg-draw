@@ -69,22 +69,23 @@ describe('directives testing', function() {
         beforeEach(
           inject(function($rootScope,$compile){
             scope = $rootScope.$new();
-            element = angular.element('<g draw-path></g>');
+            element = angular.element('<g draw-path attributes="drw.attr"></g>');
             var compiled = $compile(element);
             
-            compiled(scope);
+            //mock a scope.drw.attr
+            scope.drw = {};
+            scope.drw.attr = {
+                  d:'M12 12',
+                  fill:'red'
+              };
+              compiled(scope);
             scope.$digest();
 
                 
         }));
         
-        beforeEach(function(){
-            scope.drw={
-                attr:{
-                  d:'M12 12',
-                  fill:'red'
-                }
-              };
+        beforeEach(function($rootScope){
+
 
             path = element.find('path')[0];
           
@@ -115,7 +116,40 @@ describe('directives testing', function() {
 
             
 
-      })
+      });
+
+
+    /*describe('drawEvents',function() {
+        var e ={    //event simulation
+            pageX: 100,
+            pageY: 200,
+            target :{
+              offsetLeft: 10,
+              offsetTop:  10,
+              getBoundingClientRect:getBoundingClient
+            },
+            
+        };
+        var e2 ={    //event simulation 2
+            pageX: 100,
+            pageY: 300,
+            target :{
+              offsetLeft: 10,
+              offsetTop:  10,
+              getBoundingClientRect:getBoundingClient,
+            },
+
+        };
+      beforeEach(
+        inject(function($rootScope, $compile){
+          scope = $rootScope.new();
+          element = angular.element('<svg draw-events></svg>');
+          var compiled = $compile(element)
+        }));
+
+      
+
+    })*/
 
 });
 

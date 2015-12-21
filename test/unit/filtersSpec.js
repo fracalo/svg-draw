@@ -120,7 +120,55 @@ describe('filter', function() {
 		});
 
 
-	 })
+	 });
+
+
+	describe('toVectorArray', function(){
+		var f,test;
+
+		beforeEach(function(){
+			f= $filter('toVectorArray');
+			
+		});
+
+		it('transforms the path array into it\'s vector array', function(){
+			test=[
+				{
+					type:'M',
+					list:[ [41,42] ]
+				},
+				{
+					type:'C',
+					list:[ [11,12],[13,14],[15,16] ] 
+				},
+				{
+					type:'L',
+					list:[ [21,22] ] 
+				}
+				];
+
+				expect( (f(test)).length ).toBe(4);
+				expect(f(test)).toEqual([
+				{
+					type:'M',
+					list:[ [41,42] ]
+				},
+				{
+					type:'L',
+					list:[ [11,12] ]
+				},
+				{
+					type:'M',
+					list:[ [15,16] ]
+				},
+				{
+					type:'L',
+					list:[ [13,14] ]
+				},
+				])
+		})
+
+	})
 
 
 });

@@ -15,24 +15,27 @@
   <script src="js/bootstrap-colorpicker-module.js"></script>
 </head>
 
-<body ng-controller="HomeCtrl as dr">
-<div class='top' ng-include="dr.template.header">one</div>
+<body ng-controller='DrawCtrl as drw' ><!--   -->
+<div class='top' ng-controller="HomeCtrl as dr" ng-include="dr.template.header"></div> <!--  -->
 
 <div class='sketch'  >
         
 
     <svg draw-events  id="artboard"  class="artboard">
-        <g draw-path ></g>
+        
+
+        <g draw-path attributes='drw.attr'></g>
+        <g draw-path attributes='drw.vectorAttr'></g>
 
 
-        <g draw-points points='drw.artboard.points'></g>
+       <g draw-points points='drw.artboard.points'></g>
           
     </svg> 
 
  
     <div class="tools" >
 
-         <draw-points-list></draw-points-list> 
+         <draw-points-list points-array="drw.artboard.points" points-type="drw.artboard.curveOp"></draw-points-list> 
 
          <!-- need to set up a watch on form || currently not working!! -->
    <!--  <div class="tools" ng-controller='DrawCtrl as tl'>
@@ -63,12 +66,12 @@
 </div>
 
 
-<div class='bottom'>
+<div class='bottom' >
 <section>
       
 <form name='coding' ng-class="{'fade scaleout':dr.glyphTrans}" novalidate>
                
-  <draw-textarea></draw-textarea>
+  <draw-textarea code='drw.code'></draw-textarea>
 
 </form>
               

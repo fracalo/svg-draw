@@ -21,11 +21,41 @@ var svgFiddleFilters=angular.module('svgFiddleFilters',[]);
     }
 });*/
 
+/*create vector values from array*/
+/*transform in an array like type*/
+svgFiddleFilters.filter('toVectorArray',function(){
+  return function(ar){
+    if (ar.length == 0)
+      return;
+    return ar.reduce(function(ac,x,i,ar){
+          if( x.type =='C' || x.type =='Q'){
+            ac.push({
+              type:'M',
+              list: [ ar[i-1].list[ ar[i-1].list.length - 1 ] ]
+              });
+            ac.push({
+              type:'L',
+              list: [ x.list[0] ]
+              });
+            ac.push({
+              type:'M',
+              list: [ x.list[ x.list.length - 1 ] ]
+              });
+            ac.push({
+              type:'L',
+              list: [ x.list[ x.list.length - 2 ] ]
+              });
+            };
+            return ac
+        },[]);
+
+      }
+});
 /*from obj of path points and controlPoints to dval*/
 //sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
 svgFiddleFilters.filter('arrayToDVal',function(){ 
   return function(ar){
-      if (ar.length == 0)
+      if (!ar)
       return '';
     var res = ar.reduce(function(ac,x,i,ar){
           ac += x.type;

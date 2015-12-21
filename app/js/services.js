@@ -9,17 +9,30 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 
 	var obj={};
 
-		//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
-		obj.points = [] ;
+	//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
+	obj.points = [] ;
 
-	obj.lastPointType=function(){
-		// console.log(obj.points[obj.points.length - 1]);
-		return (obj.points.length)?
-		     obj.points[obj.points.length - 1].type:
-		     0;
+
+	obj.vectors = function(){
+		var vectors ;
+
+		if(obj.points.length)
+			vectors = obj.points.reduce(function(ac, x, i, arr){
+				if (x.type === 'Q' || x.type === 'C'){
+					ac.push(
+						[ arr[i-1].list[arr[i-1].list.length-1] , x.list[0] ],
+						[ x.list[ x.list.length -2 ] , x.list[ x.list.length -1 ] ]
+						)
+					};
+
+					return ac;
+
+			},[]);
+
+		return vectors
 	};
-	obj.setPoints= function(a){
-		obj.points=a;
+	obj.setPoints = function(a){
+		obj.points = a;
 	};
 
 	/*obj.click captures click event and registers lastPoint and adds to points  array*/
@@ -147,6 +160,11 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		return $filter('arrayToDVal')(obj.points);
 
 	};
+	obj.vectorDValue=function(){
+		var arr = $filter('toVectorArray')(obj.points)
+		return $filter('arrayToDVal')(arr);
+
+	};
 	obj.code=function(attributes){
 	 return $filter('attrsToMarkup')(attributes);
 	};
@@ -158,7 +176,7 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
  
 }]);
 
-svgFiddleServices.factory('toolsAttr' , function(){
+svgFiddleServices.factory('toolsAttr' , function($filter){
 
 var obj={
 
@@ -177,6 +195,35 @@ var obj={
 	  	}
 	};
 	obj.attributes['stroke-width']=5;
+
+
+
+
+return obj;
+
+});
+svgFiddleServices.factory('vectorAttr' , function($filter){
+
+var obj={
+
+		attributes:{
+			fill :'none',
+			stroke :'#666',
+			//['stroke-width']:5
+			
+		},
+
+		/*setAttr : function(swapObj){
+			return obj.attributes = swapObj;
+		},*/
+		getAttr : function() {
+	    	return obj.attributes;
+	  	}
+	};
+	obj.attributes['stroke-dasharray']='4,5';
+
+
+
 
 return obj;
 
