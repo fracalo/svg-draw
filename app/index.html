@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8">
   <title>SVG-draw</title>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
   <link rel="stylesheet" href="css/app.css">
 
   <!-- js -->
   <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
   <script src="js/app.js"></script>
   <script src="js/directives.js"></script>
   <script src="js/controllers.js"></script>
@@ -16,7 +18,58 @@
 </head>
 
 <body ng-controller='DrawCtrl as drw' ><!--   -->
-<div class='top' ng-controller="HomeCtrl as dr" ng-include="dr.template.header"></div> <!--  -->
+  <div class='top'>
+        <section ng-controller='MenuCtrl'>
+
+          <h2 >SVG draw</h2>
+
+          <!-- menu -->
+          <ul class="navbar">
+
+    <li class="btn-group" uib-dropdown is-open="status.isopen">
+            <button id="sample-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+            sample<span class="caret"></span>
+            </button>
+
+            <ul class='uib-dropdown-menu dropdown-menu-right' role='menu' aria-labelledby='sample-button'>
+              <li role='menuitem'><a href='#'>heart</a></li>
+              <li role='menuitem'><a href='#'>cat</a></li>
+              <li role='menuitem'><a href='#'>dog</a></li>
+            </ul>
+    </li>
+<!--     <li class="btn-group" uib-dropdown is-open="status.isopen">
+            <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+            sample<span class="caret"></span>
+            </button>
+
+            <ul class='uib-dropdown-menu' role='menu' aria-labelledby='single-button'>
+              <li role='menuitem'><a href='#'>one</a></li>
+              <li role='menuitem'><a href='#'>two</a></li>
+              <li role='menuitem'><a href='#'>three</a></li>
+            </ul>
+    </li> -->
+
+     <!-- Single button -->
+    <!-- <div class="btn-group" uib-dropdown is-open="status.isopen">
+      <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+        Button dropdown <span class="caret"></span>
+      </button>
+      <ul class="uib-dropdown-menu" role="menu" aria-labelledby="single-button">
+        <li role="menuitem"><a href="#">Action</a></li>
+        <li role="menuitem"><a href="#">Another action</a></li>
+        <li role="menuitem"><a href="#">Something else here</a></li>
+        <li class="divider"></li>
+        <li role="menuitem"><a href="#">Separated link</a></li>
+      </ul>
+    </div> -->
+
+
+          </ul>
+          
+        
+
+      </section>
+  </div> <!--  -->
 
 <div class='sketch'  >
         
@@ -27,15 +80,15 @@
         <g draw-path attributes='drw.attr'></g>
         <g draw-path attributes='drw.vectorAttr'></g>
 
-
-       <g draw-points points='drw.artboard.points'></g>
+        <!-- this has a separate controller and depends directly on service -->
+        <g draw-points points='drw.drawService.points'></g>
           
     </svg> 
 
  
     <div class="tools" >
 
-         <draw-points-list points-array="drw.artboard.points" points-type="drw.artboard.curveOp"></draw-points-list> 
+         <draw-points-list points-array="drw.drawService.points" points-type="drw.drawService.curveOp"></draw-points-list> 
 
          <!-- need to set up a watch on form || currently not working!! -->
    <!--  <div class="tools" ng-controller='DrawCtrl as tl'>

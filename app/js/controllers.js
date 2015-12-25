@@ -6,35 +6,17 @@ var svgFiddleControllers = angular.module('svgFiddleControllers', []);
 
 
 
-svgFiddleControllers.controller('HomeCtrl',	[
-	function(){ 
-
-	   	var dr = this;
-
-		dr.glyphTrans = false;
-		dr.change= function (){
-		  	return dr.glyphTrans = !dr.glyphTrans;
-		};
-
-		//for ng include
-		dr.template={
-			header:'partials/header-template.html',
-			sketch:'partials/sketch-template.html',
-			code  :'partials/code-template.html'
-		};
-		
-	
-}]);
 
 
 
-svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','artboard', 'toolsAttr', 'vectorAttr',
-  function($scope, $filter, $timeout, artboard, toolsAttr, vectorAttr) {
+
+svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','drawService', 'toolsAttr', 'vectorAttr',
+  function($scope, $filter, $timeout, drawService, toolsAttr, vectorAttr) {
     
   var drw = this;
 
   //reference to services 
-  this.artboard = artboard;
+  this.drawService = drawService;
   this.toolsAttr = toolsAttr;
 
 
@@ -61,16 +43,14 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
   };
 
 
- 
 
  
-   //this watch for point movements might blend with watch above (using true)
    //watch point type changes
-   $scope.$watch('drw.artboard.points', function(){
-         	drw.attr.d =  artboard.dValue();
-          drw.code = artboard.code(drw.attr);
+   $scope.$watch('drw.drawService.points', function(){
+         	drw.attr.d =  drawService.dValue();
+          drw.code = drawService.code(drw.attr);
 
-          drw.vectorAttr.d = artboard.vectorDValue();
+          drw.vectorAttr.d = drawService.vectorDValue();
           
           //filter the output correcting pointType
           
@@ -92,7 +72,7 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
            //normalize 
             res = $filter('normalizePointType')(res);
           
-            artboard.setPoints(res);
+            drawService.setPoints(res);
           };
     });
 
@@ -102,11 +82,11 @@ svgFiddleControllers.controller('DrawCtrl',['$scope', '$filter' , '$timeout','ar
 
 }]);
 
-svgFiddleControllers.controller('DrawEventsCtrl', function($scope, $element, $attrs, $transclude, $rootScope, artboard){
+svgFiddleControllers.controller('DrawEventsCtrl', function($scope, $element, $attrs, $transclude, $rootScope, drawService){
         var tollerance = 20;
         var down =Object.create(null);
 
-
+        var artboard = drawService;
         
         $element.on('mousedown',mousedown);
 
@@ -153,13 +133,22 @@ svgFiddleControllers.controller('DrawEventsCtrl', function($scope, $element, $at
 
       });
 
+svgFiddleControllers.controller('MenuCtrl',function($scope){
+  $scope.status={
+    isopen:false
+  }
+})
+
+
+
+
 /*svgFiddleControllers.controller('DrawTextareaCtrl',
 function($scope, $element, $attrs, $transclude, $rootScope, artboard,toolsAttr){
 
  var textarea = this;
 
   this.attr={
-   /* all attributes coming from services*/
+   /* all attributes coming from services
   /*};
 
   //digest will trigger (no need to manual $watch toolsAttr)

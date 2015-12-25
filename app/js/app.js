@@ -9,7 +9,8 @@ var svgFiddle = angular.module('svgFiddle',[
   'svgFiddleServices',
   'svgFiddleFilters',
   'svgFiddleDirectives',
-  'colorpicker.module'
+  'colorpicker.module',
+  'ui.bootstrap'
 ]);
 
 

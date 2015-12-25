@@ -44,8 +44,7 @@ svgFiddleDirectives.directive('drawPointsList',function(){
 
 
 // directive for dealing events on artboard
-
-  svgFiddleDirectives.directive('drawEvents',function(){
+svgFiddleDirectives.directive('drawEvents',function(){
     return{
       restrict:'A',
       controller: 'DrawEventsCtrl',
@@ -55,30 +54,17 @@ svgFiddleDirectives.directive('drawPointsList',function(){
     };
   });
 
+
+
 // directive for vectors
-svgFiddleDirectives.directive('drawVectors',function(){
 
-  return{
-    restrict:'A',
-    template: '<path></path>',
-
-    link: function(scope, el, attrs){
-      var vectorArray
-      
-     scope.$watch(scope.drw.artboard.getPoints, function(){
-
-      vectorArray = scope.drw.artboard.vectors();
-      // console.log(vectorArray);
-      })
-
-    }
-  }
-})
 //directive for path template
-  svgFiddleDirectives.directive('drawPath',function(){
+svgFiddleDirectives.directive('drawPath',function(){
 
    return {
       restrict:'A',
+      controller:'DrawCtrl',
+      controllerAs:'drw',
       scope:{
         attr:'=attributes'
       },
@@ -115,7 +101,7 @@ svgFiddleDirectives.directive('drawVectors',function(){
 svgFiddleDirectives.directive('drawPoints',function(){
     return {
       restrict:'EA',
-      //replace: true,
+      controller:'drawPointsCtrl',
       scope:{
         points:'='
       },
@@ -127,7 +113,11 @@ svgFiddleDirectives.directive('drawPoints',function(){
       </g>',
       link: function(scope, el, attrs, ctrl){},
     }
+})
+.controller('drawPointsCtrl', function($scope, drawService){
+     $scope.points= drawService.points
 });
+
 
 svgFiddleDirectives.directive('drawSinglePoint',function($document,$rootScope){
   return {
@@ -149,7 +139,7 @@ svgFiddleDirectives.directive('drawSinglePoint',function($document,$rootScope){
      var sketchEl = $document;
      var grannyIndex = scope.$parent.$parent.$index;
      var parentIndex = scope.$parent.$index;
-     console.log(scope.$parent.$parent.$parent)
+    
      	//change pointer when onover
      	 el.on('mouseover',function(ev){
      	 	el.css({

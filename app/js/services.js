@@ -5,15 +5,15 @@
 var svgFiddleServices = angular.module('svgFiddleServices',[]);
 
 
-svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
+svgFiddleServices.service('drawService', [ '$filter',  function($filter) {
 
-	var obj={};
+	var obj= this;
 
 	//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
-	obj.points = [] ;
+	this.points = [] ;
 
 
-	obj.vectors = function(){
+	this.vectors = function(){
 		var vectors ;
 
 		if(obj.points.length)
@@ -31,12 +31,36 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 
 		return vectors
 	};
-	obj.setPoints = function(a){
+	this.setPoints = function(a){
 		obj.points = a;
 	};
 
+	this.getPoints = function(){
+		return obj.points
+	};
+	this.dValue=function(){
+		return $filter('arrayToDVal')(obj.points);
+
+	};
+	this.vectorDValue=function(){
+		var arr = $filter('toVectorArray')(obj.points)
+		return $filter('arrayToDVal')(arr);
+
+	};
+	this.code=function(attributes){
+	 return $filter('attrsToMarkup')(attributes);
+	};
+	 // options fot point types
+ 	this.curveOp=['M','L','Q','C']
+
+
+
+
+
+
+
 	/*obj.click captures click event and registers lastPoint and adds to points  array*/
-	obj.mousedown =  function(e){
+	this.mousedown =  function(e){
 		  
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
@@ -62,23 +86,16 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 			obj.points.push(point);
 			
 	};
-	obj.mouseupLine = function(e){
-		// if (e.target instanceof SVGCircleElement)
-		// 	return;
-		// e.stopPropagation();
+	this.mouseupLine = function(e){
 
-
-			
-			var pointLen = obj.points.length;
-			var typeOfPoint = (pointLen <= 1)?'M':'L';
-
+		var pointLen = obj.points.length;
+		var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    
-		    obj.points[pointLen - 1].type = typeOfPoint;
+		obj.points[pointLen - 1].type = typeOfPoint;
 			
 	};
 
-	obj.mousemove = function(e){
-		
+	this.mousemove = function(e){
 			if (e.target instanceof SVGCircleElement )
 			return;
 
@@ -100,20 +117,18 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 		 return obj.points[0].list[0][0] = e.pageX - leftOffset |0,
 		   		obj.points[0].list[0][1] = e.pageY - topOffset  |0;
 
-			
-
 			//if no vector exist create one andinsert it on index 1
 			// and change type of point if needed
-			if (obj.points[pointLen - 1].list.length < 2)
-				obj.points[pointLen -1].list.unshift([]),
-			    obj.points[pointLen - 1].type  = 'Q';
+		if (obj.points[pointLen - 1].list.length < 2)
+			obj.points[pointLen -1].list.unshift([]),
+		    obj.points[pointLen - 1].type  = 'Q';
 			
-			//update position of vector																//coercing paseInt with bitwise
-     		//coercing to int with bitwise
-			obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
+			//update position of vector																
+			//coercing paseInt with bitwise
+     		obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
 			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
 	};
-	obj.mousemove.back = function(e){
+	this.mousemove.back = function(e){
 			var pointLen = obj.points.length;
 
 			if(obj.points[pointLen - 1].list.length < 2)
@@ -153,28 +168,17 @@ svgFiddleServices.factory('artboard', [ '$filter', function($filter) {
 	// 		//obj.points[pointLen - 1].type = 'Q';
 	// }
 
-	obj.getPoints = function(){
-		return obj.points
-	};
-	obj.dValue=function(){
-		return $filter('arrayToDVal')(obj.points);
+	
 
-	};
-	obj.vectorDValue=function(){
-		var arr = $filter('toVectorArray')(obj.points)
-		return $filter('arrayToDVal')(arr);
-
-	};
-	obj.code=function(attributes){
-	 return $filter('attrsToMarkup')(attributes);
-	};
-	 // options fot point types
- 	obj.curveOp=['M','L','Q','C']
-
-	return obj;
+	
 
  
 }]);
+
+
+
+
+
 
 svgFiddleServices.factory('toolsAttr' , function($filter){
 

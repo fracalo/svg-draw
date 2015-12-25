@@ -74,7 +74,7 @@ section{
 
 	>li {
 		line-height: 6vh;
-		margin: 0 4vw;
+		margin: auto;
 		
 	}
 	.glyphicon{
@@ -200,6 +200,9 @@ sup{
     }
     code{
 	   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+    textarea{
+    	color:black;
     }
 
 }
