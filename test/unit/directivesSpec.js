@@ -5,7 +5,7 @@
 describe('directives testing', function() {
 	 var element, scope;
 
-	beforeEach(module('svgFiddle'));
+	beforeEach(module('draw.path'));
 
       describe('draw-single-point directive',function(){
               beforeEach(inject(function($rootScope,$compile){

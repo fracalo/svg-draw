@@ -1,35 +1,6 @@
 'use strict';
 
 
- describe('HomeCtrl', function(){
-   var $controller;
-   var $scope;
-   //var artboardClick;
-    
-  beforeEach(module('svgFiddle'));
-
-    describe('$scope.glyphTrans controller as', function(){
-
-      beforeEach(inject(function(_$controller_){
-        //$scope = $rootScope.$new(); //in case for watch !!
-        $scope={};
-        $controller = _$controller_('HomeCtrl');
-
-    }));
-
-      it('finds $scope.glyphTrans', function(){
-        
-        
-        expect($controller.glyphTrans).not.toBeTruthy();
-
-        $controller.change();
-
-        expect($controller.glyphTrans).toBeTruthy();
-      })
-    }); 
-
-
-  });
 
  describe('DrawCtrl',function(){
 
@@ -41,7 +12,7 @@
 
 
 
-  beforeEach(module('svgFiddle'));
+  beforeEach(module('draw.path'));
 
     describe('DrawCtrl',function(){
 

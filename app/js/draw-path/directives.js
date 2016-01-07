@@ -191,7 +191,7 @@ angular.module('draw.path')
       template:
       "<label name='code'>SVG-Code </label>"+
       "<textarea name='code' ng-model='code' ></textarea>",
-      controller:function($scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,$q){
+      controller:function($scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,codeInput){
    
         function watchPoints(){
         return drawService.points
@@ -208,87 +208,72 @@ angular.module('draw.path')
     },true);
 
      // update drawPathAttr should be done through parsers
-    var wait;
+    var wait, lastValid;
         $scope.$watch('code',function(n,o){
           
+
+
         //cancel $timeout if exists
         if(wait){
           $timeout.cancel(wait);
           wait = null;
         }
+        if(!lastValid){
+          lastValid = o;
+          console.log(lastValid)
+        }
         // add a timeout for waiting typing
         wait = $timeout(function(){
-
-
-          // var parser = new DOMParser();
-          // var doc = parser.parseFromString($scope.code, "image/svg+xml");
-          // console.log(doc)
-
-
-          // var tmpCodeParsed = ($scope.code)?$filter('parseMarkup')($scope.code):'';
-        
-
-        /*update drawservice array*/
-        // var tmpArr =$filter('dValToArray')(tmpCodeParsed.d);
-        //tmpArr =$filter('parsePointArray')(tmpArr);
-         // will parse with promises
-        /*the actual parsing could be done on the string */
-            //send the value in drawService
-         
-         // if we have code we should parse it...
-
-         if ($scope.code.length )
-          { var promiseA = $q.resolve($filter('parseMarkup')($scope.code)) ;
-
-          var parsePath = $filter('parsePath')($scope.code);
-          parsePath.then(function(ok){
-            console.log('ok joe ',ok)
-          },function(e){
-            console.log(e)
-          });
-        } 
-
+  
          
         /*****************************
         move all this in the service
         (create an ignorant textarea)
         *****************************/
-          promiseA.then(
-              function(res){
-                // console.log( res);
-               return $filter('PromiseDValToArray')(res.d)
-              })
-          .then(
-              function(result){
+
+        if ($scope.code.length ) { 
+
+        var attrPairs = codeInput.parseAttr($scope.code)
+            .then(codeInput.checkKeys)
+            .catch(function(e){console.log(e)});
+
+            //check and set dValue 
+            attrPairs
+            .then(
+                  codeInput.checkDvalArrify,
+                  function(e){console.log(e);}
+                  )
+            .then(
+              //codeInput.checkDvalArrify, is returning the array ready to be updated
+                  function(res){
+                      drawService.setPoints(res);
+                  },
+                  function(e){  console.log(e);
+                          if(confirm("error: " +e+ "\n do you want to revert to last valid value?") )
+                            {
+                              
+                              $scope.code = lastValid;
+                            }
+                    }
+                  )
+            .finally(
+                  function(){
+                             //set lastValid to null so it can be reset 
+                              lastValid = null;
+                            }
+                  );
               
-              $filter('testParsePointArray')(result)
-              drawService.setPoints(result);
-              //drawPathAttr.setAttr(tmpCodeParsed);
 
-             },
-           function(e){
-            alert(e);
-            
-           })
-          .then(null,function(e){
+            //update all attributes in drawPathAttr
+             attrPairs
+             .then(
+                  function(res){
+                    drawPathAttr.setAttr(res)
 
-            alert('catch blok  '+e);
-           
-          });
-            
+                  });
 
-            
-           
-        
-              
-           
+        } 
 
-         /*var promise = promiseCheck(false);
-          promise.then(function(ret) {
-            alert('Success: ' + ret);
-          }, function(reason) {
-            alert('Failed: ' + reason);
-          });*/
   
       },800);
     

@@ -24,7 +24,7 @@
 </head>
 
 <body  ng-controller='RootCtrl'><!--   -->
-  <div class='top'>
+  <div class='top row'>
         <section >
 
           <h2 >SVG draw</h2>
@@ -101,13 +101,26 @@
 
 
 <div class='bottom' >
+<div name='errors' novalidate>
+               
+  <pre>errors:</pre>
+
+</div>
 <section>
-      
+
+
+
 <form name='coding' novalidate>
                
   <draw-textarea code='code'></draw-textarea>
 
 </form>
+              
+</section>
+
+<section>
+      
+
               
 </section>
 </div>
