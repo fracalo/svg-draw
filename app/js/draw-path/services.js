@@ -135,6 +135,7 @@ var obj={
 		},
 
 		setAttr : function(swapObj){
+			console.log('setAttr');
 			return obj.attributes = swapObj;
 		},
 		getAttr : function() {

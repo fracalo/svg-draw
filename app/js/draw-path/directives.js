@@ -207,84 +207,84 @@ angular.module('draw.path')
             $scope.code = drawService.code(drawPathAttr.attributes);
     },true);
 
-     // update drawPathAttr should be done through parsers
+    
+
+
+
     var wait, lastValid;
-        $scope.$watch('code',function(n,o){
+    
+
+    
+
+    $scope.$watch('code',function(n,o){
           
-
-
         //cancel $timeout if exists
         if(wait){
           $timeout.cancel(wait);
           wait = null;
         }
+        //crate a lastValid code before starting to type
         if(!lastValid){
           lastValid = o;
-          console.log(lastValid)
-        }
+        };
+
+
         // add a timeout for waiting typing
-        wait = $timeout(function(){
+        wait = $timeout( function(){ checkAndUpdate(n) } , 800);
+    
+    });
+        
+    function checkAndUpdate(input){
   
-         
-        /*****************************
-        move all this in the service
-        (create an ignorant textarea)
-        *****************************/
-
-        if ($scope.code.length ) { 
-
-        var attrPairs = codeInput.parseAttr($scope.code)
+        var attrPairs =
+        //this is converting attributes and checking keys
+          codeInput.parseAttr(input)
             .then(codeInput.checkKeys)
             .catch(function(e){console.log(e)});
 
-            //check and set dValue 
-            attrPairs
+          //check and set dValue 
+          attrPairs
             .then(
                   codeInput.checkDvalArrify,
                   function(e){console.log(e);}
                   )
             .then(
-              //codeInput.checkDvalArrify, is returning the array ready to be updated
+          //codeInput.checkDvalArrify, is returning the array ready to be updated
                   function(res){
                       drawService.setPoints(res);
                   },
                   function(e){  console.log(e);
-                          if(confirm("error: " +e+ "\n do you want to revert to last valid value?") )
+                          if(confirm(e+ "\n do you want to revert to last valid value?") )
                             {
-                              
-                              $scope.code = lastValid;
+                            //for recovering force update right away and reset $scope.code
+                             checkAndUpdate(lastValid)
+                             $scope.code = lastValid;
                             }
                     }
                   )
             .finally(
                   function(){
-                             //set lastValid to null so it can be reset 
+                             //set lastValid to null so it can be reset
                               lastValid = null;
+                            
+                             //update all attributes in drawPathAttr
+                             attrPairs
+                             .then(
+                                  function(res){
+                                    drawPathAttr.setAttr(res);
+
+                                  });
                             }
+
                   );
               
 
-            //update all attributes in drawPathAttr
-             attrPairs
-             .then(
-                  function(res){
-                    drawPathAttr.setAttr(res)
 
-                  });
 
-        } 
+        
 
   
-      },800);
-    
-        });
-        /*function promiseCheck(d){
-          return $q(function(resolve){
-                resolve(d);
-              
-            });
-        }*/
-
+      };
         
       },
  /*       require:'^form',
