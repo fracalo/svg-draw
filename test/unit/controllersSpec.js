@@ -2,12 +2,12 @@
 
 
 
- describe('DrawCtrl',function(){
+ xdescribe('DrawCtrl',function(){
 
   var $controller;
   var $scope;
   var artboardClick;
-  var toolsAttr
+  var drawPathAttr;
 
 
 
@@ -19,24 +19,24 @@
       beforeEach(inject(function($rootScope , _$controller_){
         $scope = $rootScope.$new();
 
-        toolsAttr={
+        drawPathAttr={
          attributes:{
             fill :'rgba(222,0,222,0.5)',
             stroke :'green',
             strokeWidth:5,
           },
           getAttr:function(){
-            return toolsAttr.attributes;
+            return drawPathAttr.attributes;
           },
           setAttr : function(swapObj){
-            return toolsAttr.attributes = swapObj;
+            return drawPathAttr.attributes = swapObj;
            },
         };
 
         //spyOn(toolsAttr, 'getAttr').andReturn(toolsAttr.attr)
 
         $controller = _$controller_('DrawCtrl',{
-          $scope: $scope, toolsAttr: toolsAttr
+          $scope: $scope, drawPathAttr: drawPathAttr
         });
       }));
 

@@ -64,21 +64,17 @@ describe('directives testing', function() {
 
       describe('drawPath',function(){
         
-        var  path;
+        var path, drawPathAttr;
 
         beforeEach(
-          inject(function($rootScope,$compile){
+          inject(function($rootScope,$compile, _drawPathAttr_){
             scope = $rootScope.$new();
-            element = angular.element('<g draw-path attributes="drw.attr"></g>');
+            element = angular.element('<g draw-path ></g>');
             var compiled = $compile(element);
             
-            //mock a scope.drw.attr
-            scope.drw = {};
-            scope.drw.attr = {
-                  d:'M12 12',
-                  fill:'red'
-              };
-              compiled(scope);
+            drawPathAttr = _drawPathAttr_;
+
+            compiled(scope);
             scope.$digest();
 
                 
@@ -92,19 +88,21 @@ describe('directives testing', function() {
            
         })
 
-          it('inherits attributes from attr {}',function(){
+          it('inherits attributes drawPathAttr',function(){
+            // drawPathAttr.attributes.fill=red;
+            drawPathAttr.setAttr({fill:'red'});
             scope.$digest();
             expect(path.getAttribute('fill')).toEqual('red');
             
           })
 
           it('attributes can dinamically be added and removed',function(){
-            scope.drw.attr['stroke-dasharray']='6,8';
+            drawPathAttr.attributes['stroke-dasharray']='6,8';
             scope.$digest();
 
             expect(path.getAttribute('stroke-dasharray')).toEqual('6,8');
 
-            delete scope.drw.attr['stroke-dasharray'];
+            delete drawPathAttr.attributes['stroke-dasharray'];
             scope.$digest();
 
             expect(path.getAttribute('stroke-dasharray')).toBe(null);

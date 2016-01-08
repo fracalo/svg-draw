@@ -4,7 +4,7 @@
 
 describe('filter', function() {
 	
-	beforeEach(module('svgFiddle'));
+	beforeEach(module('draw.path'));
 
 	var $filter;
 
