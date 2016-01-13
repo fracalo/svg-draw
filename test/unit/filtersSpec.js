@@ -32,7 +32,7 @@ describe('filter', function() {
 				  };
    			var f = $filter('attrsToMarkup');
    			expect(f(data)).toEqual('<path d="M301 134 L460 149" '+
-   			'fill="rgba(222,0,222,0.5)" stroke="green" ></path>');
+   			'fill="rgba(222,0,222,0.5)" stroke="green"  />');
 
     	})
     })

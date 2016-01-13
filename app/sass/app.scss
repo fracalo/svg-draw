@@ -1,7 +1,7 @@
 
 @import "partials/_base";
-@import "partials/_colorpicker";
-
+/* @import "partials/_colorpicker";
+ */
 
 /* *{
 	transition: all 0.3s;
@@ -144,10 +144,16 @@ tr{
 		font-size: 70%;
 		letter-spacing: 1px;
 		padding-left: 4px;
+
+		&[for='typeP']{
+    			vertical-align: top
+    	}
 	}
 	input, select{
 		width:100%;
 		font-size: 80%;
+	    border-width: 0;
+    	padding: 0;
 	}
 	fieldset{
 		display:inline-block;
@@ -179,7 +185,7 @@ th{
 	font-weight:700;
 }
 sup{
-	vertical-align: super;
+	vertical-align: sub;
     font-size: smaller;
 }
 /* template bottom */
@@ -196,6 +202,7 @@ sup{
     	}
     	label{
     		font-size: 70%;
+
     	}
     }
     code{

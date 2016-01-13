@@ -18,21 +18,6 @@ describe('directives testing', function() {
                   scope.$digest();
               }));
 
-              //create a spy for $scope.parent.$last
-            /*  beforeEach(function(){
-                 scope={
-                  $parent :{$last: true},
-                 
-                  isLast:function(){
-                    
-                  }
-                 }
-
-                 return scope.isLast;
-              })
-
-              spyOn("isLast").and.returnValue(false)*/
-
                    it('should replace with a svg circle elem with "r"=3', function(){
                     expect(element[0].getAttribute('r')).toBe('3');
                     expect(element[0].getAttribute('cy')).toBe('11');
@@ -51,7 +36,7 @@ describe('directives testing', function() {
       });
 
 
-      describe('draw-point-list directive' , function(){
+      xdescribe('draw-point-list directive' , function(){
             beforeEach(inject(function($rootScope,$compile){
 
               scope = $rootScope.$new();
@@ -62,20 +47,20 @@ describe('directives testing', function() {
 
        });
 
-      describe('drawPath',function(){
+      xdescribe('drawPath',function(){
         
         var path, drawPathAttr;
 
         beforeEach(
-          inject(function($rootScope,$compile, _drawPathAttr_){
+          inject(function($rootScope ,$compile , _drawPathAttr_){
             scope = $rootScope.$new();
-            element = angular.element('<g draw-path ></g>');
+            element = angular.element('<g draw-path></g>');
             var compiled = $compile(element);
             
             drawPathAttr = _drawPathAttr_;
-
             compiled(scope);
             scope.$digest();
+            
 
                 
         }));
@@ -89,10 +74,10 @@ describe('directives testing', function() {
         })
 
           it('inherits attributes drawPathAttr',function(){
-            // drawPathAttr.attributes.fill=red;
+           
             drawPathAttr.setAttr({fill:'red'});
             scope.$digest();
-            expect(path.getAttribute('fill')).toEqual('red');
+            expect(path.getAttribute().fill).toEqual('red');
             
           })
 
@@ -116,38 +101,6 @@ describe('directives testing', function() {
 
       });
 
-
-    /*describe('drawEvents',function() {
-        var e ={    //event simulation
-            pageX: 100,
-            pageY: 200,
-            target :{
-              offsetLeft: 10,
-              offsetTop:  10,
-              getBoundingClientRect:getBoundingClient
-            },
-            
-        };
-        var e2 ={    //event simulation 2
-            pageX: 100,
-            pageY: 300,
-            target :{
-              offsetLeft: 10,
-              offsetTop:  10,
-              getBoundingClientRect:getBoundingClient,
-            },
-
-        };
-      beforeEach(
-        inject(function($rootScope, $compile){
-          scope = $rootScope.new();
-          element = angular.element('<svg draw-events></svg>');
-          var compiled = $compile(element)
-        }));
-
-      
-
-    })*/
 
 });
 

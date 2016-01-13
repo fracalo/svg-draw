@@ -1,4 +1,6 @@
-'use strict';
+(function(){
+
+  'use strict';
 
 /* Filters */
 angular.module('draw.path')
@@ -55,7 +57,7 @@ angular.module('draw.path')
     for (var k in obj){
       str+= k + '="' + obj[k] + '" ';
     }
-    return '<path '+str + '></path>';
+    return '<path '+str +' />';
   };
   
 })
@@ -291,3 +293,5 @@ angular.module('draw.path')
         return arr;
       };
 })
+
+})();

@@ -3,14 +3,9 @@
 /* App Module */
 
 
-var svgFiddle = angular.module('svgFiddle',[
-  //'ngAnimate',
+angular.module('svgFiddle',[
   'draw.path',
   'svgFiddleControllers',
-  /*'svgFiddleServices',
-  'svgFiddleFilters',
-  'svgFiddleDirectives',
-  'colorpicker.module',*/
   'ui.bootstrap'
 ]);
 

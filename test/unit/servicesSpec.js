@@ -1,6 +1,5 @@
 'use strict';
 
-/* jasmine specs for services go here */
 
 describe('service', function() {
 	var drawService;
@@ -127,3 +126,25 @@ it('should populate the array with an Fragment "Q" when mouseup an mousedown(if 
 
 	
 });
+
+describe('service exception',function(){
+	var exception;
+		beforeEach(function(){
+		module('draw.path');
+
+		inject(function(_exception_){
+			exception = _exception_;
+		});
+	});
+
+	it('should add errors to a private list',function(){
+		var err = 'you got hacked';
+
+		exception.setError(err);
+
+		expect(exception.getError()).toEqual(err)
+	})
+
+
+
+})
