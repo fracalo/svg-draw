@@ -5,16 +5,18 @@
 //directive module
 angular
     .module('draw.path')
-    .controller('drawPointsCtrl', drawPointsCtrl);
+    .controller('DrawPointsCtrl', DrawPointsCtrl);
     
-    drawPointsCtrl.$inject = ['$scope','drawService'];
+    DrawPointsCtrl.$inject = ['$scope','drawService'];
     
-    function drawPointsCtrl($scope, drawService){
+    function DrawPointsCtrl($scope, drawService){
          var watchPoints = function(){
           return drawService.points;
+
          };
-         $scope.$watch(watchPoints, function(){
-          $scope.points = drawService.points;
-         });
+        $scope.$watch(watchPoints, function(){
+          this.points = drawService.points;
+          console.log(this.points)
+        });
     }
 })();

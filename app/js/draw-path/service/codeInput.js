@@ -44,7 +44,6 @@
 
 
 		checkDvalArrify : function(code){
-			console.log(code)
 			var d = code.d;
 			var list = dValToList(d);
 			var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;

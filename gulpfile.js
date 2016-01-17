@@ -1,9 +1,11 @@
-var gulp = require('gulp'),
+const gulp = require('gulp'),
 	sass = require('gulp-ruby-sass'),
 	compass = require('gulp-compass'),
 	concat = require('gulp-concat'),
 	watch = require('gulp-watch'),
-	batch = require('gulp-batch');
+	batch = require('gulp-batch'),
+	sourcemaps = require('gulp-sourcemaps');
+	// livereload = require('gulp-livereload');
 
 gulp.task('default', function() {
   console.log('woggie-boggie');
@@ -29,8 +31,11 @@ gulp.task('compass', function() {
 
 gulp.task('bundlejs', function(){
 	gulp.src(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'])
+		.pipe(sourcemaps.init())
 		.pipe(concat('draw-path.js'))
-		.pipe(gulp.dest('./app/js'));
+		.pipe(sourcemaps.write('../maps'))
+		.pipe(gulp.dest('./app/js'))
+		// .pipe(livereload({ start: true }));
 
 })
 

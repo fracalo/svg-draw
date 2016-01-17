@@ -1,43 +1,35 @@
 (function(){
 	angular
 		.module('draw.path')
-		.service('drawService', drawService);
+		.factory('drawService', drawService);
 
 	drawService.$inject = ['$filter'];
 /*service*/
 function drawService($filter){
 
-	var obj= this;
+    obj = {
+	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
+	points : [] ,
+	rawPoints : rawPoints,
+	setPoints : setPoints,
+	getPoints : getPoints,
+	dValue: dValue,
 
-	//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
-	this.points = [] ;
-
-	this.setPoints = function(a){
-		obj.points = a;
-	};
-
-	this.getPoints = function(){
-		return obj.points;
-	};
-	this.dValue=function(){
-		return $filter('arrayToDVal')(obj.points);
-
-	};
-	this.vectorDValue=function(){
-		var arr = $filter('toVectorArray')(obj.points);
-		return $filter('arrayToDVal')(arr);
-
-	};
-	this.code=function(attributes){
-	 return $filter('attrsToMarkup')(attributes);
-	};
-	 // options fot point types
- 	this.curveOp=['M','L','Q','C'];
-
-
+	vectorDValue : vectorDValue,
+	code : code,
+	 // options for point types
+ 	curveOp:['M','L','Q','C'],
 
 	/*obj.click captures click event and registers lastPoint and adds to points  array*/
-	this.mousedown =  function(e){
+	mousedown :  mousedown,
+	mouseupLine :mouseupLine,
+	mousemove : mousemove,
+	mousemoveback : mousemoveback
+	};
+	return obj;
+	
+
+	function mousedown(e){
 		  
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
@@ -62,8 +54,8 @@ function drawService($filter){
 			//inserts point
 			obj.points.push(point);
 			
-	};
-	this.mouseupLine = function(e){
+	}
+	function mouseupLine(e){
 
 		var pointLen = obj.points.length;
 		var typeOfPoint = (pointLen <= 1)?'M':'L';
@@ -72,7 +64,7 @@ function drawService($filter){
 			
 	};
 
-	this.mousemove = function(e){
+	function mousemove(e){
 			if (e.target instanceof SVGCircleElement )
 			return;
 
@@ -105,7 +97,7 @@ function drawService($filter){
      		obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
 			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
 	};
-	this.mousemove.back = function(e){
+	function mousemoveback(e){
 			var pointLen = obj.points.length;
 
 			if(obj.points[pointLen - 1].list.length < 2)
@@ -117,7 +109,37 @@ function drawService($filter){
 			var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    obj.points[pointLen - 1].type = typeOfPoint;
 
-	};
+	}
+	function getPoints(){
+		return obj.points;
+	}
+	function setPoints(a){
+		obj.points = a;
+	}
+	function rawPoints(points){
+		return points.reduce((acc,x) =>{
+			var i=0;
+			while(i < x.list.length){
+				acc.push({
+					x:x.list[i][0],
+					y:x.list[i][1]
+				});
+				i++;
+			};
+			return acc;
+		},[]);
+	}
+	function dValue(){
+		return $filter('arrayToDVal')(obj.points);
+	}
+	function vectorDValue(){
+		var arr = $filter('toVectorArray')(obj.points);
+		return $filter('arrayToDVal')(arr);
+
+	}
+	function code(attributes){
+	 return $filter('attrsToMarkup')(attributes);
+	}
 
 }
 

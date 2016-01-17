@@ -21,7 +21,16 @@
 
   $scope.change= function(a){
    $scope.code = a;
+   console.log($scope.code)
   };
+
+  $scope.testArr=[
+  {x:11,y:22,color:'red'},
+  {x:21,y:22,color:'red'},
+  {x:31,y:22,color:'red'},
+  {x:41,y:22,}
+  ]
+
 });
 
 

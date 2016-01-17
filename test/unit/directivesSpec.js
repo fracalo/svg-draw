@@ -3,37 +3,75 @@
 /* jasmine specs for directives go here */
 
 describe('directives testing', function() {
-	 var element, scope;
+	 var elem, scope, compiled,circle;
 
 	beforeEach(module('draw.path'));
+      
+      describe('draw-svg', function(){
+          var newEl;
 
-      describe('draw-single-point directive',function(){
-              beforeEach(inject(function($rootScope,$compile){
-                  
-                  scope = $rootScope.$new();
-                  element = ' <draw-single-point point="p" ></draw-single-point>';
-                  scope.p=[110,11];
-                  element = $compile(element)(scope);
-                  
-                  scope.$digest();
-              }));
+          beforeEach(inject(function($rootScope,$compile){
+              scope = $rootScope;
+              elem = angular.element('<g draw-svg="code"></g>');
+              $compile(elem)(scope);
+              scope.code ='<path fill="blue" stroke="navy" stroke-width="5" d="M201 152 Q288 84,425 76" ></path>'
+              
+              // compiled(scope)
+              scope.$digest();
 
-                   it('should replace with a svg circle elem with "r"=3', function(){
-                    expect(element[0].getAttribute('r')).toBe('3');
-                    expect(element[0].getAttribute('cy')).toBe('11');
-                    expect(element[0].getAttribute('fill')).toBe('black');
-
-                   });
-
-                   it('should change color when vector', function(){
-                    // scope.$parent.$last = false;
-                    // scope.isLast();//watcher call
-                    element[0].setAttribute('fill', 'blue');
-                    
-                    scope.$digest();
-                    expect(element[0].getAttribute('fill')).toBe('blue');
-                   });
+          }));
+          it('should compile whatever string it finds as attrs',function(){
+           
+            newEl= elem.find('path')[0];
+            expect(newEl.getAttribute('fill')).toBe('blue')
+          });
       });
+
+
+      describe('draw-single-point',function(){
+          beforeEach(inject(function($rootScope,$compile){
+              
+              scope = $rootScope.$new();
+              elem = angular.element('<g draw-single-point point="p"></g>');
+              scope.p={
+                x:110,
+                y:11,
+                color:'red'};
+              compiled = $compile(elem);
+              compiled(scope)
+              scope.$digest();
+            }));
+            it('should replace with a svg circle elem with "r"=3', function(){
+                    
+              expect(elem[0].getAttribute('r')).toBe('3');
+              expect(elem[0].getAttribute('cy')).toBe('11');
+              expect(elem[0].getAttribute('fill')).toBe('red');
+            });
+      });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
       xdescribe('draw-point-list directive' , function(){
@@ -94,7 +132,7 @@ describe('directives testing', function() {
 
           });
 
-          xit('removes all attributes from the element not present in attr {}')
+          it('removes all attributes from the element not present in attr {}')
 
 
             

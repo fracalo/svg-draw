@@ -371,55 +371,14 @@ angular
 }
 })();
 
-(function(){
-  'use strict';
+// controller for drawPath 
 
++function(){
+	angular
+		.module('draw.path')
+		.controller('drawPathCtrl', drawPathCtrl)
 
-//directive module
-angular
-    .module('draw.path')
-    .controller('drawPointsCtrl', drawPointsCtrl);
-    
-    drawPointsCtrl.$inject = ['$scope','drawService'];
-    
-    function drawPointsCtrl($scope, drawService){
-         var watchPoints = function(){
-          return drawService.points;
-         };
-         $scope.$watch(watchPoints, function(){
-          $scope.points = drawService.points;
-         });
-    }
-})();
-// directive for dealing events on artboard
-
-(function(){
-
-  angular
-    .module('draw.path')
-    .directive('drawEvents',drawEvents)
-      
-      function drawEvents(){
-              return{
-                restrict:'A',
-                controller: 'DrawEventsCtrl',
-              };
-      };
-
-
-})();
-//directive for code in textarea
-
-(function(){
-
-  angular
-    .module('draw.path')
-    .directive('drawPath',drawPath)
-      
-      function drawPath(){
-            return {
-          restrict:'A',
-          controller:function($scope, $element, drawPathAttr){
+		function drawPathCtrl($scope, drawPathAttr){
 
             var path = $element.find('path')[0];
 
@@ -446,11 +405,74 @@ angular
 
             $scope.$watchCollection( checkAttr , updateAttr );
 
-          },
-          scope:{},
-          template: '<path />',
-              }; 
+         };
+
+}();
+(function(){
+  'use strict';
+
+
+//directive module
+angular
+    .module('draw.path')
+    .controller('DrawPointsCtrl', DrawPointsCtrl);
+    
+    DrawPointsCtrl.$inject = ['$scope','drawService'];
+    
+    function DrawPointsCtrl($scope, drawService){
+         var watchPoints = function(){
+          return drawService.points;
+
+         };
+        $scope.$watch(watchPoints, function(){
+          this.points = drawService.points;
+          console.log(this.points)
+        });
+    }
+})();
+// directive for dealing events on artboard
+
+(function(){
+
+  angular
+    .module('draw.path')
+    .directive('drawEvents',drawEvents)
+      
+      function drawEvents(){
+              return{
+                restrict:'A',
+                controller: 'DrawEventsCtrl',
+              };
       };
+
+
+})();
+//directive for code in textarea
+
+(function(){
+
+  angular
+    .module('draw.path')
+    .directive('drawPath',drawPath);
+
+    drawPath.$inject =['$compile']
+      
+      function drawPath($compile){
+        return function(scope, element, attrs) {
+          scope.$watch(
+            function(scope) {
+               // watch  'code' expression for changes
+              return scope.$eval(attrs.drawPath);
+            },
+            function(value) {
+              
+              element.html(value);
+
+              $compile(element.contents());
+            }
+          );
+        };
+      }
 
 
 })();
@@ -531,111 +553,134 @@ angular
       function drawPoints(){
         return {
           restrict:'EA',
-          controller:'drawPointsCtrl',
-          scope:{},
+          controller:'DrawPointsCtrl',
+          controllerAs:'dpc',
+          // scope:{
+          //   points:'='
+          // },
           template:
-          '<g ng-repeat="segment in points track by $index" >'+
+          '<g ng-repeat="segment in dpc.points track by $index" >'+
           '   <g ng-repeat="p in segment.list track by $index" >'+
           '      <draw-single-point point="p" ></draw-single-point>'+
           '   </g>'+
           '</g>',
+          // template:
+          // '<g ng-repeat="segment in dpc.points track by $index" >'+
+          // '   <g ng-repeat="p in segment.list track by $index" >'+
+          // '      <draw-single-point point="p" ></draw-single-point>'+
+          // '   </g>'+
+          // '</g>',
+          link:function(scope,el){
+            console.log(scope,el)
+            scope.$watch('dpc.points',function(n){
+              console.log(n);
+            },true)
+          }
           };
       };
 
 
 })();
 //directive for drawing single point inside the drawPath directive
+(function () {
+    angular
+        .module('draw.path')
+        .directive('drawSinglePoint', drawSinglePoint);
+    drawSinglePoint.$inject = ['$document', '$rootScope'];
+    function drawSinglePoint($document, $rootScope) {
+        return {
+            restrict: 'A',
+            replace: true,
+            scope: {
+                point: '='
+            },
+            template: ' <circle ' +
+                'ng-mousedown="$event.stopPropagation()" ' +
+                'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' +
+                'r="3" fill="{{point.color}}" index={{$index}} />',
+            link: function (scope, el, attr, drawPath) {
+                scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
+                var startX, startY;
+                var sketchEl = $document;
+                var grannyIndex = scope.$parent.$parent.$index;
+                var parentIndex = scope.$parent.$index;
+                //change pointer when onover
+                el.on('mouseover', function (ev) {
+                    el.css({
+                        cursor: 'crosshair'
+                    });
+                });
+                //where keeping track of this event in DrawCtr
+                el.on('mousedown', function (ev) {
+                    ev.preventDefault();
+                    el.css({
+                        stroke: 'red',
+                        cursor: 'crosshair'
+                    });
+                    startX = ev.pageX - el.attr('cx');
+                    startY = ev.pageY - el.attr('cy');
+                    // console.log(scope.$parent.$parent.$index )
+                    sketchEl.on('mousemove', mousemove);
+                    sketchEl.on('mouseup', mouseup);
+                });
+                function mousemove(ev) {
+                    ev.stopPropagation();
+                    var moveX = ev.pageX - startX;
+                    var moveY = ev.pageY - startY;
+                    el.attr('cx', moveX);
+                    el.attr('cy', moveY);
+                    //scope.point= [ moveX , moveY ];
+                    //drawPath.artboard.points[scope.$parent.$index]=[moveX,moveY];//rather pass this in the message
+                    //we're going to shoot the move coordinates in the air
+                    $rootScope.$emit("pointMove", [[Number(el.attr('cx')), Number(el.attr('cy'))], grannyIndex, parentIndex]);
+                }
+                function mouseup(ev) {
+                    ev.stopPropagation();
+                    scope.point.x = el.attr('cx');
+                    scope.point.y = el.attr('cy');
+                    scope.$emit("pointMove", [[Number(el.attr('cx')), Number(el.attr('cy'))], grannyIndex, parentIndex]);
+                    sketchEl.off('mousemove', mousemove);
+                    sketchEl.off('mouseup', mouseup);
+                    el.css({
+                        stroke: 'none',
+                        cursor: 'auto'
+                    });
+                }
+            }
+        };
+    }
+})();
+
+//directive for code in textarea
 
 (function(){
 
   angular
     .module('draw.path')
-    .directive('drawSinglePoint',drawSinglePoint);
+    .directive('drawSvg',drawSvg);
 
-
-    drawSinglePoint.$inject = [ '$document' ,'$rootScope' ];
-
-      function drawSinglePoint($document,$rootScope){
-  return {
-    restrict:'A',
-    replace:true,
-    scope:{
-      point:'=',
-    },
-    template:'<circle '+
-    'ng-mousedown="$event.stopPropagation()" ng-attr-cx={{point[0]}} ng-attr-cy="{{ point[1] }}" '+
-    'r="3" fill="black">',
-  
-    link:function(scope,el,attr,drawPath){
-     var startX, startY ;
-     var sketchEl = $document;
-     var grannyIndex = scope.$parent.$parent.$index;
-     var parentIndex = scope.$parent.$index;
-    
-      //change pointer when onover
-       el.on('mouseover',function(ev){
-        el.css({
-          cursor:'crosshair'
-        });
-       });
-
-       //distinguish type of point ( if vector ) by color 
-       scope.isLast = function(){
-        return scope.$parent.$last;
-       };
-        scope.$watch(scope.isLast,function(){
-          var fillColor = (!scope.$parent.$last)? 'blue' : 'black' ;
-
-          el.css({ fill: fillColor });
-          
-          
-       });
+    drawSvg.$inject =['$compile', 'drawDataFactory']
       
-      
-      //where keeping track of this event in DrawCtr
-      el.on('mousedown', function(ev) {
-              ev.preventDefault();
-              el.css({
-               stroke:'red',
-               cursor:'crosshair'
-              });
-          
-          startX = ev.pageX - el.attr('cx');
-          startY = ev.pageY - el.attr('cy');
-
-      // console.log(scope.$parent.$parent.$index )
-      sketchEl.on('mousemove', mousemove);
-      sketchEl.on('mouseup', mouseup);    
-      });
-
-      function mousemove(ev){
-        ev.stopPropagation();
-        var moveX =ev.pageX - startX;
-        var moveY = ev.pageY - startY;
-        el.attr('cx', moveX);
-        el.attr('cy', moveY);
-        //scope.point= [ moveX , moveY ];
-    //drawPath.artboard.points[scope.$parent.$index]=[moveX,moveY];//rather pass this in the message
-         //we're going to shoot the move coordinates in the air
-         $rootScope.$emit("pointMove", [[ Number(el.attr('cx')) , Number(el.attr('cy')) ] , grannyIndex, parentIndex ]);
+      function drawSvg($compile, drawDataFactory){
+        return function(scope, element, attrs) {
+          scope.$watch(
+            function(scope) {
+               // watch  'code' expression for changes
+              return scope.$eval(attrs.drawSvg);
+            },
+            function(value) {
+              element.html(value);
+              var inner = element.contents()
+              $compile(inner);/*(scope)*/
+              /* we don't need scope as it's just reactiong to external changes*/
+            
+            /*will used the compiled element to map the objects*/
+             console.log(inner)
+            console.log(drawDataFactory.getCompiledNode(inner))              
+            }
+          );
+        };
       }
-       function mouseup(ev) {
-        ev.stopPropagation();
-        scope.point[0] = el.attr('cx');
-        scope.point[1] = el.attr('cy');
-        scope.$emit("pointMove", [[ Number(el.attr('cx')) , Number(el.attr('cy')) ] , grannyIndex, parentIndex ]);
-
-        sketchEl.off('mousemove', mousemove);
-        sketchEl.off('mouseup', mouseup);
-         el.css({
-               stroke: 'none',
-               cursor:'auto'
-          });
-      }
-    }
-  };
-}
-
 
 })();
 //directive for code in textarea
@@ -657,115 +702,116 @@ angular
           template:
           "<label name='code'>SVG-Code </label>"+
           "<textarea name='code' ng-model='code' ></textarea>",
-          controller:function(
-            $scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,codeInput,exception){
+          // controller:function(
+          //   $scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,codeInput,exception){
        
-            function watchPoints(){
-            return drawService.points
-        }
+          /*watch changes in drawPoints factory(mouse events or other inputs)*/
+        //   function watchPoints(){
+        //     return drawService.points
+        //   }
 
-          // watch point type changes
-          $scope.$watch(watchPoints, function(){
-                /*update path and vector based on drawService.points */
-                drawPathAttr.attributes.d = drawService.dValue();
-                drawVectorAttr.attributes.d = drawService.vectorDValue();
+        //   // watch point type changes
+        //   $scope.$watch(watchPoints, function(){
+        //         /*update path and vector based on drawService.points */
+        //         drawPathAttr.attributes.d = drawService.dValue();
+        //         drawVectorAttr.attributes.d = drawService.vectorDValue();
 
-                /*update code based on drawPathAttr.attributes*/
-                $scope.code = drawService.code(drawPathAttr.attributes);
-        },true);
-
-        
-
-
-
-        var wait, lastValid;
-        
+        //         /*update code based on drawPathAttr.attributes*/
+        //         $scope.code = drawService.code(drawPathAttr.attributes);
+        // },true);
 
         
 
-        $scope.$watch('code',function(n,o){
+
+
+        // var wait, lastValid;
+        
+
+        
+
+        // $scope.$watch('code',function(n,o){
               
-            //cancel $timeout if exists
-            if(wait){
-              $timeout.cancel(wait);
-              wait = null;
-            }
-            //crate a lastValid code before starting to type
-            if(!lastValid){
-              lastValid = o;
-            };
+        //     //cancel $timeout if exists
+        //     if(wait){
+        //       $timeout.cancel(wait);
+        //       wait = null;
+        //     }
+        //     //crate a lastValid code before starting to type
+        //     if(!lastValid){
+        //       lastValid = o;
+        //     };
 
 
-            // add a timeout for waiting typing
-            wait = $timeout( function(){ checkAndUpdate(n) } , 800);
+        //     // add a timeout for waiting typing
+        //     wait = $timeout( function(){ checkAndUpdate(n) } , 800);
         
-        });
+        // });
             
-          function checkAndUpdate(input){
+        //   function checkAndUpdate(input){
       
-            var attrPairs =
-            //this is converting attributes and checking keys
-              codeInput.parseAttr(input)
-                .then(function(res){
-                  return res;
-                });
+        //     var attrPairs =
+        //     //this is converting attributes and checking keys
+        //       codeInput.parseAttr(input)
+        //         .then(function(res){
+        //           return res;
+        //         });
 
-              //once the key/attr is returned this checks for errors
-              //only interested in the rejection of this promise
-              //doesn't deserve a prompt, user can live with this
-              attrPairs
-                .then(codeInput.checkKeys)
-                .then(null, function(e){
-                  console.log(e, ' from hell');
-                  exception.setError(e)
-                })
+        //       //once the key/attr is returned this checks for errors
+        //       //only interested in the rejection of this promise
+        //       //doesn't deserve a prompt, user can live with this
+        //       attrPairs
+        //         .then(codeInput.checkKeys)
+        //         .then(null, function(e){
+        //           console.log(e, ' from hell');
+        //           exception.setError(e)
+        //         })
 
 
 
-                //.then(null,function(e){console.log(e)});
+        //         //.then(null,function(e){console.log(e)});
 
-              //check and set dValue 
-              var dValueCheck = 
-              attrPairs
-                .then(
-                      codeInput.checkDvalArrify,
-                      function(e){
-                        console.log(e);
-                        exception.setError(e);
-                      }
-                      )
-                .then(
-              //codeInput.checkDvalArrify, is returning the array ready to be updated
-                      function(res){
-                          drawService.setPoints(res);
-                      },
-                      function(e){  console.log(e);
-                              if(confirm(e+ "\n do you want to revert to last valid value?") )
-                                {
-                                //for recovering force update right away and reset $scope.code
-                                 checkAndUpdate(lastValid)
-                                 $scope.code = lastValid;
-                                }
-                        }
-                      )
-                .finally(
-                      function(){
-                                 //set lastValid to null so it can be reset
-                                  lastValid = null;
+        //       //check and set dValue 
+        //       var dValueCheck = 
+        //       attrPairs
+        //         .then(
+        //               codeInput.checkDvalArrify,
+        //               function(e){
+        //                 console.log(e);
+        //                 exception.setError(e);
+        //               }
+        //               )
+        //         .then(
+        //       //codeInput.checkDvalArrify, is returning the array ready to be updated
+        //               function(res){
+        //                   drawService.setPoints(res);
+        //               },
+        //               function(e){  console.log(e);
+        //                       if(confirm(e+ "\n do you want to revert to last valid value?") )
+        //                         {
+        //                         //for recovering force update right away and reset $scope.code
+        //                          checkAndUpdate(lastValid)
+        //                          $scope.code = lastValid;
+        //                         }
+        //                 }
+        //               )
+        //         .finally(
+        //               function(){
+        //                          //set lastValid to null so it can be reset
+        //                           lastValid = null;
                               
-                                }
-                      );
+        //                         }
+        //               );
 
-                  //once d-value is checked update all attributes in drawPathAttr
-                   dValueCheck.then(
-                       attrPairs.then(
-                            function(res){
-                              drawPathAttr.setAttr(res);
+        //           //once d-value is checked update all attributes in drawPathAttr
+        //            dValueCheck.then(
+        //                attrPairs.then(
+        //                     function(res){
+        //                       drawPathAttr.setAttr(res);
 
-                            }));
-              };
+        //                     }));
+        //       };
             
-          },
+        //   },
       };
 
     }
@@ -860,7 +906,6 @@ function drawVector(){
 
 
 		checkDvalArrify : function(code){
-			console.log(code)
 			var d = code.d;
 			var list = dValToList(d);
 			var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
@@ -912,6 +957,70 @@ function drawVector(){
 };
 
 })();
+//this is the factory that stores the data in a serialized object
+//it uses the data mapped while compiling in the directive drawSvg
+//??? relying on other services it parses the code
+//into a different object depending on the svg type
+// exampleList = [
+// 	{node :'circle',
+// 	 cx   :44,
+// 	 cy   :55,
+// 	 r    :3		},
+// 	{node :'path',
+// 	 d    :'M11 11',
+// 	stroke: '#000'	}
+// ]
+
+
+(function(){
+	angular
+		.module('draw.path')
+		.factory('drawDataFactory', drawDataFactory);
+
+	drawDataFactory.$inject = ['$filter'];
+
+	function drawDataFactory($filter){
+		obj = {
+			storage:[],
+			getCompiledNode:getCompiledNode,
+
+		};
+		return obj;
+
+		function getCompiledNode(a){
+			//the dom rappresentation is good we just need to map what we want
+			//maybe there are some JQlite methods for this..
+			function mapNode(node){
+				var res ={
+					nodeName : node.nodeName,
+					attributes:node.attributes,
+					childNodes:node.childNodes
+				};
+				if (node.childNodes.length > 0)
+					res.childNodes = [].slice.call(node.childNodes).map(function(x){
+						return mapNode(x);
+					});
+				return res; 
+			}
+			if(a)
+			return [].slice.call(a).map(function(n){
+				return mapNode(n);
+			});
+
+		}
+
+		function parseNode(n){
+			var parsed ;
+			/*strip newlines*/
+			n =n.replace(/\n|\r/g, "");
+			/*parse*/
+			var nodePat = /<\s*([a-zA-Z]+)(.+)\s*(>\s*<\s*\1)\/\s*>/; 
+			n.replace(nodePat)
+
+		}
+
+	}
+})();
 (function(){
 	angular
 		.module('draw.path')
@@ -946,43 +1055,35 @@ function drawVector(){
 (function(){
 	angular
 		.module('draw.path')
-		.service('drawService', drawService);
+		.factory('drawService', drawService);
 
 	drawService.$inject = ['$filter'];
 /*service*/
 function drawService($filter){
 
-	var obj= this;
+    obj = {
+	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
+	points : [] ,
+	rawPoints : rawPoints,
+	setPoints : setPoints,
+	getPoints : getPoints,
+	dValue: dValue,
 
-	//sample point output  point={type:'C', list:[ [22,33],[34,42],[66,88] ] };
-	this.points = [] ;
-
-	this.setPoints = function(a){
-		obj.points = a;
-	};
-
-	this.getPoints = function(){
-		return obj.points;
-	};
-	this.dValue=function(){
-		return $filter('arrayToDVal')(obj.points);
-
-	};
-	this.vectorDValue=function(){
-		var arr = $filter('toVectorArray')(obj.points);
-		return $filter('arrayToDVal')(arr);
-
-	};
-	this.code=function(attributes){
-	 return $filter('attrsToMarkup')(attributes);
-	};
-	 // options fot point types
- 	this.curveOp=['M','L','Q','C'];
-
-
+	vectorDValue : vectorDValue,
+	code : code,
+	 // options for point types
+ 	curveOp:['M','L','Q','C'],
 
 	/*obj.click captures click event and registers lastPoint and adds to points  array*/
-	this.mousedown =  function(e){
+	mousedown :  mousedown,
+	mouseupLine :mouseupLine,
+	mousemove : mousemove,
+	mousemoveback : mousemoveback
+	};
+	return obj;
+	
+
+	function mousedown(e){
 		  
 			if(!e || e.target instanceof SVGCircleElement)
 			return;
@@ -1007,8 +1108,8 @@ function drawService($filter){
 			//inserts point
 			obj.points.push(point);
 			
-	};
-	this.mouseupLine = function(e){
+	}
+	function mouseupLine(e){
 
 		var pointLen = obj.points.length;
 		var typeOfPoint = (pointLen <= 1)?'M':'L';
@@ -1017,7 +1118,7 @@ function drawService($filter){
 			
 	};
 
-	this.mousemove = function(e){
+	function mousemove(e){
 			if (e.target instanceof SVGCircleElement )
 			return;
 
@@ -1050,7 +1151,7 @@ function drawService($filter){
      		obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
 			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
 	};
-	this.mousemove.back = function(e){
+	function mousemoveback(e){
 			var pointLen = obj.points.length;
 
 			if(obj.points[pointLen - 1].list.length < 2)
@@ -1062,7 +1163,37 @@ function drawService($filter){
 			var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    obj.points[pointLen - 1].type = typeOfPoint;
 
-	};
+	}
+	function getPoints(){
+		return obj.points;
+	}
+	function setPoints(a){
+		obj.points = a;
+	}
+	function rawPoints(points){
+		return points.reduce((acc,x) =>{
+			var i=0;
+			while(i < x.list.length){
+				acc.push({
+					x:x.list[i][0],
+					y:x.list[i][1]
+				});
+				i++;
+			};
+			return acc;
+		},[]);
+	}
+	function dValue(){
+		return $filter('arrayToDVal')(obj.points);
+	}
+	function vectorDValue(){
+		var arr = $filter('toVectorArray')(obj.points);
+		return $filter('arrayToDVal')(arr);
+
+	}
+	function code(attributes){
+	 return $filter('attrsToMarkup')(attributes);
+	}
 
 }
 
@@ -1137,3 +1268,4 @@ function drawService($filter){
 
     }
 })();
+//# sourceMappingURL=../maps/draw-path.js.map

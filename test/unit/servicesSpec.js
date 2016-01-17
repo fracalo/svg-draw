@@ -124,6 +124,22 @@ it('should populate the array with an Fragment "Q" when mouseup an mousedown(if 
 
 	})
 
+	describe('drawService.rawPoints()',function(){
+
+		it('should return an array of objects rappreseting rawPoints',function(){
+			var test = [
+			{type:'M', list:[ [0,1] ] },
+			{type:'C', list:[ [22,33],[34,42],[66,88] ] }
+			]
+			expect(drawService.rawPoints(test)).toEqual(
+				[	{x:0,y:1},
+					{x:22,y:33},
+					{x:34,y:42},
+					{x:66,y:88}		]
+				);
+
+		})
+	})
 	
 });
 

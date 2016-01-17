@@ -41,9 +41,7 @@
                         </li>
 
 
-        <!-- <li role='menuitem'><a ng-click='change()'>heart</a></li>
-                        <li role='menuitem'><a href='#'>cat</a></li>
-                        <li role='menuitem'><a href='#'>dog</a></li> -->
+      
                       </ul>
               </li>
           </ul>
@@ -57,40 +55,20 @@
       
     <svg draw-events  id="artboard"  class="artboard">
 
-        <g draw-path ></g>
-        <g draw-vector ></g>
+        <g draw-svg='code'></g>
+       <!--  <g draw-vector ></g> -->
+       <!-- <g ng-repeat='i in testArr' draw-single-point point="i">-->
 
-  <!-- this has a separate controller and depends directly on service -->
-        <g draw-points ></g>
+ 
+  </g>
           
     </svg> 
+
 
  
     <div class="tools" >
 
-         <draw-points-list ></draw-points-list> 
-
-    <!-- need to set up a watch on form || currently not working!! -->
-   <!--  <div class="tools" ng-controller='DrawCtrl as tl'>
-                
-        <ng-form>
-
-        <fieldset>
-        <label for='fill'>Fill</label>
-        <input type='color' id='fill' name='fill' ng-model='tl.attr.fill' >
-        </fieldset>
-
-        <fieldset>
-        <label for='stroke'>Stroke</label>
-        <input colorpicker='rgba' id='stroke' name='stroke' ng-model='tl.attr.stroke'>
-        </fieldset>
-
-        <fieldset>
-        <label for='stroke-width'>Stroke-width</label>
-        <input id='stroke-width' name='stroke-width' ng-model='tl.attr["stroke-width"]'>
-        </fieldset>
-                
-        </ng-form> -->
+         <!-- <draw-points-list ></draw-points-list>  -->
 
     </div>   
 
@@ -101,8 +79,10 @@
 
 <div class='bottom' >
 <div name='errors' novalidate>
-               
+              
   <pre>errors:</pre>
+
+
 
 </div>
 <section>
