@@ -28,7 +28,7 @@ describe('service', function() {
 		return {
 			left:10,
 			top:10
-		}
+		};
 	}
 
 	beforeEach(function(){
@@ -109,10 +109,6 @@ it('should populate the array with an Fragment "Q" when mouseup an mousedown(if 
 		drawService.mousemove(e);
 		expect(drawService.points[1].type).toEqual('Q')
 
-
-
-		
-
 	});
 
 
@@ -160,6 +156,91 @@ describe('service exception',function(){
 
 		expect(exception.getError()).toEqual(err)
 	})
+
+
+
+});
+
+describe('drawDataFactory',function(){
+	var drawDataFactory;
+		beforeEach(function(){
+		module('draw.path');
+
+		inject(function(_drawDataFactory_){
+			drawDataFactory = _drawDataFactory_;
+		});
+	});
+
+	it('should ',function(){
+		
+	})
+
+
+
+})
+describe('drawExceptFactory',function(){
+	var drawExceptFactory, drawDataFactory,scope ;
+		beforeEach(function(){
+			module('draw.path');
+
+			inject(function(_drawExceptFactory_,_drawDataFactory_,$rootScope){
+				drawExceptFactory = _drawExceptFactory_;
+				drawDataFactory = _drawDataFactory_;
+				scope = $rootScope
+			});
+
+			drawExceptFactory.list =[
+	            {error:'first'},
+	            {error:'second'},
+			];
+			scope.$digest();
+		});
+
+	it('should remove through deleteError mthod ',function(){
+		drawExceptFactory.deleteError(0);
+		expect(drawExceptFactory.list.length).toBe(1),
+		expect(drawExceptFactory.list[0].error).toBe('second')
+	});
+
+	it('should check the drawDataFactory.node for errors',function(){
+		drawDataFactory.node =  [
+									{
+									 nodeName :'g',
+									 hashSvg: 0,
+									 attributes: {},
+									 childNodes:[
+												 {
+												 nodeName :'circle',
+												 hashSvg: 1,
+												 attributes: {
+															cx   :44,
+													        cy   :55,
+													         /*r    :3*/
+												 			},
+												 childNodes:[]
+												}
+									 ]
+									},
+									{
+									 nodeName :'ellipse',
+									 hashSvg: 2,
+									 attributes: {
+									 	cx   :44,
+								        cy   :55,
+							         	/*rx    :3*/
+							     		/*ry    :3*/
+							     		},
+									 childNodes:[]
+									},
+
+								];
+	drawExceptFactory.checkExc();
+	expect(drawExceptFactory.list.length).toBe(3);
+	
+
+	})
+
+
 
 
 

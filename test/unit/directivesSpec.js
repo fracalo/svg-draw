@@ -3,7 +3,7 @@
 /* jasmine specs for directives go here */
 
 describe('directives testing', function() {
-	 var elem, scope, compiled,circle;
+	 var elem, scope, compiled;
 
 	beforeEach(module('draw.path'));
       
@@ -29,6 +29,7 @@ describe('directives testing', function() {
 
 
       describe('draw-single-point',function(){
+        var circle;
           beforeEach(inject(function($rootScope,$compile){
               
               scope = $rootScope.$new();
@@ -48,6 +49,27 @@ describe('directives testing', function() {
               expect(elem[0].getAttribute('fill')).toBe('red');
             });
       });
+
+      describe('draw-except', function(){
+        var drawExceptFactory, pElem;
+        beforeEach(inject(function($rootScope,$compile,_drawExceptFactory_){
+            scope = $rootScope.$new();
+            drawExceptFactory = _drawExceptFactory_;
+            drawExceptFactory.list = [
+            {issue:'first'},
+            {issue:'second'},
+            ];
+            //better block call to checkExc
+            spyOn(drawExceptFactory, 'checkExc').andReturn(null);
+            
+            elem = angular.element('<draw-except></draw-except>');
+            $compile(elem)(scope);
+            scope.$digest();
+        }));
+        it('should find 2 errors  ',function(){
+           expect(elem.find('p').length).toBe(2);
+        })
+      })
 
 
 

@@ -1,4 +1,5 @@
 (function(){
+	 'use strict';
 	angular
 		.module('draw.path')
 		.factory('drawService', drawService);
@@ -7,7 +8,7 @@
 /*service*/
 function drawService($filter){
 
-    obj = {
+    var obj = {
 	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
 	points : [] ,
 	rawPoints : rawPoints,

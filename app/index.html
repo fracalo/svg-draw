@@ -21,7 +21,7 @@
   <script src="js/draw-path/controllers.js"></script>-->
 </head>
 
-<body  ng-controller='RootCtrl'>   
+<body  ng-controller='RootCtrl as root'>   
 
   <div class='top'>
         <section >
@@ -36,8 +36,8 @@
                       </button>
 
                       <ul class='uib-dropdown-menu dropdown-menu-right' role='menu' aria-labelledby='sample-button'>
-                        <li ng-repeat="sample in samples">
-                        <a href ng-click='change(sample.code)'>{{sample.name}}</a>
+                        <li ng-repeat="sample in root.samples">
+                        <a href ng-click='root.change(sample.code)'>{{sample.name}}</a>
                         </li>
 
 
@@ -55,7 +55,7 @@
       
     <svg draw-events  id="artboard"  class="artboard">
 
-        <g draw-svg='code'></g>
+        <g draw-svg='root.code'></g>
        <!--  <g draw-vector ></g> -->
        <!-- <g ng-repeat='i in testArr' draw-single-point point="i">-->
 
@@ -78,18 +78,12 @@
 
 
 <div class='bottom' >
-<div name='errors' novalidate>
-              
-  <pre>errors:</pre>
-
-
-
-</div>
+  <div draw-except></div>
 <section>
 
 <form name='coding' novalidate>
                
-  <draw-textarea code='code'></draw-textarea>
+  <draw-textarea code='root.code'></draw-textarea>
 
 </form>
               

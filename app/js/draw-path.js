@@ -447,6 +447,48 @@ angular
 
 
 })();
+// directive that dialogs with user showing exceptions on attributes names
+// or common value types
+// that are being stored in the drawExceptFactory
+(function(){
+	'use strict';
+	angular
+		.module('draw.path')
+		.directive('drawExcept' , drawExcept);
+
+	drawExcept.$inject = ['drawExceptFactory','drawDataFactory'];
+
+	function drawExcept(drawExceptFactory,drawDataFactory){
+		return {
+			restrict:'EA',
+			template:
+			"<div ng-repeat='i in exc.list'>"+
+			"	<p>error:{{i.issue}}</p>"+
+			"	<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError($index)'></span>"+
+			"</div>",
+			controllerAs:'exc',
+			controller: function($scope,drawExceptFactory,drawDataFactory){
+				var self = this;
+				this.list = drawExceptFactory.list;
+				
+				$scope.$watch(exceptList,function(){
+					
+					drawExceptFactory.checkExc();
+					self.list = drawExceptFactory.list;
+					console.log(drawExceptFactory.list)
+				});
+				
+				function exceptList(){
+					return drawDataFactory.node;
+				}
+				
+				this.deleteError = drawExceptFactory.deleteError;
+			}
+		};
+	}
+})();
+
+
 //directive for code in textarea
 
 (function(){
@@ -654,12 +696,12 @@ angular
 //directive for code in textarea
 
 (function(){
-
+ 'use strict';
   angular
     .module('draw.path')
     .directive('drawSvg',drawSvg);
 
-    drawSvg.$inject =['$compile', 'drawDataFactory']
+    drawSvg.$inject =['$compile', 'drawDataFactory'];
       
       function drawSvg($compile, drawDataFactory){
         return function(scope, element, attrs) {
@@ -670,13 +712,13 @@ angular
             },
             function(value) {
               element.html(value);
-              var inner = element.contents()
+              var inner = element.contents();
               $compile(inner);/*(scope)*/
               /* we don't need scope as it's just reactiong to external changes*/
             
-            /*will used the compiled element to map the objects*/
-             console.log(inner)
-            console.log(drawDataFactory.getCompiledNode(inner))              
+            /*the setNode method sets data in drawDataFactory,
+              we store the node that's been compiled by angular*/
+             drawDataFactory.setNode(inner) ;           
             }
           );
         };
@@ -686,10 +728,10 @@ angular
 //directive for code in textarea
 
 (function(){
-
+'use strict';
   angular
     .module('draw.path')
-    .directive('drawTextarea',drawTextarea)
+    .directive('drawTextarea',drawTextarea);
 
     function drawTextarea(){
 
@@ -957,44 +999,127 @@ function drawVector(){
 };
 
 })();
-//this is the factory that stores the data in a serialized object
-//it uses the data mapped while compiling in the directive drawSvg
-//??? relying on other services it parses the code
-//into a different object depending on the svg type
+(function(){
+	'use strict';
+	angular
+		.module('draw.path')
+		.factory('drawAttributes',drawAttributes);
+
+	function drawAttributes(){
+		return {
+			circle:{
+				spec:[
+				{ prop:'r'} ,
+				{ prop:'cy'} ,
+				{ prop:'cx'}
+				],
+			},
+			ellipse:{
+				spec:[
+				{ prop:'rx'} ,
+				{ prop:'ry'} ,
+				{ prop:'cy'} ,
+				{ prop:'cx'}
+				],
+			},
+			line:{
+				spec:[
+				{ prop:'x1'} ,
+				{ prop:'x2'} ,
+				{ prop:'y1'} ,
+				{ prop:'y2'}
+				],
+			},
+			path:{
+				spec:[
+				{prop:'d'}
+				]
+			},
+			polygon:{
+				spec:[
+				{prop:'points'}
+				]
+			},
+			polyline:{
+				spec:[
+				{prop:'points'}
+				]
+			},
+			rect:{
+				spec:[
+				{prop:'x'},
+				{prop:'y'},
+				{prop:'width'},
+				{prop:'height'},
+				{prop:'rx', renderOpt:true},
+				{prop:'ry', renderOpt:true},
+				 ]
+			}
+
+		};
+	}
+})();
+// this is the factory that stores the data in a serialized object
+// it uses the data mapped while compiling in the directive drawSvg
+// into a different object depending on the svg type
 // exampleList = [
-// 	{node :'circle',
-// 	 cx   :44,
-// 	 cy   :55,
-// 	 r    :3		},
-// 	{node :'path',
-// 	 d    :'M11 11',
-// 	stroke: '#000'	}
+// 	{
+//	 nodeName :'circle',
+// 	 attributes: {
+//			cx   :44,
+// 	        cy   :55,
+// 	         r    :3
+//	 },
+//	 childNodes:[]
 // ]
+// relying on other services it check the attributes for basic types
+// <circle>, <ellipse>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <text>, <use>
+
 
 
 (function(){
+	"use strict";
+
 	angular
 		.module('draw.path')
 		.factory('drawDataFactory', drawDataFactory);
 
-	drawDataFactory.$inject = ['$filter'];
 
-	function drawDataFactory($filter){
-		obj = {
-			storage:[],
-			getCompiledNode:getCompiledNode,
-
+	function drawDataFactory(){
+		var obj = {
+			node:[],
+			setNode:setNode,
+			serializeNode:serializeNode,
 		};
 		return obj;
 
-		function getCompiledNode(a){
+		function setNode(a){
+			obj.node = serializeNode(a);
+		}
+
+		function serializeNode(a){
 			//the dom rappresentation is good we just need to map what we want
 			//maybe there are some JQlite methods for this..
+			var hashSvg = 0;
+			if(a)
+			return [].slice.call(a).map(function(n){
+				return mapNode(n);
+			});
+
 			function mapNode(node){
+				function mappedAttributes(nA){
+					if(nA)
+					return [].slice.call(nA).reduce( (acc,x )=> {
+						 acc[x.name] = x.value;
+						 return acc;
+					},{});
+				}
+				var attrs= mappedAttributes(node.attributes) || [];
 				var res ={
-					nodeName : node.nodeName,
-					attributes:node.attributes,
-					childNodes:node.childNodes
+					nodeName  : node.nodeName,
+					attributes: attrs,
+					childNodes:node.childNodes,
+					hashSvg: hashSvg++,
 				};
 				if (node.childNodes.length > 0)
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
@@ -1002,25 +1127,87 @@ function drawVector(){
 					});
 				return res; 
 			}
-			if(a)
-			return [].slice.call(a).map(function(n){
-				return mapNode(n);
-			});
-
 		}
+		
 
-		function parseNode(n){
-			var parsed ;
-			/*strip newlines*/
-			n =n.replace(/\n|\r/g, "");
-			/*parse*/
-			var nodePat = /<\s*([a-zA-Z]+)(.+)\s*(>\s*<\s*\1)\/\s*>/; 
-			n.replace(nodePat)
-
-		}
+		
 
 	}
 })();
+
+		/*function parseNode(n){
+			var parsed ;
+			n =n.replace(/\n|\r/g, "");
+			
+			var nodePat = /<\s*([a-zA-Z]+)(.+)\s*(>\s*<\s*\1)\/\s*>/; 
+			n.replace(nodePat)
+
+		}*/
+(function() {
+    'use strict';
+
+    angular
+        .module('draw.path')
+        .factory('drawExceptFactory', drawExceptFactory);
+
+    drawExceptFactory.$inject = ['drawDataFactory','drawAttributes'];
+
+    function drawExceptFactory(drawDataFactory,drawAttributes) {
+
+        var service = {
+           list:[],
+           deleteError: deleteError,
+           checkExc :checkExc,
+      
+        };
+        return service;
+
+        function deleteError(i){
+            service.list.splice(i,1);
+        }
+        function checkExc(){
+
+            //reset list
+            var checkList= [];
+
+            drawDataFactory.node.forEach(x => {checkItem(x);} );
+            
+            service.list= checkList;
+           
+           function checkItem(item){
+                var type = item.nodeName;
+                /*if an element has specific attribute make a check*/
+                var specific = (drawAttributes[type] && drawAttributes[type].spec)?
+                drawAttributes[type].spec.filter(r => {
+                     return Object.keys(item.attributes)
+                     .every((itemAttr) => {
+                        if(r.renderOpt)
+                        return false;
+
+                        return itemAttr != r.prop ;
+                    });
+                }) : [];
+
+                /*do it recursivly on childNodes if any*/
+                if (item.childNodes.length  >  0)
+                item.childNodes.forEach((c) => {checkItem(c) ; });
+
+                specific = specific.map( (x) => {
+                    return{
+                        issue:x.prop,
+                        type:'specific',
+                        hashEl: item.hashSvg
+                    }
+                });
+
+               
+                checkList = checkList.concat(specific);
+
+            }
+        }
+    }
+})();
+
 (function(){
 	angular
 		.module('draw.path')
@@ -1053,6 +1240,7 @@ function drawVector(){
 
 })();
 (function(){
+	 'use strict';
 	angular
 		.module('draw.path')
 		.factory('drawService', drawService);
@@ -1061,7 +1249,7 @@ function drawVector(){
 /*service*/
 function drawService($filter){
 
-    obj = {
+    var obj = {
 	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
 	points : [] ,
 	rawPoints : rawPoints,

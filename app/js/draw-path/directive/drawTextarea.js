@@ -1,10 +1,10 @@
 //directive for code in textarea
 
 (function(){
-
+'use strict';
   angular
     .module('draw.path')
-    .directive('drawTextarea',drawTextarea)
+    .directive('drawTextarea',drawTextarea);
 
     function drawTextarea(){
 
