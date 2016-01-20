@@ -47,8 +47,10 @@
 
 			function mapNode(node){
 				function mappedAttributes(nA){
+					var patt = /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;
 					if(nA)
-					return [].slice.call(nA).reduce( (acc,x )=> {
+					return [].slice.call(nA).reduce( ( acc , x )=> {
+						 if( !patt.test(x.name))
 						 acc[x.name] = x.value;
 						 return acc;
 					},{});

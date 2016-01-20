@@ -202,7 +202,7 @@ describe('drawExceptFactory',function(){
 		expect(drawExceptFactory.list[0].error).toBe('second')
 	});
 
-	it('should check the drawDataFactory.node for errors',function(){
+	iit('should check the drawDataFactory.node for errors',function(){
 		drawDataFactory.node =  [
 									{
 									 nodeName :'g',
@@ -216,6 +216,8 @@ describe('drawExceptFactory',function(){
 															cx   :44,
 													        cy   :55,
 													         /*r    :3*/
+													        fill : 'red',
+													        stroke:'blue'
 												 			},
 												 childNodes:[]
 												}
@@ -235,7 +237,7 @@ describe('drawExceptFactory',function(){
 
 								];
 	drawExceptFactory.checkExc();
-	expect(drawExceptFactory.list.length).toBe(3);
+	expect(drawExceptFactory.list.specific.length).toBe(3);
 	
 
 	})

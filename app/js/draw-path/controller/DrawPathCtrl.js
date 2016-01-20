@@ -1,6 +1,7 @@
 // controller for drawPath 
 
 +function(){
+	'use strict';
 	angular
 		.module('draw.path')
 		.controller('drawPathCtrl', drawPathCtrl)

@@ -1,4 +1,5 @@
 module.exports = function(config){
+  'use strict';
   var configuration ={
 
     basePath : '../',
@@ -27,12 +28,17 @@ module.exports = function(config){
     plugins : [
             'karma-chrome-launcher',
             'karma-firefox-launcher',
-            'karma-jasmine'
+            'karma-jasmine',
+            'karma-sourcemap-loader'
             ],
 
     junitReporter : {
       outputFile: 'test_out/unit.xml',
       suite: 'unit'
+    },
+
+    preprocessors: {
+      '**/*.js': ['sourcemap']
     }
 
   };

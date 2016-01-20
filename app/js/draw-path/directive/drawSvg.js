@@ -23,7 +23,7 @@
             
             /*the setNode method sets data in drawDataFactory,
               we store the node that's been compiled by angular*/
-             drawDataFactory.setNode(inner) ;           
+             drawDataFactory.setNode(inner) ; 
             }
           );
         };

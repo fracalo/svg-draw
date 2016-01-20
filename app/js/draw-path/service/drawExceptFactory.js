@@ -21,44 +21,72 @@
             service.list.splice(i,1);
         }
         function checkExc(){
-
             //reset list
-            var checkList= [];
+            var checkList= {};
+            checkList.specific=[];
+            checkList.presentational=[];
 
             drawDataFactory.node.forEach(x => {checkItem(x);} );
             
             service.list= checkList;
-           
-           function checkItem(item){
-                var type = item.nodeName;
-                /*if an element has specific attribute make a check*/
-                var specific = (drawAttributes[type] && drawAttributes[type].spec)?
-                drawAttributes[type].spec.filter(r => {
-                     return Object.keys(item.attributes)
-                     .every((itemAttr) => {
-                        if(r.renderOpt)
-                        return false;
 
-                        return itemAttr != r.prop ;
-                    });
-                }) : [];
+           function checkItem(item){
+                var specific =  checkSpecific(item);
+               
 
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => {checkItem(c) ; });
 
-                specific = specific.map( (x) => {
+                checkList.specific = checkList.specific.concat(specific);
+
+
+                
+
+            }
+        }
+
+        function checkPresentationalAttr(item){
+            return Object.keys(item.attributes).filter(x => {
+                    return drawAttributes.present.every(a => {
+                        return a !== x;
+                    })
+                })
+                .map( (x) => {
+                    return{
+                        issue:x,
+                        type:' not presentational attribute',
+                        hashEl: item.hashSvg
+                    }
+                });
+        }
+
+        function checkSpecific(item){
+            var arrayToPipe = [];
+            var res = (drawAttributes.basic[item.nodeName] )?
+                drawAttributes.basic[item.nodeName].filter(r => {
+                    
+
+                    var result =  Object.keys(item.attributes)
+                     .every((itemAttr , i , arr) => {
+                        if(r.renderOpt)
+                        return false;
+
+                        return itemAttr != r.prop ;
+                    });
+
+                    return result;
+                })
+                .map( (x) => {
                     return{
                         issue:x.prop,
                         type:'specific',
                         hashEl: item.hashSvg
                     }
-                });
+                }):
+                [];
 
-               
-                checkList = checkList.concat(specific);
-
-            }
-        }
+            return res
+        };
     }
 })();

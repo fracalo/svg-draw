@@ -25,8 +25,7 @@
 				$scope.$watch(exceptList,function(){
 					
 					drawExceptFactory.checkExc();
-					self.list = drawExceptFactory.list;
-					console.log(drawExceptFactory.list)
+					self.list = drawExceptFactory.list.specific;
 				});
 				
 				function exceptList(){

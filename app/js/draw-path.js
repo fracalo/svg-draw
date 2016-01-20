@@ -374,6 +374,7 @@ angular
 // controller for drawPath 
 
 +function(){
+	'use strict';
 	angular
 		.module('draw.path')
 		.controller('drawPathCtrl', drawPathCtrl)
@@ -474,8 +475,7 @@ angular
 				$scope.$watch(exceptList,function(){
 					
 					drawExceptFactory.checkExc();
-					self.list = drawExceptFactory.list;
-					console.log(drawExceptFactory.list)
+					self.list = drawExceptFactory.list.specific;
 				});
 				
 				function exceptList(){
@@ -718,7 +718,7 @@ angular
             
             /*the setNode method sets data in drawDataFactory,
               we store the node that's been compiled by angular*/
-             drawDataFactory.setNode(inner) ;           
+             drawDataFactory.setNode(inner) ; 
             }
           );
         };
@@ -1005,59 +1005,118 @@ function drawVector(){
 		.module('draw.path')
 		.factory('drawAttributes',drawAttributes);
 
+
+
+
 	function drawAttributes(){
 		return {
-			circle:{
-				spec:[
+			basic:basic(),
+			present:presentational()
+		};
+	};
+
+	function basic(){
+		return{
+			circle:[
 				{ prop:'r'} ,
 				{ prop:'cy'} ,
 				{ prop:'cx'}
-				],
-			},
-			ellipse:{
-				spec:[
+			],
+			ellipse:[
 				{ prop:'rx'} ,
 				{ prop:'ry'} ,
 				{ prop:'cy'} ,
 				{ prop:'cx'}
-				],
-			},
-			line:{
-				spec:[
+			],
+			line:[
 				{ prop:'x1'} ,
 				{ prop:'x2'} ,
 				{ prop:'y1'} ,
 				{ prop:'y2'}
-				],
-			},
-			path:{
-				spec:[
+			],
+			path:[
 				{prop:'d'}
-				]
-			},
-			polygon:{
-				spec:[
+				],
+			polygon:[
 				{prop:'points'}
-				]
-			},
-			polyline:{
-				spec:[
+			],
+			polyline:[
 				{prop:'points'}
-				]
-			},
-			rect:{
-				spec:[
+			],
+			rect:[
 				{prop:'x'},
 				{prop:'y'},
 				{prop:'width'},
 				{prop:'height'},
 				{prop:'rx', renderOpt:true},
 				{prop:'ry', renderOpt:true},
-				 ]
-			}
-
+			],
 		};
 	}
+	function presentational(){
+		return[
+			'alignment-baseline',
+			'baseline-shift',
+			'clip',
+			'clip-path',
+			'clip-rule',
+			'color',
+			'color-interpolation',
+			'color-interpolation-filters',
+			'color-profile',
+			'color-rendering',
+			'cursor',
+			'direction',
+			'display',
+			'dominant-baseline',
+			'enable-background',
+			'fill',
+			'fill-opacity',
+			'fill-rule',
+			'filter',
+			'flood-color',
+			'flood-opacity',
+			'font-family',
+			'font-size',
+			'font-size-adjust',
+			'font-stretch',
+			'font-style',
+			'font-variant',
+			'font-weight',
+			'glyph-orientation-horizontal',
+			'glyph-orientation-vertical',
+			'image-rendering',
+			'kerning',
+			'letter-spacing',
+			'lighting-color',
+			'marker-end',
+			'marker-mid',
+			'marker-start',
+			'mask',
+			'opacity',
+			'overflow',
+			'pointer-events',
+			'shape-rendering',
+			'stop-color',
+			'stop-opacity',
+			'stroke',
+			'stroke-dasharray',
+			'stroke-dashoffset',
+			'stroke-linecap',
+			'stroke-linejoin',
+			'stroke-miterlimit',
+			'stroke-opacity',
+			'stroke-width',
+			'text-anchor',
+			'text-decoration',
+			'text-rendering',
+			'unicode-bidi',
+			'visibility',
+			'word-spacing',
+			'writing-mode'
+		]
+	}
+
 })();
 // this is the factory that stores the data in a serialized object
 // it uses the data mapped while compiling in the directive drawSvg
@@ -1108,8 +1167,10 @@ function drawVector(){
 
 			function mapNode(node){
 				function mappedAttributes(nA){
+					var patt = /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;
 					if(nA)
-					return [].slice.call(nA).reduce( (acc,x )=> {
+					return [].slice.call(nA).reduce( ( acc , x )=> {
+						 if( !patt.test(x.name))
 						 acc[x.name] = x.value;
 						 return acc;
 					},{});
@@ -1166,45 +1227,73 @@ function drawVector(){
             service.list.splice(i,1);
         }
         function checkExc(){
-
             //reset list
-            var checkList= [];
+            var checkList= {};
+            checkList.specific=[];
+            checkList.presentational=[];
 
             drawDataFactory.node.forEach(x => {checkItem(x);} );
             
             service.list= checkList;
-           
-           function checkItem(item){
-                var type = item.nodeName;
-                /*if an element has specific attribute make a check*/
-                var specific = (drawAttributes[type] && drawAttributes[type].spec)?
-                drawAttributes[type].spec.filter(r => {
-                     return Object.keys(item.attributes)
-                     .every((itemAttr) => {
-                        if(r.renderOpt)
-                        return false;
 
-                        return itemAttr != r.prop ;
-                    });
-                }) : [];
+           function checkItem(item){
+                var specific =  checkSpecific(item);
+               
 
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => {checkItem(c) ; });
 
-                specific = specific.map( (x) => {
+                checkList.specific = checkList.specific.concat(specific);
+
+
+                
+
+            }
+        }
+
+        function checkPresentationalAttr(item){
+            return Object.keys(item.attributes).filter(x => {
+                    return drawAttributes.present.every(a => {
+                        return a !== x;
+                    })
+                })
+                .map( (x) => {
+                    return{
+                        issue:x,
+                        type:' not presentational attribute',
+                        hashEl: item.hashSvg
+                    }
+                });
+        }
+
+        function checkSpecific(item){
+            var arrayToPipe = [];
+            var res = (drawAttributes.basic[item.nodeName] )?
+                drawAttributes.basic[item.nodeName].filter(r => {
+                    
+
+                    var result =  Object.keys(item.attributes)
+                     .every((itemAttr , i , arr) => {
+                        if(r.renderOpt)
+                        return false;
+
+                        return itemAttr != r.prop ;
+                    });
+
+                    return result;
+                })
+                .map( (x) => {
                     return{
                         issue:x.prop,
                         type:'specific',
                         hashEl: item.hashSvg
                     }
-                });
+                }):
+                [];
 
-               
-                checkList = checkList.concat(specific);
-
-            }
-        }
+            return res
+        };
     }
 })();
 
