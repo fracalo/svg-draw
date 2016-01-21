@@ -23,27 +23,42 @@
         function checkExc(){
             //reset list
             var checkList= {};
-            checkList.specific=[];
+            checkList.basic=[];
             checkList.presentational=[];
 
-            drawDataFactory.node.forEach(x => {checkItem(x);} );
+            drawDataFactory.node.forEach(x => checkItem(x) );
             
             service.list= checkList;
 
            function checkItem(item){
-                var specific =  checkSpecific(item);
-               
-
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
-                item.childNodes.forEach((c) => {checkItem(c) ; });
+                item.childNodes.forEach((c) => checkItem(c) );
 
-                checkList.specific = checkList.specific.concat(specific);
+                /*********************************************/
+                //check if basic per-element rendering properties are present
+                var basic =  checkSpecific(item);
+                checkList.basic = checkList.basic.concat(basic);
 
-
+                /*********************************************/
+                //copy the nodeitem, strip out the basic attributes,
+                //check presentational
+                var itemcopy = stripBasic(item)
                 
+                var present = checkPresentationalAttr(itemcopy);
+                checkList.presentational = checkList.presentational.concat(present);
+            
 
             }
+        }
+
+        function stripBasic(item){
+                for (var i in item.attributes){
+                    if(drawAttributes.basic[item.nodeName].some(x => x.prop == i))
+                    { delete item.attributes[i]; }
+                };
+
+                return item;
         }
 
         function checkPresentationalAttr(item){
@@ -62,12 +77,10 @@
         }
 
         function checkSpecific(item){
-            var arrayToPipe = [];
             var res = (drawAttributes.basic[item.nodeName] )?
                 drawAttributes.basic[item.nodeName].filter(r => {
                     
-
-                    var result =  Object.keys(item.attributes)
+                    return  Object.keys(item.attributes)
                      .every((itemAttr , i , arr) => {
                         if(r.renderOpt)
                         return false;
@@ -75,18 +88,19 @@
                         return itemAttr != r.prop ;
                     });
 
-                    return result;
+                  
                 })
                 .map( (x) => {
                     return{
                         issue:x.prop,
-                        type:'specific',
+                        type:'basic attribute missing',
                         hashEl: item.hashSvg
                     }
                 }):
                 [];
 
             return res
+
         };
     }
 })();

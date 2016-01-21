@@ -217,7 +217,7 @@ describe('drawExceptFactory',function(){
 													        cy   :55,
 													         /*r    :3*/
 													        fill : 'red',
-													        stroke:'blue'
+													        strike:'blue'
 												 			},
 												 childNodes:[]
 												}
@@ -236,8 +236,15 @@ describe('drawExceptFactory',function(){
 									},
 
 								];
-	drawExceptFactory.checkExc();
-	expect(drawExceptFactory.list.specific.length).toBe(3);
+		drawExceptFactory.checkExc();
+		expect(drawExceptFactory.list.basic.length).toBe(3);
+		expect(drawExceptFactory.list.presentational.length).toBe(1);
+		expect(drawExceptFactory.list.presentational[0]).toEqual(
+		{
+	        issue:'strike',
+	        type:' not presentational attribute',
+	        hashEl: 1
+	    });
 	
 
 	})
