@@ -51,16 +51,18 @@ describe('directives testing', function() {
       });
 
       describe('draw-except', function(){
-        var drawExceptFactory, pElem;
-        beforeEach(inject(function($rootScope,$compile,_drawExceptFactory_){
+        var drawValidation, pElem;
+        beforeEach(inject(function($rootScope,$compile,_drawValidation_){
             scope = $rootScope.$new();
-            drawExceptFactory = _drawExceptFactory_;
-            drawExceptFactory.list = [
-            {issue:'first'},
-            {issue:'second'},
-            ];
+            drawValidation = _drawValidation_;
+            drawValidation.list = {
+              specific:[
+                      {issue:'first'},
+                      {issue:'second'},
+                      ]
+            };
             //better block call to checkExc
-            spyOn(drawExceptFactory, 'checkExc').andReturn(null);
+            spyOn(drawValidation, 'checkExc').andReturn(null);
             
             elem = angular.element('<draw-except></draw-except>');
             $compile(elem)(scope);

@@ -450,16 +450,16 @@ angular
 })();
 // directive that dialogs with user showing exceptions on attributes names
 // or common value types
-// that are being stored in the drawExceptFactory
+// that are being stored in the drawValidation
 (function(){
 	'use strict';
 	angular
 		.module('draw.path')
 		.directive('drawExcept' , drawExcept);
 
-	drawExcept.$inject = ['drawExceptFactory','drawDataFactory'];
+	drawExcept.$inject = ['drawValidation','drawDataFactory'];
 
-	function drawExcept(drawExceptFactory,drawDataFactory){
+	function drawExcept(drawValidation,drawDataFactory){
 		return {
 			restrict:'EA',
 			template:
@@ -468,21 +468,21 @@ angular
 			"	<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError($index)'></span>"+
 			"</div>",
 			controllerAs:'exc',
-			controller: function($scope,drawExceptFactory,drawDataFactory){
+			controller: function($scope,drawValidation,drawDataFactory){
 				var self = this;
-				this.list = drawExceptFactory.list;
+				this.list = drawValidation.list;
 				
 				$scope.$watch(exceptList,function(){
 					
-					drawExceptFactory.checkExc();
-					self.list = drawExceptFactory.list.specific;
+					drawValidation.checkExc();
+					self.list = drawValidation.list.specific;
 				});
 				
 				function exceptList(){
 					return drawDataFactory.node;
 				}
 				
-				this.deleteError = drawExceptFactory.deleteError;
+				this.deleteError = drawValidation.deleteError;
 			}
 		};
 	}
@@ -587,24 +587,20 @@ angular
 //directive for drawing points inside the drawPath directive
 
 (function(){
-
+'use strict';
   angular
     .module('draw.path')
     .directive('drawPoints',drawPoints)
       
       function drawPoints(){
         return {
-          restrict:'EA',
-          controller:'DrawPointsCtrl',
-          controllerAs:'dpc',
-          // scope:{
-          //   points:'='
-          // },
+          restrict:'A',
+          scope:{
+            points:'='
+          },
           template:
-          '<g ng-repeat="segment in dpc.points track by $index" >'+
-          '   <g ng-repeat="p in segment.list track by $index" >'+
-          '      <draw-single-point point="p" ></draw-single-point>'+
-          '   </g>'+
+          '<g ng-repeat="el in points track by $index" >'+
+          '   <g ng-repeat="p in el track by $index" draw-single-point point="p">'+
           '</g>',
           // template:
           // '<g ng-repeat="segment in dpc.points track by $index" >'+
@@ -612,12 +608,34 @@ angular
           // '      <draw-single-point point="p" ></draw-single-point>'+
           // '   </g>'+
           // '</g>',
-          link:function(scope,el){
-            console.log(scope,el)
-            scope.$watch('dpc.points',function(n){
-              console.log(n);
-            },true)
-          }
+          
+          // link:function(scope,el){
+          //   console.log(scope,el)
+          //   scope.$watch('dpc.points',function(n){
+          //     console.log(n);
+          //   },true)
+          // },
+
+          // controller:'DrawPointsCtrl',
+          // controllerAs:'dpc',
+          // controller:function($scope, drawDisassemble){
+          //   $scope.points = drawDisassemble.structure;
+
+          //   var  watchStructure = function(){
+          //     return drawDisassemble.structure;
+          //   }
+
+          //   $scope.$watch( watchStructure() ,
+          //     function(n){
+          //       $scope.points = n ;
+          //       console.log(42)
+          //     },true);
+
+
+
+
+          // }
+
           };
       };
 
@@ -625,6 +643,7 @@ angular
 })();
 //directive for drawing single point inside the drawPath directive
 (function () {
+    'use strict';
     angular
         .module('draw.path')
         .directive('drawSinglePoint', drawSinglePoint);
@@ -718,7 +737,8 @@ angular
             
             /*the setNode method sets data in drawDataFactory,
               we store the node that's been compiled by angular*/
-             drawDataFactory.setNode(inner) ; 
+             drawDataFactory.setNode(inner) ;
+             /**********this starts some woggieboggie*********/ 
             }
           );
         };
@@ -1167,6 +1187,8 @@ function drawVector(){
 
 			function mapNode(node){
 				function mappedAttributes(nA){
+					// this regex strips out wrong attributes compiled by angular
+					// but it probably will fail in some situations 
 					var patt = /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;
 					if(nA)
 					return [].slice.call(nA).reduce( ( acc , x )=> {
@@ -1204,113 +1226,202 @@ function drawVector(){
 			n.replace(nodePat)
 
 		}*/
-(function() {
-    'use strict';
+//drawDeconstruct service
+(function(){
+	'use strict';
 
-    angular
-        .module('draw.path')
-        .factory('drawExceptFactory', drawExceptFactory);
+	angular
+		.module('draw.path')
+		.factory('drawDeconstruct',drawDeconstruct);
 
-    drawExceptFactory.$inject = ['drawDataFactory','drawAttributes'];
+	drawDeconstruct.$inject = ['drawDisassemble'];
 
-    function drawExceptFactory(drawDataFactory,drawAttributes) {
+	function drawDeconstruct(drawDisassemble){
 
-        var service = {
-           list:[],
-           deleteError: deleteError,
-           checkExc :checkExc,
-      
-        };
-        return service;
+		var dCData = {
+			structure:[],
+			parseBasic:parseBasic,
+		};
+		return dCData;
 
-        function deleteError(i){
-            service.list.splice(i,1);
-        }
-        function checkExc(){
-            //reset list
-            var checkList= {};
-            checkList.basic=[];
-            checkList.presentational=[];
+		function parseBasic(a){
+			    // a is being piped from drawValidation and is an array of {objects
+			    // one for each propertyCheck..
+			       /*      a:type = 
+                  [
+                     {
+                     propertyCheck:cx,
+                     item:{}
+                     },
+                     {
+                     propertyCheck:cy,
+                     item:{}
+                     },
+                  ]
+           			 returns [{basicValueEr},[destructuredData]]
+                  */
 
-            drawDataFactory.node.forEach(x => checkItem(x) );
-            
-            service.list= checkList;
+				if(!a){
+				console.log('if we get here let me know');
+				return}
+        	
+			
 
-           function checkItem(item){
-                /*do it recursivly on childNodes if any*/
-                if (item.childNodes.length  >  0)
-                item.childNodes.forEach((c) => checkItem(c) );
+	          // res is piped back to drawValidation.checkItem with a boolean value 
+	          // indicating that the property-value is valid   
+	        var res = a.map( (x,i,arr) => {
 
-                /*********************************************/
-                //check if basic per-element rendering properties are present
-                var basic =  checkSpecific(item);
-                checkList.basic = checkList.basic.concat(basic);
+	                //depending on the the x.propertyCheck we need to validate specifically (validity function )
+	                var test = validity( x.propertyCheck , x.item.attributes[x.propertyCheck] );
 
-                /*********************************************/
-                //copy the nodeitem, strip out the basic attributes,
-                //check presentational
-                var itemcopy = stripBasic(item)
-                
-                var present = checkPresentationalAttr(itemcopy);
-                checkList.presentational = checkList.presentational.concat(present);
-            
+	                var response = {
+	                	property : x.propertyCheck,
+	                	valid    : test,
+	                	hashSvg  : x.item.hashSvg
+	                };
+	                
+					/*****************************\
+					 if test passes create an argument to pass to
+					 structureNode and fire it off !!
+					\*****************************/
+		            if(test){
+		                var rawData = {
+		                	hashSvg  : x.item.hashSvg,
+		                	nodeName : x.item.nodeName,
+		                	basicAttr: x.propertyCheck,
+		                	item     : x.item
+		                };
+		                structureNode(rawData);
+		            }
+		            /**********************************/
+	                return response;
+	         }); 
 
-            }
-        }
+	        return res;
+		}
 
-        function stripBasic(item){
-                for (var i in item.attributes){
-                    if(drawAttributes.basic[item.nodeName].some(x => x.prop == i))
-                    { delete item.attributes[i]; }
-                };
+		function structureNode(rd){
+			// @exem return {hashSvg: number, pointRappr:[] }
+			var response = drawDisassemble[rd.nodeName](rd);
+			dCData.structure[response.hashSvg] = response.pointRappr;
+		};
 
-                return item;
-        }
 
-        function checkPresentationalAttr(item){
-            return Object.keys(item.attributes).filter(x => {
-                    return drawAttributes.present.every(a => {
-                        return a !== x;
-                    })
-                })
-                .map( (x) => {
-                    return{
-                        issue:x,
-                        type:' not presentational attribute',
-                        hashEl: item.hashSvg
-                    }
-                });
-        }
+		function validity(attr,value){
+			validity.lenPatt = /^(cy|cx|r|rx|ry|x|x1|x2|y|y1|y2|height|width)+?$/
+			if( validity.lenPatt.test(attr) )
+			return lengthValid(value);
 
-        function checkSpecific(item){
-            var res = (drawAttributes.basic[item.nodeName] )?
-                drawAttributes.basic[item.nodeName].filter(r => {
-                    
-                    return  Object.keys(item.attributes)
-                     .every((itemAttr , i , arr) => {
-                        if(r.renderOpt)
-                        return false;
+			if( attr === 'd')
+				;
 
-                        return itemAttr != r.prop ;
-                    });
+			if( attr === 'points')
+				;
+		}
 
-                  
-                })
-                .map( (x) => {
-                    return{
-                        issue:x.prop,
-                        type:'basic attribute missing',
-                        hashEl: item.hashSvg
-                    }
-                }):
-                [];
+		function lengthValid(x) {
+			lengthValid.patt =  /^[\d]+(.\d+?)?((em|ex|px|in|cm|mm|pt|pc|%)+?)?$/;
 
-            return res
+      		if (typeof x === 'string')
+			x.trim();
 
-        };
-    }
+			return lengthValid.patt.test(x);
+		}
+ 
+
+	}
 })();
+// disassemble factory
+(function(){
+	'use strict';
 
+	angular
+		.module('draw.path')
+		.factory('drawDisassemble',drawDisassemble);
+
+	function drawDisassemble(){
+		var service = {
+			circle  : circle,
+			ellipse : ellipse,
+			line    : line,
+			path    : path,
+			polygon : polygon,
+			polyline: polyline,
+			rect    : rect,
+		};
+		return service;
+
+		function circle(o){
+			var attr= o.item.attributes;
+			var center   = (attr.cx && attr.cy)?
+			{ x:attr.cx ,  y:attr.cy}:
+			null;
+			var radPoint = (attr.r && center )?
+			{ x:sum(attr.cx,attr.r)  , y:attr.cy}:
+			null;
+
+			return {
+				hashSvg: o.hashSvg,
+				pointRappr: [center, radPoint]
+			};
+		}
+		function ellipse(o){
+			var attr= o.item.attributes;
+			var center   = (attr.cx && attr.cy)?
+			{ x:attr.cx ,  y:attr.cy}:
+			null;
+			var radPointX = (attr.rx && center )?
+			{ x:sum(attr.cx,attr.rx)  , y:attr.cy}:
+			null;
+			var radPointY = (attr.ry && center )?
+			{ x:attr.cx,  y:sum(attr.cy,attr.ry) }:
+			null;
+
+			return {
+				hashSvg: o.hashSvg,
+				pointRappr: [center, radPointX, radPointY]
+			};
+		}
+		function line(o){
+			var attr= o.item.attributes;
+			var x = (attr.x1  &&  attr.x2)?
+			{ x:attr.x1 , y:attr.x2 }:
+			null ;
+			var y = (attr.y1  &&  attr.y2)?
+			{ x:attr.y1 , y:attr.y2 }:
+			null ;
+
+			return {
+				hashSvg: o.hashSvg,
+				pointRappr: [ x, y ]
+			};
+		}
+		function rect(o){
+			var attr= o.item.attributes;
+			var start = (attr.x  &&  attr.y)?
+			{ x:attr.x , y:attr.y }:
+			null ;
+			var end = (start && attr.width  &&  attr.height)?
+			{ x:sum( attr.x, attr.width) , y:sum( attr.y, attr.height) }
+			: null ;
+
+			return {
+				hashSvg: o.hashSvg,
+				pointRappr: [ start, end ]
+			};
+		}
+		function path(o){}
+		function polygon(o){}
+		function polyline(o){}
+		
+
+		function sum(a,b){
+			//toDo we will need to consider unit values
+			return +a + +b;
+		}
+	}
+
+})();
 (function(){
 	angular
 		.module('draw.path')
@@ -1489,6 +1600,149 @@ function drawService($filter){
 }
 
 })();
+(function() {
+    'use strict';
+
+    angular
+        .module('draw.path')
+        .factory('drawValidation', drawValidation);
+
+    drawValidation.$inject = ['drawDataFactory','drawAttributes','drawDeconstruct'];
+
+    function drawValidation(drawDataFactory,drawAttributes,drawDeconstruct) {
+
+        var service = {
+           list:[],
+           deleteError: deleteError,
+           checkExc :checkExc,
+      
+        };
+        return service;
+
+        function deleteError(i){
+            service.list.splice(i,1);
+        }
+        function checkExc(){
+            //reset list
+            var checkList= {};
+            checkList.basic=[];
+            checkList.basicValues=[];
+            checkList.presentational=[];
+
+            drawDataFactory.node.forEach(x => checkItem(x) );
+            
+            service.list= checkList;
+
+           function checkItem(item){
+                /*do it recursivly on childNodes if any*/
+                if (item.childNodes.length  >  0)
+                item.childNodes.forEach((c) => checkItem(c) );
+
+                /*********************************************/
+                //check if basic per-element rendering properties are present
+                var basicTestValues =  checkSpecific(item);
+
+                var basicTest =  basicTestValues[0];
+                checkList.basic = checkList.basic.concat(basicTest);
+                
+                // basic values that are present are sent to destructioring service
+                // this will eventually comunicate any errors on values,
+                // if there's no error the destructioring service uses the value
+                // to populate the GUI with points / mouseevents
+                var basicVals =  basicTestValues[1];
+                var basicValueErr = drawDeconstruct.parseBasic(basicVals);
+                checkList.basicValues = checkList.basicValues.concat(basicValueErr);
+
+               
+                /*********************************************/
+                //copy the nodeitem, strip out the basic attributes,
+                //check presentational
+                var itemcopy = stripBasicAttr(item);
+                
+                var present = checkPresentationalAttr(itemcopy);
+                checkList.presentational = checkList.presentational.concat(present);
+            
+
+            }
+        }
+        //utility of chechItem
+        function stripBasicAttr(item){
+                /* for (var i in item.attributes){
+                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
+                    if(test)
+                    { delete item.attributes[i]; }
+                }
+                return item;*/
+
+                if ( drawAttributes.basic[item.nodeName] )
+                Object.keys(item.attributes).forEach( i => {
+                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
+                    if(test)
+                    { delete item.attributes[i]; }
+                });
+                return item;
+
+
+                
+        }
+        //utility of chechItem
+        function checkPresentationalAttr(item){
+            return Object.keys(item.attributes).filter(x => {
+                    return drawAttributes.present.every(a => {
+                        return a !== x;
+                    });
+                })
+                .map( (x) => {
+                    return{
+                        issue:x,
+                        type:' not presentational attribute',
+                        hashEl: item.hashSvg
+                    };
+                });
+        }
+        //utility of checkItem
+        function checkSpecific(item){
+            var res = [];
+            //res[0] returns check on keys
+            //res[1] returns check on values
+            res[1]= [];
+            res[0]= (drawAttributes.basic[item.nodeName] )?
+                     drawAttributes.basic[item.nodeName].filter(r => {
+                        
+                        var result =  Object.keys(item.attributes)
+                         .every((itemAttr , i , arr) => {
+                            if(r.renderOpt)
+                            return false;
+
+                            return (itemAttr != r.prop);
+                        });
+
+                        if (!result)
+                        {  res[1].push(r);  }
+
+                        return result;
+                    })
+                    .map( (x) => {
+                        return{
+                            issue:x.prop,
+                            type:'basic attribute missing',
+                            hashEl: item.hashSvg
+                        };
+                    }):
+                    [];
+                //creating a map to pipe to next checkpoint
+                //( that will check the basicAttr values )
+                res[1] = res[1].map((x) =>{
+                        return {
+                            propertyCheck:x.prop,
+                            item:item
+                        };
+                });
+            return res;
+        }
+    }
+})();
+
 (function(){
 	angular
 		.module('draw.path')

@@ -65,7 +65,7 @@ describe('service', function() {
 
 		expect(drawService.points[0]).toEqual(
 		{type:'M',list:[[90,190]] }
-		)
+		);
 		//expect(drawService.points).toContain([90,190]);
 
 	});
@@ -85,7 +85,7 @@ it('should populate the array with an Fragment "L" on second mouseup an mousedow
 		drawService.mousedown(e2);
 		drawService.mouseupLine(e2);
 		
-		expect(drawService.points[1].type).toEqual('L')
+		expect(drawService.points[1].type).toEqual('L');
 
 
 
@@ -178,31 +178,29 @@ describe('drawDataFactory',function(){
 
 
 })
-describe('drawExceptFactory',function(){
-	var drawExceptFactory, drawDataFactory,scope ;
+describe('drawValidation',function(){
+	var drawValidation, drawDataFactory,scope ;
 		beforeEach(function(){
 			module('draw.path');
 
-			inject(function(_drawExceptFactory_,_drawDataFactory_,$rootScope){
-				drawExceptFactory = _drawExceptFactory_;
+			inject(function(_drawValidation_,_drawDataFactory_){
+				drawValidation = _drawValidation_;
 				drawDataFactory = _drawDataFactory_;
-				scope = $rootScope
 			});
 
-			drawExceptFactory.list =[
+			drawValidation.list =[
 	            {error:'first'},
 	            {error:'second'},
 			];
-			scope.$digest();
 		});
 
 	it('should remove through deleteError mthod ',function(){
-		drawExceptFactory.deleteError(0);
-		expect(drawExceptFactory.list.length).toBe(1),
-		expect(drawExceptFactory.list[0].error).toBe('second')
+		drawValidation.deleteError(0);
+		expect(drawValidation.list.length).toBe(1),
+		expect(drawValidation.list[0].error).toBe('second')
 	});
 
-	iit('should check the drawDataFactory.node for errors',function(){
+	it('should check the drawDataFactory.node for errors',function(){
 		drawDataFactory.node =  [
 									{
 									 nodeName :'g',
@@ -213,8 +211,8 @@ describe('drawExceptFactory',function(){
 												 nodeName :'circle',
 												 hashSvg: 1,
 												 attributes: {
-															cx   :44,
-													        cy   :55,
+															cx   :11,
+													        cy   :12,
 													         /*r    :3*/
 													        fill : 'red',
 													        strike:'blue'
@@ -227,8 +225,8 @@ describe('drawExceptFactory',function(){
 									 nodeName :'ellipse',
 									 hashSvg: 2,
 									 attributes: {
-									 	cx   :44,
-								        cy   :55,
+									 	cx   :21,
+								        cy   :22,
 							         	/*rx    :3*/
 							     		/*ry    :3*/
 							     		},
@@ -236,10 +234,10 @@ describe('drawExceptFactory',function(){
 									},
 
 								];
-		drawExceptFactory.checkExc();
-		expect(drawExceptFactory.list.basic.length).toBe(3);
-		expect(drawExceptFactory.list.presentational.length).toBe(1);
-		expect(drawExceptFactory.list.presentational[0]).toEqual(
+		drawValidation.checkExc();
+		expect(drawValidation.list.basic.length).toBe(3);
+		expect(drawValidation.list.presentational.length).toBe(1);
+		expect(drawValidation.list.presentational[0]).toEqual(
 		{
 	        issue:'strike',
 	        type:' not presentational attribute',
@@ -252,5 +250,56 @@ describe('drawExceptFactory',function(){
 
 
 
+
+});
+
+describe('drawDeconstructFactory',function(){
+	var drawDeconstruct;
+
+	var pipedArgFor1Element = [
+						{
+							propertyCheck: 'cy',
+							item:{
+								nodeName: 'circle',
+								hashSvg: 1,
+								attributes: {
+									cx   :44,
+									cy   :55,
+									r    :9
+								},
+								childNodes: []
+							}
+						},
+						// {
+						// 	propertyCheck: 'cx',
+						// 	item:{
+						// 		nodeName: 'circle',
+						// 		hashSvg: 1,
+						// 		attributes: {
+						// 			cx   :44,
+						// 			cy   :55,
+						// 			r    :9
+						// 		},
+						// 		childNodes: []
+						// 	}
+						// },
+
+					];
+
+	beforeEach(function(){
+		module('draw.path');
+
+		inject(function(_drawDeconstruct_){
+			drawDeconstruct = _drawDeconstruct_;
+		});
+	});
+
+	it(' method parseBasic ',function(){
+	
+ 		drawDeconstruct.parseBasic(pipedArgFor1Element);
+		expect(drawDeconstruct.structure[1][0]).toEqual( { x : 44, y : 55 });
+		console.log(drawDeconstruct.structure)
+
+	})
 
 })

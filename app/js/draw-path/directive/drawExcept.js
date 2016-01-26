@@ -1,15 +1,15 @@
 // directive that dialogs with user showing exceptions on attributes names
 // or common value types
-// that are being stored in the drawExceptFactory
+// that are being stored in the drawValidation
 (function(){
 	'use strict';
 	angular
 		.module('draw.path')
 		.directive('drawExcept' , drawExcept);
 
-	drawExcept.$inject = ['drawExceptFactory','drawDataFactory'];
+	drawExcept.$inject = ['drawValidation','drawDataFactory'];
 
-	function drawExcept(drawExceptFactory,drawDataFactory){
+	function drawExcept(drawValidation,drawDataFactory){
 		return {
 			restrict:'EA',
 			template:
@@ -18,21 +18,21 @@
 			"	<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError($index)'></span>"+
 			"</div>",
 			controllerAs:'exc',
-			controller: function($scope,drawExceptFactory,drawDataFactory){
+			controller: function($scope,drawValidation,drawDataFactory){
 				var self = this;
-				this.list = drawExceptFactory.list;
+				this.list = drawValidation.list;
 				
 				$scope.$watch(exceptList,function(){
 					
-					drawExceptFactory.checkExc();
-					self.list = drawExceptFactory.list.specific;
+					drawValidation.checkExc();
+					self.list = drawValidation.list.specific;
 				});
 				
 				function exceptList(){
 					return drawDataFactory.node;
 				}
 				
-				this.deleteError = drawExceptFactory.deleteError;
+				this.deleteError = drawValidation.deleteError;
 			}
 		};
 	}

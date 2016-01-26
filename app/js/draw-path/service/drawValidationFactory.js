@@ -3,11 +3,11 @@
 
     angular
         .module('draw.path')
-        .factory('drawValidationFactory', drawValidationFactory);
+        .factory('drawValidation', drawValidation);
 
-    drawValidationFactory.$inject = ['drawDataFactory','drawAttributes','drawDeconstruct'];
+    drawValidation.$inject = ['drawDataFactory','drawAttributes','drawDeconstruct'];
 
-    function drawValidationFactory(drawDataFactory,drawAttributes,drawDeconstruct) {
+    function drawValidation(drawDataFactory,drawAttributes,drawDeconstruct) {
 
         var service = {
            list:[],
@@ -38,17 +38,19 @@
 
                 /*********************************************/
                 //check if basic per-element rendering properties are present
-                var basic =  checkSpecific(item)[0];
-                checkList.basic = checkList.basic.concat(basic);
-                
-                //if they're present hand of values to destructioring service
-                //this will eventually comunicate any errors
-                //if there's no error the destructioring service uses the value
-                //to populate the GUI with points / mouseevents
-                
-                var basicValues =  checkSpecific(item)[1];
+                var basicTestValues =  checkSpecific(item);
 
-                drawDeconstruct.parseBasic(basicValues)
+                var basicTest =  basicTestValues[0];
+                checkList.basic = checkList.basic.concat(basicTest);
+                
+                // basic values that are present are sent to destructioring service
+                // this will eventually comunicate any errors on values,
+                // if there's no error the destructioring service uses the value
+                // to populate the GUI with points / mouseevents
+                var basicVals =  basicTestValues[1];
+                var basicValueErr = drawDeconstruct.parseBasic(basicVals);
+                checkList.basicValues = checkList.basicValues.concat(basicValueErr);
+
                
                 /*********************************************/
                 //copy the nodeitem, strip out the basic attributes,
@@ -61,38 +63,49 @@
 
             }
         }
-
+        //utility of chechItem
         function stripBasicAttr(item){
-                for (var i in item.attributes){
-                    if(drawAttributes.basic[item.nodeName].some(x => x.prop == i))
+                /* for (var i in item.attributes){
+                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
+                    if(test)
                     { delete item.attributes[i]; }
-                };
-                return item;
-        }
+                }
+                return item;*/
 
+                if ( drawAttributes.basic[item.nodeName] )
+                Object.keys(item.attributes).forEach( i => {
+                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
+                    if(test)
+                    { delete item.attributes[i]; }
+                });
+                return item;
+
+
+                
+        }
+        //utility of chechItem
         function checkPresentationalAttr(item){
             return Object.keys(item.attributes).filter(x => {
                     return drawAttributes.present.every(a => {
                         return a !== x;
-                    })
+                    });
                 })
                 .map( (x) => {
                     return{
                         issue:x,
                         type:' not presentational attribute',
                         hashEl: item.hashSvg
-                    }
+                    };
                 });
         }
-
+        //utility of checkItem
         function checkSpecific(item){
             var res = [];
             //res[0] returns check on keys
             //res[1] returns check on values
-            res[1] = [];
+            res[1]= [];
             res[0]= (drawAttributes.basic[item.nodeName] )?
-                    drawAttributes.basic[item.nodeName].filter(r => {
-                        
+                     drawAttributes.basic[item.nodeName].filter(r => {
                         
                         var result =  Object.keys(item.attributes)
                          .every((itemAttr , i , arr) => {
@@ -103,33 +116,27 @@
                         });
 
                         if (!result)
-                        {res[1].push(r)}
-
-                    
+                        {  res[1].push(r);  }
 
                         return result;
-
-                      
                     })
                     .map( (x) => {
                         return{
                             issue:x.prop,
                             type:'basic attribute missing',
                             hashEl: item.hashSvg
-                        }
+                        };
                     }):
                     [];
-                //creating a map to pipe to next checkpoint( that will actually check the basicAttr  values )
+                //creating a map to pipe to next checkpoint
+                //( that will check the basicAttr values )
                 res[1] = res[1].map((x) =>{
                         return {
                             propertyCheck:x.prop,
                             item:item
-                        }
+                        };
                 });
-                
-                
-            return res
-
-        };
+            return res;
+        }
     }
 })();

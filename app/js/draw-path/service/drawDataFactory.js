@@ -47,6 +47,8 @@
 
 			function mapNode(node){
 				function mappedAttributes(nA){
+					// this regex strips out wrong attributes compiled by angular
+					// but it probably will fail in some situations 
 					var patt = /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;
 					if(nA)
 					return [].slice.call(nA).reduce( ( acc , x )=> {

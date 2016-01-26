@@ -1,5 +1,6 @@
 //directive for drawing single point inside the drawPath directive
 (function () {
+    'use strict';
     angular
         .module('draw.path')
         .directive('drawSinglePoint', drawSinglePoint);
