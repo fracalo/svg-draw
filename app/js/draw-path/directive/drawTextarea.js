@@ -6,18 +6,64 @@
     .module('draw.path')
     .directive('drawTextarea',drawTextarea);
 
+    drawTextarea.$inject = ['drawData'];
+
     function drawTextarea(){
 
-       return {
-          restrict:'AE',
-          replace: false,
-          scope: {
-            code:'='
-          },
-          template:
-          "<label name='code'>SVG-Code </label>"+
-          "<textarea name='code' ng-model='code' ></textarea>",
-          // controller:function(
+        return {
+            restrict:'AE',
+            replace: false,
+            scope: {
+                code:'='
+            },
+            template:
+            "<label name='code'>SVG-Code </label>"+
+            "<textarea name='code' ng-model='inside.code' ></textarea>",
+            controllerAs:'inside',
+            controller:function($scope, $timeout,$rootScope,drawData){
+
+                var wait, lastValid;
+                var inside = this;
+                this.code = $scope.code;
+                $scope.$watch('code',function(n,o){
+                    inside.code = n;
+                })
+
+                $scope.$watch(
+                    'inside.code',
+                    function(n,o){
+                          
+                        //cancel $timeout if exists
+                        if(wait){
+                          $timeout.cancel(wait);
+                          wait = null;
+                        }
+                        //crate a lastValid code before starting to type
+                        if(!lastValid){
+                          lastValid = o;
+                        }
+
+
+                        // add a timeout for waiting typing
+                        wait = $timeout( function(){
+                            $scope.code = n;
+                        }  , 900);
+                    }
+                );
+
+                $rootScope.$on('pointMove',function(){
+                    var res = drawData.getStr();
+                    console.log('saluts!!' , res);
+
+
+                })
+            }
+        };
+    }
+
+})();
+
+     // controller:function(
           //   $scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,codeInput,exception){
        
           /*watch changes in drawPoints factory(mouse events or other inputs)*/
@@ -127,7 +173,3 @@
         //       };
             
         //   },
-      };
-
-    }
-})();

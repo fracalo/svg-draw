@@ -6,7 +6,7 @@
  angular.module('svgFiddleControllers', [])
 
 
-.controller('RootCtrl',function($scope,drawDataFactory, drawDeconstruct){
+.controller('RootCtrl',function($scope,drawData, drawDeconstruct){
   var self = this;
   
   this.status={
@@ -25,36 +25,18 @@
    this.code = a;
  };
 
-  this.testArr=[
-  {x:11,y:22,color:'red'},
-  {x:21,y:22,color:'red'},
-  {x:31,y:22,color:'red'},
-  {x:41,y:22,}
-  ]; 
-
+/**** this rappresents the value for points (should be integrated in another way)****/
   var  watchNode = function(){
-              return drawDataFactory.node;
+              // return drawData.node;
+              return drawDeconstruct.structure;
             }
 
   $scope.$watch( watchNode ,
       ()=>{
         this.points = drawDeconstruct.structure ;
-        console.log(21)
-    });
+    },true);
 
-  this.points=[
-    [
-    {x:22,y:22},
-    {x:32,y:32},
-    {x:42,y:42,color:'red'},
-    ],   
-    [
-    {x:22,y:122},
-    {x:32,y:132},
-    {x:42,y:142,color:'red'},
-    ],
- 
-  ];
+
 
 });
 

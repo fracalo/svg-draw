@@ -457,9 +457,9 @@ angular
 		.module('draw.path')
 		.directive('drawExcept' , drawExcept);
 
-	drawExcept.$inject = ['drawValidation','drawDataFactory'];
+	drawExcept.$inject = ['drawValidation','drawData'];
 
-	function drawExcept(drawValidation,drawDataFactory){
+	function drawExcept(drawValidation,drawData){
 		return {
 			restrict:'EA',
 			template:
@@ -468,18 +468,19 @@ angular
 			"	<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError($index)'></span>"+
 			"</div>",
 			controllerAs:'exc',
-			controller: function($scope,drawValidation,drawDataFactory){
+			controller: function($scope,drawValidation,drawData){
 				var self = this;
 				this.list = drawValidation.list;
 				
 				$scope.$watch(exceptList,function(){
 					
+					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
 					drawValidation.checkExc();
 					self.list = drawValidation.list.specific;
 				});
 				
 				function exceptList(){
-					return drawDataFactory.node;
+					return drawData.node;
 				}
 				
 				this.deleteError = drawValidation.deleteError;
@@ -647,8 +648,9 @@ angular
     angular
         .module('draw.path')
         .directive('drawSinglePoint', drawSinglePoint);
-    drawSinglePoint.$inject = ['$document', '$rootScope'];
-    function drawSinglePoint($document, $rootScope) {
+    drawSinglePoint.$inject = ['$document', '$rootScope','drawDeconstruct', 'drawPointRelation'];
+
+    function drawSinglePoint($document, $rootScope, drawDeconstruct ,drawPointRelation) {
         return {
             restrict: 'A',
             replace: true,
@@ -659,11 +661,11 @@ angular
                 'ng-mousedown="$event.stopPropagation()" ' +
                 'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' +
                 'r="3" fill="{{point.color}}" index={{$index}} />',
-            link: function (scope, el, attr, drawPath) {
+            link: function (scope, el, attr) {
                 scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
                 var startX, startY;
                 var sketchEl = $document;
-                var grannyIndex = scope.$parent.$parent.$index;
+                var grannyIndex = scope.point.hashSvg; //scope.$parent.$parent.$index;//will use hashsvg for tracking element
                 var parentIndex = scope.$parent.$index;
                 //change pointer when onover
                 el.on('mouseover', function (ev) {
@@ -684,22 +686,59 @@ angular
                     sketchEl.on('mousemove', mousemove);
                     sketchEl.on('mouseup', mouseup);
                 });
+
+                var org,relRes;
+                $rootScope.$on('pointMove',function(_,a){
+                   org = { 
+                        point   :{x:Number(el.attr('cx')), y:Number(el.attr('cy'))},
+                        elemHash:   grannyIndex,
+                        index   :   parentIndex
+                    };
+                    relRes = drawPointRelation.relate(org,a);
+                    
+                    if( relRes )
+                    el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
+
+                });
+
+                var res, moveX, moveY,startPoint;
                 function mousemove(ev) {
                     ev.stopPropagation();
-                    var moveX = ev.pageX - startX;
-                    var moveY = ev.pageY - startY;
+                    moveX = ev.pageX - startX;
+                    moveY = ev.pageY - startY;
+
+                    startPoint = { x: el.attr('cx') , y: el.attr('cy') } ;
+
                     el.attr('cx', moveX);
                     el.attr('cy', moveY);
-                    //scope.point= [ moveX , moveY ];
-                    //drawPath.artboard.points[scope.$parent.$index]=[moveX,moveY];//rather pass this in the message
-                    //we're going to shoot the move coordinates in the air
-                    $rootScope.$emit("pointMove", [[Number(el.attr('cx')), Number(el.attr('cy'))], grannyIndex, parentIndex]);
+
+                    res = { 
+                        point   :{x:Number(el.attr('cx')), y:Number(el.attr('cy'))},
+                        elemHash:   grannyIndex,
+                        index   :   parentIndex,
+                        start   :   startPoint,
+                    };
+
+                    $rootScope.$emit("pointMove", res );//this event is for -> drawSvg
+                    drawDeconstruct.movement(res);      //this is for the service directly 
+
                 }
                 function mouseup(ev) {
                     ev.stopPropagation();
-                    scope.point.x = el.attr('cx');
-                    scope.point.y = el.attr('cy');
-                    scope.$emit("pointMove", [[Number(el.attr('cx')), Number(el.attr('cy'))], grannyIndex, parentIndex]);
+                    scope.point.x = startPoint.x = el.attr('cx');
+                    scope.point.y = startPoint.y = el.attr('cy');
+                    
+                    res = { 
+                        point   :{x:Number(el.attr('cx')), y:Number(el.attr('cy'))},
+                        elemHash:   grannyIndex,
+                        index   :   parentIndex,
+                        start   :   startPoint,
+                        mouseup :   true
+                    };
+
+                    $rootScope.$emit("pointMove", res );
+                    drawDeconstruct.movement(res);
+
                     sketchEl.off('mousemove', mousemove);
                     sketchEl.off('mouseup', mouseup);
                     el.css({
@@ -720,12 +759,12 @@ angular
     .module('draw.path')
     .directive('drawSvg',drawSvg);
 
-    drawSvg.$inject =['$compile', 'drawDataFactory'];
+    drawSvg.$inject =['$compile', 'drawData','$rootScope'];
       
-      function drawSvg($compile, drawDataFactory){
+      function drawSvg($compile, drawData, $rootScope){
         return function(scope, element, attrs) {
           scope.$watch(
-            function(scope) {
+            function() {
                // watch  'code' expression for changes
               return scope.$eval(attrs.drawSvg);
             },
@@ -735,12 +774,17 @@ angular
               $compile(inner);/*(scope)*/
               /* we don't need scope as it's just reactiong to external changes*/
             
-            /*the setNode method sets data in drawDataFactory,
+            /*the setNode method sets data in drawData,
               we store the node that's been compiled by angular*/
-             drawDataFactory.setNode(inner) ;
+             drawData.setNode(inner,value) ;
              /**********this starts some woggieboggie*********/ 
-            }
-          );
+            });
+          
+         $rootScope.$on("pointMove",function(n, msg){
+          drawData.changeNode(msg)
+         })
+        
+          
         };
       }
 
@@ -753,18 +797,64 @@ angular
     .module('draw.path')
     .directive('drawTextarea',drawTextarea);
 
+    drawTextarea.$inject = ['drawData'];
+
     function drawTextarea(){
 
-       return {
-          restrict:'AE',
-          replace: false,
-          scope: {
-            code:'='
-          },
-          template:
-          "<label name='code'>SVG-Code </label>"+
-          "<textarea name='code' ng-model='code' ></textarea>",
-          // controller:function(
+        return {
+            restrict:'AE',
+            replace: false,
+            scope: {
+                code:'='
+            },
+            template:
+            "<label name='code'>SVG-Code </label>"+
+            "<textarea name='code' ng-model='inside.code' ></textarea>",
+            controllerAs:'inside',
+            controller:function($scope, $timeout,$rootScope,drawData){
+
+                var wait, lastValid;
+                var inside = this;
+                this.code = $scope.code;
+                $scope.$watch('code',function(n,o){
+                    inside.code = n;
+                })
+
+                $scope.$watch(
+                    'inside.code',
+                    function(n,o){
+                          
+                        //cancel $timeout if exists
+                        if(wait){
+                          $timeout.cancel(wait);
+                          wait = null;
+                        }
+                        //crate a lastValid code before starting to type
+                        if(!lastValid){
+                          lastValid = o;
+                        }
+
+
+                        // add a timeout for waiting typing
+                        wait = $timeout( function(){
+                            $scope.code = n;
+                        }  , 900);
+                    }
+                );
+
+                $rootScope.$on('pointMove',function(){
+                    var res = drawData.getStr();
+                    console.log('saluts!!' , res);
+
+
+                })
+            }
+        };
+    }
+
+})();
+
+     // controller:function(
           //   $scope, $filter, $timeout, drawPathAttr, drawVectorAttr, drawService,codeInput,exception){
        
           /*watch changes in drawPoints factory(mouse events or other inputs)*/
@@ -874,10 +964,6 @@ angular
         //       };
             
         //   },
-      };
-
-    }
-})();
 //directive for code in textarea
 
 (function(){
@@ -1019,6 +1105,210 @@ function drawVector(){
 };
 
 })();
+// drawAssemble is used to update a new string every time a certain attribute is modified.
+// utility of drawData
+// Process:
+// once drawDeconstruct.structure has changed we check what type of element we're dealing with (hash reference in drawData.node)
+// drawData.node is updated  (will be useful with tools)  
+// a newstring is created ready to be compiled by directive
+// [[I suppose it would be more performant to target the property directly instead of re-compiling -- using setAttribute]]
+(function(){
+	'use strict';
+
+	angular
+		.module('draw.path')
+		.factory('drawAssemble', drawAssemble);
+	
+	drawAssemble.$inject = ['drawDeconstruct'];
+
+	function drawAssemble(drawDeconstruct) {
+		// add methods on proto
+		if(SVGLength.prototype && !SVGLength.prototype.updateConvertSVGLen)
+		SVGLength.prototype.updateConvertSVGLen = function(v){
+			this.oldVal = this.unitType;
+			//TODO transform value and update after
+			this.newValueSpecifiedUnits(1, v);
+			this.convertToSpecifiedUnits(this.oldVal);
+		};
+
+		return {
+			path:path,
+			polygon:polygon,
+			polyline:polygon,
+			rect:rect,
+			circle:circle,
+			ellipse:ellipse,
+			line:line,
+		};
+		function path(p,obj){
+
+			path.pointByI = obj.pathDataPointList[p.index];
+			
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     =  p.point.x;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] =  p.point.y;
+
+			obj.domObj.setPathData(obj.pathData);
+		}
+		function polygon(p,obj){
+ console.log(obj.attributes)
+//TODO need to update obj.attributes.points  (the strnig)
+			obj.pointList.points[p.index].x = p.point.x;
+			obj.pointList.points[p.index].y = p.point.y;
+
+		}
+
+
+		function rect(p, obj){
+			var attrObj = obj.attributes;
+			var oldX, oldY ;
+
+			rect.start = function(p, attrObj){
+				oldX = obj.attrsLength.x.baseVal.value;
+				oldY = obj.attrsLength.y.baseVal.value;
+
+				attrObj.x = p.point.x;
+				attrObj.y = p.point.y;
+
+				obj.attrsLength.x.baseVal.updateConvertSVGLen(p.point.x);
+				obj.attrsLength.y.baseVal.updateConvertSVGLen(p.point.y);
+
+				//adjust end point
+				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldX;
+				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldY;
+
+
+			};
+			rect.end   = function(p, attrObj){
+				attrObj.width  = p.point.x - attrObj.x;
+				attrObj.height = p.point.y - attrObj.y;
+
+				obj.attrsLength.width.baseVal.updateConvertSVGLen(attrObj.width);
+				obj.attrsLength.height.baseVal.updateConvertSVGLen(attrObj.height);
+			};
+
+			if(p.index === 0)
+			return rect.start(p,attrObj);
+
+			return rect.end(p,attrObj);
+		}
+		function circle(p, obj){
+			var attrObj = obj.attributes;
+			var oldCx, oldCy ;
+
+			circle.center = function(p, attrObj){
+				oldCx = obj.attrsLength.cx.baseVal.value;
+				oldCy = obj.attrsLength.cy.baseVal.value;
+				
+				attrObj.cx = p.point.x;
+				attrObj.cy = p.point.y;
+
+				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
+				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				//adjust radius point
+				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
+				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
+			};
+
+			circle.rad = function(p, attrObj){
+				attrObj.r = pytha(
+					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
+					[p.point.x, p.point.y] );
+
+				obj.attrsLength.r.baseVal.updateConvertSVGLen( attrObj.r );
+			};
+
+			// check if it's the point responsible for center[0](cx and cy) or rad[1]
+			// and use corresponding function property
+			if (p.index === 0)
+			return circle.center(p,attrObj);
+			
+			return circle.rad(p,attrObj);
+		}
+
+		function ellipse(p, obj){
+			var attrObj = obj.attributes;
+			var oldCx, oldCy ;
+
+			ellipse.center = function(p, attrObj){
+				oldCx = obj.attrsLength.cx.baseVal.value;
+				oldCy = obj.attrsLength.cy.baseVal.value;
+				
+				attrObj.cx = p.point.x;
+				attrObj.cy = p.point.y;
+
+				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
+				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				//adjust both radius point
+				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
+				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
+				drawDeconstruct.structure[obj.hashSvg][2].x += p.point.x - oldCx;
+				drawDeconstruct.structure[obj.hashSvg][2].y += p.point.y - oldCy;
+			};
+
+			ellipse.radX = function(p, attrObj){
+				attrObj.rx = pytha(
+					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
+					[p.point.x, p.point.y] );
+
+				obj.attrsLength.rx.baseVal.updateConvertSVGLen( attrObj.rx );
+			};
+
+			ellipse.radY = function(p, attrObj){
+				attrObj.ry = pytha(
+					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
+					[p.point.x, p.point.y] );
+
+				obj.attrsLength.ry.baseVal.updateConvertSVGLen( attrObj.ry );
+			};
+
+			if (p.index === 0)
+			return ellipse.center(p,attrObj);
+			
+			if (p.index === 1)
+			return ellipse.radX(p,attrObj);
+
+			return ellipse.radY(p,attrObj);
+		}
+		function line(p, obj){
+			var attrObj = obj.attributes;
+
+			line.x = function(p, attrObj){
+				attrObj.x1 = p.point.x;
+				attrObj.y1 = p.point.y;
+				obj.attrsLength.x1.baseVal.updateConvertSVGLen(p.point.x);
+				obj.attrsLength.y1.baseVal.updateConvertSVGLen(p.point.y); 
+			};
+			line.y = function(p, attrObj){
+				attrObj.x2 = p.point.x;
+				attrObj.y2 = p.point.y;
+				obj.attrsLength.x2.baseVal.updateConvertSVGLen(p.point.x);
+				obj.attrsLength.y2.baseVal.updateConvertSVGLen(p.point.y); 
+
+			};
+			if (p.index === 0)
+			return line.x(p,attrObj);
+			
+			return line.y(p,attrObj);
+		}
+
+		function pytha(c,r){
+			return Math.sqrt( Math.pow(c[0]-r[0],2) + Math.pow(c[1]-r[1],2) ) | 0 ;
+		}
+		function absInt(x) { //https://jsperf.com/math-abs-vs-bitwise/7
+            return (x ^ (x >> 31)) - (x >> 31);
+      	}
+	}
+
+})();
+
+
+		// function updateConvertSVGLen(v,a,obj){
+		// 	var val = obj[a].baseVal.unitType;
+		// 	obj[a].baseVal.newValueSpecifiedUnits(1, v);
+		// 	obj[a].baseVal.convertToSpecifiedUnits(val);
+		// }
 (function(){
 	'use strict';
 	angular
@@ -1138,18 +1428,150 @@ function drawVector(){
 	}
 
 })();
+// drawDCommands is a utility of drawDeconstruct to specifically check path's dValue
+// it parses each command checking for errors
+// in the response it stores  
+//			return{
+//				bool: false,
+//				descr:'',
+//				dStructure:'' //this will help creating a pointRappresentation
+//			};
+
+(function(){
+	'use strict';
+
+	angular
+		.module('draw.path')
+		.factory('drawDCommands',drawDCommands);
+
+	function drawDCommands(){
+		
+		return {
+			run: run,
+		};
+
+		function run(x){
+			run.alienChar = /([^\d .,mlhvzcsqta-])/gi ;
+			x = x.toString();
+			var alienChar = x.match(run.alienChar);
+			if(alienChar)
+			/***** first exit ****/
+				return{   
+					bool: false,
+					descr:'invalid point value char.: ' + alienChar.join(' | ')
+				};
+
+			
+			run.patt = /([a-z]) *((-?\d+(\.\d+)?( *, *| *))+)z?/gi;
+			var captureData=[]; // additional information for next exit
+			var stringAnalisis = (function(){
+				var count= 0;
+				return x.replace(run.patt,function(m,a,b){
+					// storing some precious data that's beibg checked as it's piped in
+					captureData.push( dCommCheck(count,a,b) );
+
+					count++;
+					return '' ;
+				});
+			})();
+			//if the string hasn't been completly matched we return
+			if( stringAnalisis !== '' )
+			/***** second exit ****/
+				return {
+					bool : false,
+					descr: 'problems with char.: '+ stringAnalisis.split('') +' in your \'d\' value'
+				};
+
+
+			if ( ! captureData.every(( x , i ) => {
+				return captureData.lastI = i ,
+						x.bool === true;
+			}) )
+			/***** third exit ****/
+				return {
+					bool : false,
+					descr: 'with command: '+ captureData[captureData.lastI].type +' | wrong args ('+ captureData[captureData.lastI].val+')'
+				};
+
+			
+			/*** finally if we got here it should be true ***/
+				return {
+					bool : true,
+					valueOpt : captureData
+				};
+		}
+
+		// this methods check that each d_val command has the correct args ( number ..) .
+		// it returns:
+		//	 	bool  : boolean,
+		//	 	index : counter,
+		//	 	type  : 'm|l|C...',
+		//	 	args  : [  ]
+		function dCommCheck(count,type,val){
+				dCommCheck.specs={
+					m : [ 2 ],		l : [ 2 ],
+			 		h : [ 1 ], 		v : [ 1 ],
+					s : [ 4 ],		q : [ 4 ],		t : [ 2 ],
+					c : [ 6  ,  'poly' ],			a : [ 7  , 'arc' ] 
+				};
+				var typeLow = type.toLowerCase();
+				
+				return dCommCheck.args  = [count,type,val].concat(dCommCheck.specs[typeLow]),
+				countArgs.apply(null,dCommCheck.args);
+		}
+
+		function countArgs(count,type,val,num,opt){
+				countArgs.patt = /-?\d+(\.\d+)?/g;
+				countArgs.args = val.match(countArgs.patt );
+				countArgs.bool = (!opt) ?
+					num === countArgs.args.length :
+				(opt === 'poly') ?
+					countArgs.args.length % num === 0:
+				
+				//if we get here it's going to be an arc
+					(			countArgs.args.length === num      &&
+					(countArgs.args[3] === '0' || countArgs.args[3] === '1') &&
+					(countArgs.args[4] === '0' || countArgs.args[4] === '1')    ) ;
+				
+				return {
+					bool  : countArgs.bool,
+				 	index : count,
+				 	type  : type,
+				 	args  : countArgs.args,
+				 	val   : val
+				};
+		}
+
+	}
+
+
+})();
 // this is the factory that stores the data in a serialized object
 // it uses the data mapped while compiling in the directive drawSvg
 // into a different object depending on the svg type
 // exampleList = [
 // 	{
 //	 nodeName :'circle',
+// 	 hashSvg: 0,
 // 	 attributes: {
 //			cx   :44,
 // 	        cy   :55,
 // 	         r    :3
 //	 },
-//	 childNodes:[]
+//	 childNodes:[
+// 				{
+// 				 nodeName :'circle',
+// 				 hashSvg: 1,
+// 				 attributes: {
+// 							cx   :11,
+// 					        cy   :12,
+// 					        r    :3
+// 					        fill : 'red',
+// 					        stroke:'blue'
+// 				 			},
+// 				 childNodes:[]
+// 				},
+// 				]
 // ]
 // relying on other services it check the attributes for basic types
 // <circle>, <ellipse>, <image>, <line>, <path>, <polygon>, <polyline>, <rect>, <text>, <use>
@@ -1161,22 +1583,59 @@ function drawVector(){
 
 	angular
 		.module('draw.path')
-		.factory('drawDataFactory', drawDataFactory);
+		.factory('drawData', drawData);
+
+	drawData.$inject = ['drawAssemble'];
 
 
-	function drawDataFactory(){
+	function drawData(drawAssemble){
+		
+
 		var obj = {
 			node:[],
+			str:'',
 			setNode:setNode,
-			serializeNode:serializeNode,
+			// serializeNode:serializeNode,
+			changeNode:changeNode,
+			flatNodeList:flatNodeList,
+			getStr:getStr
 		};
 		return obj;
 
-		function setNode(a){
-			obj.node = serializeNode(a);
+		function getStr(){
+			return obj.str;
 		}
 
-		function serializeNode(a){
+		function changeNode(msg){
+			// this should return the new string value an update node [] (sideEff)
+
+			// if it's needed we need to get a new-reference to elem we're modifying
+			if( !changeNode.pointer)
+			changeNode.pointer = pointTo(msg.elemHash);
+			
+			drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			
+			// if mouseup we should clean up pointer and stop
+			if(msg.mouseup){
+				setTimeout(function(){ changeNode.pointer = null ;},0)
+			}
+
+			// now we should update the string
+		}
+
+		// util for changeNode it updates the str in the end of cycle
+		function stringUpdate(){
+
+		}
+		function strSplice(str, start, end, sub) {
+  			return str.slice(0, start) + (sub || '') + str.slice(end)
+		}
+		function setNode(a,str){
+			obj.node = serializeNode(a,str);
+			obj.str = str;
+		}
+
+		function serializeNode(a,str){
 			//the dom rappresentation is good we just need to map what we want
 			//maybe there are some JQlite methods for this..
 			var hashSvg = 0;
@@ -1186,10 +1645,13 @@ function drawVector(){
 			});
 
 			function mapNode(node){
+				
 				function mappedAttributes(nA){
 					// this regex strips out wrong attributes compiled by angular
-					// but it probably will fail in some situations 
-					var patt = /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;
+					// when dealing with 'd'
+					// but it probably will fail in some situations
+					/* /(^=|^\"|^\'|^[a-zA-Z][0-9]|[0-9])/;*/
+					var patt = /(^=|^\"|^\'|^[0-9]|^class$)/;
 					if(nA)
 					return [].slice.call(nA).reduce( ( acc , x )=> {
 						 if( !patt.test(x.name))
@@ -1197,21 +1659,100 @@ function drawVector(){
 						 return acc;
 					},{});
 				}
+
 				var attrs= mappedAttributes(node.attributes) || [];
-				var res ={
-					nodeName  : node.nodeName,
-					attributes: attrs,
-					childNodes:node.childNodes,
-					hashSvg: hashSvg++,
+
+				// attrsStringRef is a reference on the char-string-index in  str
+				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
+//TODO  create a match for points and d
+					  var pat = new RegExp("< *" + node.nodeName + ".+?" + x + " *= *[\'|\"]? *(-?\\d+(.\\d+)?[a-z]*)");
+					  var strI = {};
+					  str.replace(pat, function(m, m2, m3, startI) {
+					    strI.end = startI + m.length;
+					    strI.start = strI.end - m2.length;
+					  });
+					  acc[x] =  strI;
+					  return acc;
+				}, {} );
+
+				// check svgAnimatedLength for conversion values
+				var attrsLength = {};
+				var pointList ={};
+				for( let x in attrs){
+					if (node[x] instanceof SVGAnimatedLength )
+					attrsLength[x] = node[x];
+
+					if (node[x] instanceof SVGPointList )
+					pointList[x] = node[x]; 
 				};
+
+				var res ={
+					nodeName   		: node.nodeName,
+					attributes 		: attrs,
+					childNodes 		: node.childNodes,
+					hashSvg    	  	: hashSvg++,
+					attrsStringRef	: attrsStringRef,
+				};
+				if(node.nodeName === 'path')
+				// since we're using a shim for astracting specific d getPathData()
+				// we'll pass the whole dom nodeName
+				res.domObj = a[0];  
+
+				if(Object.keys(attrsLength).length > 0)
+				res.attrsLength = attrsLength;
+
+				if(Object.keys(pointList).length > 0)
+				res.pointList = pointList;
+
 				if (node.childNodes.length > 0)
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
+console.log(res)
+console.log(str)
 				return res; 
 			}
 		}
 		
+	//pointTo - flatNodeList - pathDataPointList are utility of changeNode()
+		function pathDataPointList(domO){
+			return domO.getPathData().reduce((ac,x,i)=>{
+				var subI=0;
+				while (x.values.length > 0){
+					ac.push({
+						x :x.values[0],
+						y :x.values[1],
+						comI : i,
+						command:x.type,
+						subI: subI++
+					});
+				x.values.splice(0,2);
+				}
+				return ac;
+			}, []);
+		}
+		function pointTo(h){
+			var o = flatNodeList();
+
+			if(o[h].nodeName === 'path'){
+				o[h].pathDataPointList = pathDataPointList(o[h].domObj);
+				o[h].pathData = o[h].domObj.getPathData();
+			}
+
+			return o[h];
+		}
+		function flatNodeList(){
+			return obj.node.reduce( (acc,x) => {
+				acc.push(x);
+				if(x.childNodes.length > 0)
+				x.childNodes.reduce( (ac,cn) =>{
+					acc.push(cn);
+					return ac;
+				}, acc);
+				return acc;
+			}, [])
+			.sort( (a,b) => {return a.hashSvg - b.hashSvg});
+		}
 
 		
 
@@ -1234,16 +1775,21 @@ function drawVector(){
 		.module('draw.path')
 		.factory('drawDeconstruct',drawDeconstruct);
 
-	drawDeconstruct.$inject = ['drawDisassemble'];
+	drawDeconstruct.$inject = ['drawDisassemble','drawDCommands'];
 
-	function drawDeconstruct(drawDisassemble){
+	function drawDeconstruct(drawDisassemble, drawDCommands){
 
-		var dCData = {
+		var deconstructData = {
 			structure:[],
 			parseBasic:parseBasic,
+			movement:movement
 		};
-		return dCData;
+		return deconstructData;
 
+		function movement(obj){
+			deconstructData.structure[obj.elemHash][obj.index].x = obj.point.x;
+			deconstructData.structure[obj.elemHash][obj.index].y = obj.point.y;
+		}
 		function parseBasic(a){
 			    // a is being piped from drawValidation and is an array of {objects
 			    // one for each propertyCheck..
@@ -1261,9 +1807,8 @@ function drawVector(){
            			 returns [{basicValueEr},[destructuredData]]
                   */
 
-				if(!a){
-				console.log('if we get here let me know');
-				return}
+
+			if(!a){	console.log('if we get here let me know');	return;  }
         	
 			
 
@@ -1274,26 +1819,41 @@ function drawVector(){
 	                //depending on the the x.propertyCheck we need to validate specifically (validity function )
 	                var test = validity( x.propertyCheck , x.item.attributes[x.propertyCheck] );
 
-	                var response = {
-	                	property : x.propertyCheck,
-	                	valid    : test,
-	                	hashSvg  : x.item.hashSvg
-	                };
+
 	                
+	                /** since destructioring data to check dValue pairs is quite expensive
+	                we will preserve destructured value and  add an optional field so to pass parsed data directly to 
+	                stucture node if test passes**/
+	       			// respose from validity will  have one optional property: dValueOpt
+	       			// bool: false,
+				    // descr:'string',
+				    // dValueOpt:[]  // d_value data
+
+
 					/*****************************\
 					 if test passes create an argument to pass to
 					 structureNode and fire it off !!
 					\*****************************/
-		            if(test){
+		            if(test.bool){
 		                var rawData = {
 		                	hashSvg  : x.item.hashSvg,
 		                	nodeName : x.item.nodeName,
 		                	basicAttr: x.propertyCheck,
 		                	item     : x.item
 		                };
+		                rawData.optional = (test.valueOpt) ?
+		                test.valueOpt : null ;
 		                structureNode(rawData);
 		            }
 		            /**********************************/
+
+
+	                var response = {
+	                	property : x.propertyCheck,
+	                	valid    : test.bool, //boolean
+	                	reason   : test.descr,//if it's false justify
+	                	hashSvg  : x.item.hashSvg
+	                };
 	                return response;
 	         }); 
 
@@ -1301,31 +1861,64 @@ function drawVector(){
 		}
 
 		function structureNode(rd){
-			// @exem return {hashSvg: number, pointRappr:[] }
+			// @ex. return {hashSvg: number, pointRappr:[] }
 			var response = drawDisassemble[rd.nodeName](rd);
-			dCData.structure[response.hashSvg] = response.pointRappr;
-		};
+			deconstructData.structure[response.hashSvg] = response.pointRappr;
+			
+		}
 
 
 		function validity(attr,value){
-			validity.lenPatt = /^(cy|cx|r|rx|ry|x|x1|x2|y|y1|y2|height|width)+?$/
+			validity.lenPatt = /^(cy|cx|r|rx|ry|x|x1|x2|y|y1|y2|height|width)+?$/;
 			if( validity.lenPatt.test(attr) )
 			return lengthValid(value);
 
 			if( attr === 'd')
-				;
+			//return dValid(value);
+			return drawDCommands.run(value);
 
 			if( attr === 'points')
-				;
+			return pointsValid(value);
+		}
+		
+
+		function pointsValid(x){
+			pointsValid.alienChar = /([^\d ,.-])/g ;
+			x = x.toString();
+			var alienChar = x.match(pointsValid.alienChar);
+			if(alienChar)
+			return{
+				bool: false,
+				descr:'invalid point value char.: ' + alienChar.join(' | ')
+			};
+			//if no alienChar check  if the number values are even
+			pointsValid.numbers = /((-?)\d+(\.\d+)?)/g;
+			pointsValid.matchNumbers = x.match(pointsValid.numbers);
+			var res = {};
+			res.bool = (pointsValid.matchNumbers && pointsValid.matchNumbers.length % 2 === 0) ?
+			true : false ;
+			res.descr = (!res.bool) ?
+			'invalid number pairs' : null ;
+
+			res.valueOpt = pointsValid.matchNumbers;	
+			return res;
 		}
 
 		function lengthValid(x) {
-			lengthValid.patt =  /^[\d]+(.\d+?)?((em|ex|px|in|cm|mm|pt|pc|%)+?)?$/;
+			lengthValid.patt =  /^\d+(\.\d+)?(em|ex|px|in|cm|mm|pt|pc|%)?$/;
 
       		if (typeof x === 'string')
 			x.trim();
 
-			return lengthValid.patt.test(x);
+			var res = {
+				bool:lengthValid.patt.test(x),
+			};
+
+			res.descr = (res.bool === false) ?
+			('invalid length: '+x) :
+			null ;
+
+			return res;
 		}
  
 
@@ -1352,72 +1945,143 @@ function drawVector(){
 		return service;
 
 		function circle(o){
-			var attr= o.item.attributes;
-			var center   = (attr.cx && attr.cy)?
-			{ x:attr.cx ,  y:attr.cy}:
+			var cx = lengthVal('cx',o);
+			var cy = lengthVal('cy',o);
+			var r  = lengthVal('r',o);
+
+			var center   = (cx && cy)?
+			{ hashSvg: o.hashSvg, x: cx ,  y:cy}:
 			null;
-			var radPoint = (attr.r && center )?
-			{ x:sum(attr.cx,attr.r)  , y:attr.cy}:
+			var radPoint = (r && center )?
+			{ hashSvg: o.hashSvg, x:sum(cx,r)  , y: cy}:
 			null;
 
 			return {
-				hashSvg: o.hashSvg,
+				hashSvg   : o.hashSvg,
 				pointRappr: [center, radPoint]
 			};
 		}
+
 		function ellipse(o){
-			var attr= o.item.attributes;
-			var center   = (attr.cx && attr.cy)?
-			{ x:attr.cx ,  y:attr.cy}:
+			var cx = lengthVal('cx',o);
+			var cy = lengthVal('cy',o);
+			var rx = lengthVal('rx',o);
+			var ry = lengthVal('ry',o);
+
+			var center    = (cx && cy)?
+			{ hashSvg: o.hashSvg, x: cx ,  y: cy}:
 			null;
-			var radPointX = (attr.rx && center )?
-			{ x:sum(attr.cx,attr.rx)  , y:attr.cy}:
+			var radPointX = (rx && center )?
+			{ hashSvg: o.hashSvg, x:sum( cx, rx)  , y: cy}:
 			null;
-			var radPointY = (attr.ry && center )?
-			{ x:attr.cx,  y:sum(attr.cy,attr.ry) }:
+			var radPointY = ( ry && center )?
+			{ hashSvg: o.hashSvg, x: cx,  y:sum( cy, ry) }:
 			null;
 
 			return {
-				hashSvg: o.hashSvg,
+				hashSvg    : o.hashSvg,
 				pointRappr: [center, radPointX, radPointY]
 			};
 		}
 		function line(o){
-			var attr= o.item.attributes;
-			var x = (attr.x1  &&  attr.x2)?
-			{ x:attr.x1 , y:attr.x2 }:
+			var x1 = lengthVal('x1',o);
+			var x2 = lengthVal('x2',o);
+			var y1 = lengthVal('y1',o);
+			var y2 = lengthVal('y2',o);
+
+			var x = (x1  &&  y1)?
+			{ hashSvg: o.hashSvg, x: x1 , y: y1 }:
 			null ;
-			var y = (attr.y1  &&  attr.y2)?
-			{ x:attr.y1 , y:attr.y2 }:
+			var y = (x2  &&  y2)?
+			{ hashSvg: o.hashSvg, x: x2 , y: y2 }:
 			null ;
 
 			return {
-				hashSvg: o.hashSvg,
+				hashSvg   : o.hashSvg,
 				pointRappr: [ x, y ]
 			};
 		}
 		function rect(o){
-			var attr= o.item.attributes;
-			var start = (attr.x  &&  attr.y)?
-			{ x:attr.x , y:attr.y }:
+			var x = lengthVal('x',o);
+			var y = lengthVal('y',o);
+			var width = lengthVal('width',o);
+			var height = lengthVal('height',o);
+
+			var start = (x  &&  y)?
+			{ hashSvg: o.hashSvg, x:x , y:y }:
 			null ;
-			var end = (start && attr.width  &&  attr.height)?
-			{ x:sum( attr.x, attr.width) , y:sum( attr.y, attr.height) }
-			: null ;
+			var end = (start && width  &&  height)?
+			{ hashSvg: o.hashSvg, x:sum( x, width) , y:sum( y, height) }:
+			null ;
 
 			return {
-				hashSvg: o.hashSvg,
+				hashSvg   : o.hashSvg,
 				pointRappr: [ start, end ]
 			};
 		}
-		function path(o){}
-		function polygon(o){}
-		function polyline(o){}
+		function path(o){
+			var points = o.optional.reduce((acc, x) => {
+				if(x.type ==='a' || x.type ==='A'){
+					acc.push({
+						hashSvg: o.hashSvg, 
+						x: x.args[x.args.length - 2],
+						y: x.args[x.args.length - 1],
+					});
+					return acc;
+				}
+				//else
+				while (x.args.length > 0){
+					acc.push({
+						hashSvg: o.hashSvg, 
+						x: x.args[0],
+						y: x.args[1]
+					});
+					x.args.shift();
+					x.args.shift();
+				}
+
+				return acc;
+
+			} , [] );
+
+			return {
+				hashSvg   : o.hashSvg,
+				pointRappr: points
+			};
+
+		}
+		function polygon(o){
+			var rawPoints = o.optional;
+			var points = [];
+
+			while ( rawPoints && rawPoints.length > 0){
+					points.push({
+						hashSvg: o.hashSvg, 
+						x: Number(rawPoints[0]),
+						y: Number(rawPoints[1])
+					});
+					rawPoints.shift();
+					rawPoints.shift();
+			}
+
+			return {
+				hashSvg   : o.hashSvg,
+				pointRappr: points
+			};
+		}
+		function polyline(o){
+			return polygon(o);
+		}
 		
 
 		function sum(a,b){
-			//toDo we will need to consider unit values
 			return +a + +b;
+		}
+		function lengthVal(attr,obj){
+			return ( obj.item.attrsLength  &&  obj.item.attrsLength[attr] )?
+			obj.item.attrsLength[attr].baseVal.value:
+			obj.item.attributes[attr];
+
 		}
 	}
 
@@ -1452,6 +2116,50 @@ function drawVector(){
 
 		}
 
+})();
+// directive for checking point realtion during event pointMove
+// and eventually react
+(function(){
+	'use strict';
+	angular
+		.module('draw.path')
+		.factory('drawPointRelation',drawPointRelation);
+
+		drawPointRelation.$inject = ['drawData'];
+
+		function drawPointRelation (drawData){
+			return{
+				relate:relate,
+			};
+
+			function relate(loc,rem){
+				//if it's not the same elem || it's the same point we stop
+				if(  loc.elemHash !== rem.elemHash ||
+					(loc.elemHash === rem.elemHash && loc.index === rem.index) )
+				return;
+
+				relate.circle = function(l,r){
+					//only cause of a point influencing another point is if it's center
+					if( r.index !== 0)
+					return; 
+
+					return [ 
+						l.point.x + (r.point.x - r.start.x),
+						l.point.y + (r.point.y - r.start.y)
+					];
+				};
+
+				relate.ellipse = relate.circle;
+				relate.rect = relate.circle;
+
+
+				if(relate[drawData.changeNode.pointer.nodeName])
+				return relate[drawData.changeNode.pointer.nodeName](loc,rem);
+				
+			}
+
+
+		}
 })();
 (function(){
 	 'use strict';
@@ -1607,9 +2315,9 @@ function drawService($filter){
         .module('draw.path')
         .factory('drawValidation', drawValidation);
 
-    drawValidation.$inject = ['drawDataFactory','drawAttributes','drawDeconstruct'];
+    drawValidation.$inject = ['drawData','drawAttributes','drawDeconstruct'];
 
-    function drawValidation(drawDataFactory,drawAttributes,drawDeconstruct) {
+    function drawValidation(drawData,drawAttributes,drawDeconstruct) {
 
         var service = {
            list:[],
@@ -1629,11 +2337,11 @@ function drawService($filter){
             checkList.basicValues=[];
             checkList.presentational=[];
 
-            drawDataFactory.node.forEach(x => checkItem(x) );
+            drawData.node.forEach(x => checkItem(x) );
             
             service.list= checkList;
 
-           function checkItem(item){
+            function checkItem(item){
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => checkItem(c) );
@@ -1648,13 +2356,14 @@ function drawService($filter){
                 // basic values that are present are sent to destructioring service
                 // this will eventually comunicate any errors on values,
                 // if there's no error the destructioring service uses the value
-                // to populate the GUI with points / mouseevents
+                // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals =  basicTestValues[1];
-                var basicValueErr = drawDeconstruct.parseBasic(basicVals);
+                var basicValueErr = drawDeconstruct.parseBasic(basicVals);   //\\ -- //\\
                 checkList.basicValues = checkList.basicValues.concat(basicValueErr);
-
                
                 /*********************************************/
+
+
                 //copy the nodeitem, strip out the basic attributes,
                 //check presentational
                 var itemcopy = stripBasicAttr(item);
@@ -1665,27 +2374,29 @@ function drawService($filter){
 
             }
         }
-        //utility of chechItem
+        //utility of checkItem
         function stripBasicAttr(item){
-                /* for (var i in item.attributes){
+                /*for (var i in item.attributes){
                     var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
                     if(test)
                     { delete item.attributes[i]; }
                 }
                 return item;*/
-
+               // var copy = JSON.parse(JSON.stringify(item));
+               var copy = {
+                attributes:{},
+                hashSvg   :item.hashSvg,
+                nodeName  :item.nodeName,
+               };
                 if ( drawAttributes.basic[item.nodeName] )
                 Object.keys(item.attributes).forEach( i => {
                     var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
-                    if(test)
-                    { delete item.attributes[i]; }
+                    if( !test )
+                    copy.attributes[i]=item.attributes[i];
                 });
-                return item;
-
-
-                
+                return copy;
         }
-        //utility of chechItem
+        //utility of checkItem
         function checkPresentationalAttr(item){
             return Object.keys(item.attributes).filter(x => {
                     return drawAttributes.present.every(a => {

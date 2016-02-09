@@ -161,17 +161,58 @@ describe('service exception',function(){
 
 });
 
-describe('drawDataFactory',function(){
-	var drawDataFactory;
+
+describe('drawData',function(){
+	var drawData, node;
 		beforeEach(function(){
 		module('draw.path');
 
-		inject(function(_drawDataFactory_){
-			drawDataFactory = _drawDataFactory_;
+		inject(function(_drawData_){
+			drawData = _drawData_;
+
 		});
+
+		drawData.node =  [
+							{
+							 nodeName :'g',
+							 hashSvg: 0,
+							 attributes: {},
+							 childNodes:[
+										 {
+										 nodeName :'circle',
+										 hashSvg: 1,
+										 attributes: {
+													cx   :11,
+											        cy   :12,
+											         r    :3
+										 			},
+										 childNodes:[]
+										}
+							 ]
+							},
+							{
+							 nodeName :'ellipse',
+							 hashSvg: 2,
+							 attributes: {
+							 	cx   :21,
+						        cy   :22,
+					         	rx    :3,
+					     		ry    :3
+					     		},
+							 childNodes:[]
+							},
+						];
 	});
 
-	it('should ',function(){
+	it('flatNodelist should make a flat list which points to correct object',function(){
+		var res=drawData.flatNodeList();
+		expect(res.length).toBe(3);
+
+		res[1].attributes.test = 'just checking';
+
+		expect(drawData.node[0].childNodes[0].attributes.test).toBe('just checking')
+
+
 		
 	})
 
@@ -179,13 +220,13 @@ describe('drawDataFactory',function(){
 
 })
 describe('drawValidation',function(){
-	var drawValidation, drawDataFactory,scope ;
+	var drawValidation, drawData,scope ;
 		beforeEach(function(){
 			module('draw.path');
 
-			inject(function(_drawValidation_,_drawDataFactory_){
+			inject(function(_drawValidation_,_drawData_){
 				drawValidation = _drawValidation_;
-				drawDataFactory = _drawDataFactory_;
+				drawData = _drawData_;
 			});
 
 			drawValidation.list =[
@@ -200,8 +241,8 @@ describe('drawValidation',function(){
 		expect(drawValidation.list[0].error).toBe('second')
 	});
 
-	it('should check the drawDataFactory.node for errors',function(){
-		drawDataFactory.node =  [
+	it('should check the drawData.node for errors',function(){
+		drawData.node =  [
 									{
 									 nodeName :'g',
 									 hashSvg: 0,
@@ -256,7 +297,7 @@ describe('drawValidation',function(){
 describe('drawDeconstructFactory',function(){
 	var drawDeconstruct;
 
-	var pipedArgFor1Element = [
+	var pipedArgForElement = [
 						{
 							propertyCheck: 'cy',
 							item:{
@@ -295,11 +336,199 @@ describe('drawDeconstructFactory',function(){
 	});
 
 	it(' method parseBasic ',function(){
+		drawDeconstruct.parseBasic(pipedArgForElement);
+		expect(drawDeconstruct.structure[1][0]).toEqual( { hashSvg: 1, x : 44, y : 55 });
+	});
+
+	it(' should find wrong length values ',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'cx',
+							item:{
+								nodeName: 'circle',
+								hashSvg: 1,
+								attributes: {
+									cx   :'44e',
+									cy   :55,
+									r    :9
+								},
+								childNodes: []
+							}
+						},];
+		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0]).toEqual(
+		 	{
+		 		property:'cx',
+		 		valid   :false,
+		 		reason  :'invalid length: 44e',
+		 		hashSvg :1
+		 	});
+		
+	});
+
+	it(' should find wrong d values (alien charac.)',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'd',
+							item:{
+								nodeName: 'path',
+								hashSvg: 1,
+								attributes: {
+									d:'M0 0 C-12,22x'
+								},
+								childNodes: []
+							}
+						},];
+		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0]).toEqual(
+		 	{
+		 		property:'d',
+		 		valid   :false,
+		 		reason  :'invalid point value char.: x',
+		 		hashSvg :1
+		 	});
+		
+	});
+
+	it(' should find wrong d values (unmatched part of string)',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'd',
+							item:{
+								nodeName: 'path',
+								hashSvg: 1,
+								attributes: {
+									d:'M-11 0 C-12,22mh'
+								},
+								childNodes: []
+							}
+						},];
+		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0]).toEqual(
+		 	{
+		 		property:'d',
+		 		valid   :false,
+		 		reason  :'problems with char.: m,h in your \'d\' value',
+		 		hashSvg :1
+		 	});
+		
+	});
+	it(' should find wrong d values (checks each command )',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'd',
+							item:{
+								nodeName: 'path',
+								hashSvg: 1,
+								attributes: {
+									d:'M-11 0 C-12,22'
+								},
+								childNodes: []
+							}
+						},];
+		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0].valid).toBe(false)
+		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0].hashSvg).toBe( 1 )
+	});
+	it(' should find wrong d values (checks each command )',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'd',
+							item:{
+								nodeName: 'path',
+								hashSvg: 1,
+								attributes: {
+									d:'M500 88 a 30 50 0 1 1 162.55 162.45 ,c    50  ,0 -5.0 100     , -1.100 ,100 50,0 50 ,   100 100,100z'
+								},
+								childNodes: []
+							}
+						},];
+			var res = drawDeconstruct.parseBasic(pipedArgForElement);
+		 	expect(res[0].valid).toBe(true)
+	});
+
+	it(' should parse "points" ',function(){
+		pipedArgForElement = [
+						{
+							propertyCheck: 'points',
+							item:{
+								nodeName: 'polygon',
+								hashSvg: 1,
+								attributes: {
+									points:'30 50 0 1 1 162.55 162.45 50  ,0 -5.0 '
+								},
+								childNodes: []
+							}
+						},];
+			var res = drawDeconstruct.parseBasic(pipedArgForElement);
+		 	expect(res[0].valid).toBe(true)
+		    expect(drawDeconstruct.structure[1][0]).toEqual( { hashSvg: 1, x : 30, y : 50 });
+	});
+
+});
+
+// drawDisassemble is a utility for the drawDeconstruct service;
+// svg-elements basic attributes(the ones that influence dimension and position)
+// are transformed into an array of points stored in drawDeconstruct.structure
+describe('drawDisassemble',function(){
+	var drawDisassemble;
+	beforeEach(function(){
+		module('draw.path');
+
+		inject(function(_drawDisassemble_){
+			drawDisassemble =_drawDisassemble_;
+		});
+	});
+
+		describe( 'circle method',function(){
+			var pipedObj;
+			beforeEach(function(){
+						pipedObj = {
+							hashSvg:55,
+							item:{
+								attributes:{
+									cx:22,
+									cy:33,
+									r:4
+								}
+							}
+						};
+			});
+
+			it('should parse it to..',function(){
+				var res = drawDisassemble.circle(pipedObj);
+				expect(res.hashSvg).toBe(55);
+				expect(res.pointRappr).toEqual(
+					[
+						{x:22,y:33,hashSvg:55},
+						{x:26,y:33,hashSvg:55},
+					]
+				);
+			})
+		});
+		//polygon |point value -- 
+		describe( 'polygon method',function(){
+			var pipedObj , res ;
+			beforeEach(function(){
+						pipedObj = {
+							hashSvg:2,
+							item:{
+								attributes:{
+									points:'11 11 22 22 33 11'
+								}
+							},
+							optional:['11', '11', '22', '22', '33', '11']
+						};
+			});
+
+			it('should parse it to..',function(){
+				res = drawDisassemble.polygon(pipedObj);
+				expect(res.hashSvg).toBe(2);
+				expect(res.pointRappr).toEqual(
+					[
+						{hashSvg:2,x:11,y:11},
+						{hashSvg:2,x:22,y:22},
+						{hashSvg:2,x:33,y:11},
+					]
+				);
+			})
+		});
+
 	
- 		drawDeconstruct.parseBasic(pipedArgFor1Element);
-		expect(drawDeconstruct.structure[1][0]).toEqual( { x : 44, y : 55 });
-		console.log(drawDeconstruct.structure)
-
-	})
-
-})
+});

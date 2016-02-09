@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/app.css">
 
   <!-- js -->
+  <script src="js/path-data-polyfill.js"></script>
+
   <script src="bower_components/angular/angular.js"></script>
   <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
   <script src="js/app.js"></script>
@@ -14,11 +16,6 @@
   <script src="js/controllers.js"></script>
   
   <script src="js/draw-path.js"></script>
- <!-- <script src="js/draw-path/filters.js"></script>
-  <script src="js/draw-path/directives.js"></script>
-  <script src="js/draw-path/services.js"></script>
-  <script src="js/draw-path/service/exception.js"></script>
-  <script src="js/draw-path/controllers.js"></script>-->
 </head>
 
 <body  ng-controller='RootCtrl as root'>   
@@ -53,7 +50,8 @@
 
 <div class='sketch'  >
       
-    <svg draw-events  id="artboard"  class="artboard">
+    <!-- <svg draw-events  id="artboard"  class="artboard"> -->
+    <svg  id="artboard"  class="artboard">
 
         <g draw-svg='root.code'></g>
        <!--  <g draw-vector ></g> -->

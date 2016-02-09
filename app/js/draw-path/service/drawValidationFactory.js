@@ -5,9 +5,9 @@
         .module('draw.path')
         .factory('drawValidation', drawValidation);
 
-    drawValidation.$inject = ['drawDataFactory','drawAttributes','drawDeconstruct'];
+    drawValidation.$inject = ['drawData','drawAttributes','drawDeconstruct'];
 
-    function drawValidation(drawDataFactory,drawAttributes,drawDeconstruct) {
+    function drawValidation(drawData,drawAttributes,drawDeconstruct) {
 
         var service = {
            list:[],
@@ -27,11 +27,11 @@
             checkList.basicValues=[];
             checkList.presentational=[];
 
-            drawDataFactory.node.forEach(x => checkItem(x) );
+            drawData.node.forEach(x => checkItem(x) );
             
             service.list= checkList;
 
-           function checkItem(item){
+            function checkItem(item){
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => checkItem(c) );
@@ -46,13 +46,14 @@
                 // basic values that are present are sent to destructioring service
                 // this will eventually comunicate any errors on values,
                 // if there's no error the destructioring service uses the value
-                // to populate the GUI with points / mouseevents
+                // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals =  basicTestValues[1];
-                var basicValueErr = drawDeconstruct.parseBasic(basicVals);
+                var basicValueErr = drawDeconstruct.parseBasic(basicVals);   //\\ -- //\\
                 checkList.basicValues = checkList.basicValues.concat(basicValueErr);
-
                
                 /*********************************************/
+
+
                 //copy the nodeitem, strip out the basic attributes,
                 //check presentational
                 var itemcopy = stripBasicAttr(item);
@@ -63,27 +64,29 @@
 
             }
         }
-        //utility of chechItem
+        //utility of checkItem
         function stripBasicAttr(item){
-                /* for (var i in item.attributes){
+                /*for (var i in item.attributes){
                     var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
                     if(test)
                     { delete item.attributes[i]; }
                 }
                 return item;*/
-
+               // var copy = JSON.parse(JSON.stringify(item));
+               var copy = {
+                attributes:{},
+                hashSvg   :item.hashSvg,
+                nodeName  :item.nodeName,
+               };
                 if ( drawAttributes.basic[item.nodeName] )
                 Object.keys(item.attributes).forEach( i => {
                     var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
-                    if(test)
-                    { delete item.attributes[i]; }
+                    if( !test )
+                    copy.attributes[i]=item.attributes[i];
                 });
-                return item;
-
-
-                
+                return copy;
         }
-        //utility of chechItem
+        //utility of checkItem
         function checkPresentationalAttr(item){
             return Object.keys(item.attributes).filter(x => {
                     return drawAttributes.present.every(a => {
