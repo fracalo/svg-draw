@@ -1,10 +1,15 @@
-// drawAssemble is used to update a new string every time a certain attribute is modified.
+// drawAssemble is used to update SVG and update the GUI value every time a certain attribute is modified.
 // utility of drawData
 // Process:
-// once drawDeconstruct.structure has changed we check what type of element we're dealing with (hash reference in drawData.node)
-// drawData.node is updated  (will be useful with tools)  
-// a newstring is created ready to be compiled by directive
-// [[I suppose it would be more performant to target the property directly instead of re-compiling -- using setAttribute]]
+// 
+// drawData.changeNode calls for an updated (this is binded to mousemove).  
+// through a pointer on the DOMobject we modify it changing the SVGLegth attributes (also SVGPointsList and PathDataPointList).
+// if there any related points effected we adjust these in drawDeconstruct.structure, but
+// in GUI the actula point position is changed by the drawSinglePoint directive (with drawPointRelation).
+// we return the updated value to drawData preparing the argument for drawData.stringUpdate()
+
+
+
 (function(){
 	'use strict';
 
@@ -68,8 +73,6 @@
 				//adjust end point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldX;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldY;
-
-
 			};
 			rect.end   = function(p, attrObj){
 				attrObj.width  = p.point.x - attrObj.x;
@@ -84,6 +87,18 @@
 
 			return rect.end(p,attrObj);
 		}
+
+		// function responder(h){
+		// 	//arguments: 1, ['cx', 44] , ['cy', 422]
+		// 	responder.args = [].splice.call(arguments,1).map(x=>{
+		// 			return { prop:x[0], val:x[1] };
+		// 	});
+		// 	return {
+		// 			hashSvg:h,
+		// 			update:responder.args,
+		// 	};
+		// }
+
 		function circle(p, obj){
 			var attrObj = obj.attributes;
 			var oldCx, oldCy ;
@@ -92,23 +107,33 @@
 				oldCx = obj.attrsLength.cx.baseVal.value;
 				oldCy = obj.attrsLength.cy.baseVal.value;
 				
-				attrObj.cx = p.point.x;
-				attrObj.cy = p.point.y;
-
+				// convert it to old orig 
 				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				// update attributes obj 
+// console.log(obj.attrsLength)
+				attrObj.cx = obj.attrsLength.cx.baseVal.valueAsString;
+				attrObj.cy = obj.attrsLength.cy.baseVal.valueAsString;
 
 				//adjust radius point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
+
+
+// console.log(obj)		
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ]
+
 			};
 
 			circle.rad = function(p, attrObj){
 				attrObj.r = pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
 					[p.point.x, p.point.y] );
-
+//TODO need to update attrObj after
 				obj.attrsLength.r.baseVal.updateConvertSVGLen( attrObj.r );
+
+				return [ obj.hashSvg , ['r',attrObj.r] ]
 			};
 
 			// check if it's the point responsible for center[0](cx and cy) or rad[1]

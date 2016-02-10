@@ -37,25 +37,27 @@
 		.module('draw.path')
 		.factory('drawData', drawData);
 
-	drawData.$inject = ['drawAssemble'];
+	drawData.$inject = ['drawAssemble','drawRegexCons'];
 
 
-	function drawData(drawAssemble){
+	function drawData(drawAssemble, drawRegexCons){
 		
 
 		var obj = {
 			node:[],
-			str:'',
+			string:'',
 			setNode:setNode,
+			flatNodeList:flatNodeList,
+			getStr:getStr,
 			// serializeNode:serializeNode,
 			changeNode:changeNode,
-			flatNodeList:flatNodeList,
-			getStr:getStr
+			stringUpdate:stringUpdate,
+			strSplice:strSplice
 		};
 		return obj;
 
 		function getStr(){
-			return obj.str;
+			return obj.string;
 		}
 
 		function changeNode(msg){
@@ -65,8 +67,11 @@
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
 			
-			drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			// with return  from draw assemble we update string
+			stringUpdate(res);			
 			
+
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
 				setTimeout(function(){ changeNode.pointer = null ;},0)
@@ -76,15 +81,57 @@
 		}
 
 		// util for changeNode it updates the str in the end of cycle
-		function stringUpdate(){
+		function stringUpdate(res){
 
+			var elObj= pointTo.o[res[0]];
+			var vals = res.splice( 1 ) ;
+			vals.forEach(x=>{
+				// x : ['cx',33]
+			obj.string = drawData.strSplice(
+								obj.string,
+								elObj.attrsStringRef[x[0]].start , 
+								elObj.attrsStringRef[x[0]].end   ,
+								x[1]
+							);
+			});
 		}
-		function strSplice(str, start, end, sub) {
+
+		function strSplice(str, start, end, sub ) {
+			// while making simultaneous changes
+			// if the string changes length we should update all attrsStringRef properties ...
+			// without updating all attrsStringRef we could add a 
+			// strSplice.offset property that add or reduces attrsStringRef values accordingly
+//TODO cleanup strSplice.offset
+  			if( strSplice.offset === undefined){
+	  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
+	  		}
+
+			//if needed update stringindexs
+			for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
+				if (strSplice.offset.ar[i] <  start){
+					start += strSplice.offset[ strSplice.offset.ar[i] ];
+				}
+				if (strSplice.offset.ar[i] <= end){
+					end += strSplice.offset[ strSplice.offset.ar[i] ];
+				}
+			}
+
+			// keep track if there are variation on sub length 
+			if( sub.length !== (end - start) ){
+				strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
+				
+				if(strSplice.offset[end] === 0){//we splice it out
+					strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
+				}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
+					strSplice.offset.ar.push(end);
+				}
+			} 
   			return str.slice(0, start) + (sub || '') + str.slice(end)
 		}
+
 		function setNode(a,str){
 			obj.node = serializeNode(a,str);
-			obj.str = str;
+			obj.string = str;
 		}
 
 		function serializeNode(a,str){
@@ -114,12 +161,13 @@
 
 				var attrs= mappedAttributes(node.attributes) || [];
 
-				// attrsStringRef is a reference on the char-string-index in  str
+				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
-//TODO  create a match for points and d
-					  var pat = new RegExp("< *" + node.nodeName + ".+?" + x + " *= *[\'|\"]? *(-?\\d+(.\\d+)?[a-z]*)");
+//TODO  create a match for points and d and other values...
+					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
 					  var strI = {};
-					  str.replace(pat, function(m, m2, m3, startI) {
+					  str.replace(pat, function(m, m2, startI) {
+
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
@@ -146,7 +194,7 @@
 					attrsStringRef	: attrsStringRef,
 				};
 				if(node.nodeName === 'path')
-				// since we're using a shim for astracting specific d getPathData()
+				// since we're using a shim for abstracting specific d getPathData()
 				// we'll pass the whole dom nodeName
 				res.domObj = a[0];  
 
@@ -160,8 +208,6 @@
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-console.log(res)
-console.log(str)
 				return res; 
 			}
 		}
@@ -184,14 +230,13 @@ console.log(str)
 			}, []);
 		}
 		function pointTo(h){
-			var o = flatNodeList();
+			pointTo.o = flatNodeList();
 
-			if(o[h].nodeName === 'path'){
-				o[h].pathDataPointList = pathDataPointList(o[h].domObj);
-				o[h].pathData = o[h].domObj.getPathData();
+			if(pointTo.o[h].nodeName === 'path'){
+				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
+				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
 			}
-
-			return o[h];
+			return pointTo.o[h];
 		}
 		function flatNodeList(){
 			return obj.node.reduce( (acc,x) => {

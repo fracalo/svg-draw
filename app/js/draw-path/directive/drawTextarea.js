@@ -53,7 +53,7 @@
 
                 $rootScope.$on('pointMove',function(){
                     var res = drawData.getStr();
-                    console.log('saluts!!' , res);
+ console.log('saluts!!' , res);
 
 
                 })

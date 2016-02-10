@@ -5,15 +5,16 @@
 		.factory('drawAttributes',drawAttributes);
 
 
-
-
 	function drawAttributes(){
 		return {
 			basic:basic(),
-			present:presentational()
+			present:presentational(),
+			lenVal : lenVal(),
 		};
 	};
-
+	function lenVal() {
+		return ['r' ,'cy' ,'cx','rx','ry','x1','x2','y1','y2','width','height'];
+	}
 	function basic(){
 		return{
 			circle:[

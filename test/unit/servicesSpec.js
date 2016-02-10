@@ -162,63 +162,7 @@ describe('service exception',function(){
 });
 
 
-describe('drawData',function(){
-	var drawData, node;
-		beforeEach(function(){
-		module('draw.path');
 
-		inject(function(_drawData_){
-			drawData = _drawData_;
-
-		});
-
-		drawData.node =  [
-							{
-							 nodeName :'g',
-							 hashSvg: 0,
-							 attributes: {},
-							 childNodes:[
-										 {
-										 nodeName :'circle',
-										 hashSvg: 1,
-										 attributes: {
-													cx   :11,
-											        cy   :12,
-											         r    :3
-										 			},
-										 childNodes:[]
-										}
-							 ]
-							},
-							{
-							 nodeName :'ellipse',
-							 hashSvg: 2,
-							 attributes: {
-							 	cx   :21,
-						        cy   :22,
-					         	rx    :3,
-					     		ry    :3
-					     		},
-							 childNodes:[]
-							},
-						];
-	});
-
-	it('flatNodelist should make a flat list which points to correct object',function(){
-		var res=drawData.flatNodeList();
-		expect(res.length).toBe(3);
-
-		res[1].attributes.test = 'just checking';
-
-		expect(drawData.node[0].childNodes[0].attributes.test).toBe('just checking')
-
-
-		
-	})
-
-
-
-})
 describe('drawValidation',function(){
 	var drawValidation, drawData,scope ;
 		beforeEach(function(){

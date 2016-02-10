@@ -844,7 +844,7 @@ angular
 
                 $rootScope.$on('pointMove',function(){
                     var res = drawData.getStr();
-                    console.log('saluts!!' , res);
+ console.log('saluts!!' , res);
 
 
                 })
@@ -1105,13 +1105,18 @@ function drawVector(){
 };
 
 })();
-// drawAssemble is used to update a new string every time a certain attribute is modified.
+// drawAssemble is used to update SVG and update the GUI value every time a certain attribute is modified.
 // utility of drawData
 // Process:
-// once drawDeconstruct.structure has changed we check what type of element we're dealing with (hash reference in drawData.node)
-// drawData.node is updated  (will be useful with tools)  
-// a newstring is created ready to be compiled by directive
-// [[I suppose it would be more performant to target the property directly instead of re-compiling -- using setAttribute]]
+// 
+// drawData.changeNode calls for an updated (this is binded to mousemove).  
+// through a pointer on the DOMobject we modify it changing the SVGLegth attributes (also SVGPointsList and PathDataPointList).
+// if there any related points effected we adjust these in drawDeconstruct.structure, but
+// in GUI the actula point position is changed by the drawSinglePoint directive (with drawPointRelation).
+// we return the updated value to drawData preparing the argument for drawData.stringUpdate()
+
+
+
 (function(){
 	'use strict';
 
@@ -1175,8 +1180,6 @@ function drawVector(){
 				//adjust end point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldX;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldY;
-
-
 			};
 			rect.end   = function(p, attrObj){
 				attrObj.width  = p.point.x - attrObj.x;
@@ -1191,6 +1194,18 @@ function drawVector(){
 
 			return rect.end(p,attrObj);
 		}
+
+		// function responder(h){
+		// 	//arguments: 1, ['cx', 44] , ['cy', 422]
+		// 	responder.args = [].splice.call(arguments,1).map(x=>{
+		// 			return { prop:x[0], val:x[1] };
+		// 	});
+		// 	return {
+		// 			hashSvg:h,
+		// 			update:responder.args,
+		// 	};
+		// }
+
 		function circle(p, obj){
 			var attrObj = obj.attributes;
 			var oldCx, oldCy ;
@@ -1199,23 +1214,33 @@ function drawVector(){
 				oldCx = obj.attrsLength.cx.baseVal.value;
 				oldCy = obj.attrsLength.cy.baseVal.value;
 				
-				attrObj.cx = p.point.x;
-				attrObj.cy = p.point.y;
-
+				// convert it to old orig 
 				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				// update attributes obj 
+// console.log(obj.attrsLength)
+				attrObj.cx = obj.attrsLength.cx.baseVal.valueAsString;
+				attrObj.cy = obj.attrsLength.cy.baseVal.valueAsString;
 
 				//adjust radius point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
+
+
+// console.log(obj)		
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ]
+
 			};
 
 			circle.rad = function(p, attrObj){
 				attrObj.r = pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
 					[p.point.x, p.point.y] );
-
+//TODO need to update attrObj after
 				obj.attrsLength.r.baseVal.updateConvertSVGLen( attrObj.r );
+
+				return [ obj.hashSvg , ['r',attrObj.r] ]
 			};
 
 			// check if it's the point responsible for center[0](cx and cy) or rad[1]
@@ -1316,15 +1341,16 @@ function drawVector(){
 		.factory('drawAttributes',drawAttributes);
 
 
-
-
 	function drawAttributes(){
 		return {
 			basic:basic(),
-			present:presentational()
+			present:presentational(),
+			lenVal : lenVal(),
 		};
 	};
-
+	function lenVal() {
+		return ['r' ,'cy' ,'cx','rx','ry','x1','x2','y1','y2','width','height'];
+	}
 	function basic(){
 		return{
 			circle:[
@@ -1585,25 +1611,27 @@ function drawVector(){
 		.module('draw.path')
 		.factory('drawData', drawData);
 
-	drawData.$inject = ['drawAssemble'];
+	drawData.$inject = ['drawAssemble','drawRegexCons'];
 
 
-	function drawData(drawAssemble){
+	function drawData(drawAssemble, drawRegexCons){
 		
 
 		var obj = {
 			node:[],
-			str:'',
+			string:'',
 			setNode:setNode,
+			flatNodeList:flatNodeList,
+			getStr:getStr,
 			// serializeNode:serializeNode,
 			changeNode:changeNode,
-			flatNodeList:flatNodeList,
-			getStr:getStr
+			stringUpdate:stringUpdate,
+			strSplice:strSplice
 		};
 		return obj;
 
 		function getStr(){
-			return obj.str;
+			return obj.string;
 		}
 
 		function changeNode(msg){
@@ -1613,8 +1641,11 @@ function drawVector(){
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
 			
-			drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			// with return  from draw assemble we update string
+			stringUpdate(res);			
 			
+
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
 				setTimeout(function(){ changeNode.pointer = null ;},0)
@@ -1624,15 +1655,57 @@ function drawVector(){
 		}
 
 		// util for changeNode it updates the str in the end of cycle
-		function stringUpdate(){
+		function stringUpdate(res){
 
+			var elObj= pointTo.o[res[0]];
+			var vals = res.splice( 1 ) ;
+			vals.forEach(x=>{
+				// x : ['cx',33]
+			obj.string = drawData.strSplice(
+								obj.string,
+								elObj.attrsStringRef[x[0]].start , 
+								elObj.attrsStringRef[x[0]].end   ,
+								x[1]
+							);
+			});
 		}
-		function strSplice(str, start, end, sub) {
+
+		function strSplice(str, start, end, sub ) {
+			// while making simultaneous changes
+			// if the string changes length we should update all attrsStringRef properties ...
+			// without updating all attrsStringRef we could add a 
+			// strSplice.offset property that add or reduces attrsStringRef values accordingly
+//TODO cleanup strSplice.offset
+  			if( strSplice.offset === undefined){
+	  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
+	  		}
+
+			//if needed update stringindexs
+			for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
+				if (strSplice.offset.ar[i] <  start){
+					start += strSplice.offset[ strSplice.offset.ar[i] ];
+				}
+				if (strSplice.offset.ar[i] <= end){
+					end += strSplice.offset[ strSplice.offset.ar[i] ];
+				}
+			}
+
+			// keep track if there are variation on sub length 
+			if( sub.length !== (end - start) ){
+				strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
+				
+				if(strSplice.offset[end] === 0){//we splice it out
+					strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
+				}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
+					strSplice.offset.ar.push(end);
+				}
+			} 
   			return str.slice(0, start) + (sub || '') + str.slice(end)
 		}
+
 		function setNode(a,str){
 			obj.node = serializeNode(a,str);
-			obj.str = str;
+			obj.string = str;
 		}
 
 		function serializeNode(a,str){
@@ -1662,12 +1735,13 @@ function drawVector(){
 
 				var attrs= mappedAttributes(node.attributes) || [];
 
-				// attrsStringRef is a reference on the char-string-index in  str
+				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
-//TODO  create a match for points and d
-					  var pat = new RegExp("< *" + node.nodeName + ".+?" + x + " *= *[\'|\"]? *(-?\\d+(.\\d+)?[a-z]*)");
+//TODO  create a match for points and d and other values...
+					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
 					  var strI = {};
-					  str.replace(pat, function(m, m2, m3, startI) {
+					  str.replace(pat, function(m, m2, startI) {
+
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
@@ -1694,7 +1768,7 @@ function drawVector(){
 					attrsStringRef	: attrsStringRef,
 				};
 				if(node.nodeName === 'path')
-				// since we're using a shim for astracting specific d getPathData()
+				// since we're using a shim for abstracting specific d getPathData()
 				// we'll pass the whole dom nodeName
 				res.domObj = a[0];  
 
@@ -1708,8 +1782,6 @@ function drawVector(){
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-console.log(res)
-console.log(str)
 				return res; 
 			}
 		}
@@ -1732,14 +1804,13 @@ console.log(str)
 			}, []);
 		}
 		function pointTo(h){
-			var o = flatNodeList();
+			pointTo.o = flatNodeList();
 
-			if(o[h].nodeName === 'path'){
-				o[h].pathDataPointList = pathDataPointList(o[h].domObj);
-				o[h].pathData = o[h].domObj.getPathData();
+			if(pointTo.o[h].nodeName === 'path'){
+				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
+				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
 			}
-
-			return o[h];
+			return pointTo.o[h];
 		}
 		function flatNodeList(){
 			return obj.node.reduce( (acc,x) => {
@@ -2161,6 +2232,31 @@ console.log(str)
 
 		}
 })();
+(function(){
+	'use strict';
+
+	angular
+		.module('draw.path')
+		.factory('drawRegexCons',drawRegexCons);
+
+	
+
+	function drawRegexCons(){
+		return{
+			attrsStrLen:attrsStrLen
+		};
+
+		function attrsStrLen (nodeName, attr, val) {
+
+			// this escapes some characters that need 
+			var valescaper = /[(|)+*[\]]/g;
+			val = val.toString();
+			val = val.replace(valescaper,'\\$&');
+			
+			return new RegExp("< *" + nodeName + ".+?(?:" + attr + ").+?(" + val + ")");
+		}
+	}
+	})();
 (function(){
 	 'use strict';
 	angular
