@@ -52,10 +52,8 @@
                 );
 
                 $rootScope.$on('pointMove',function(){
-                    var res = drawData.getStr();
- console.log('saluts!!' , res);
-
-
+                    inside.code = drawData.getStr();
+                    $scope.$digest()
                 })
             }
         };

@@ -37,10 +37,10 @@
 		.module('draw.path')
 		.factory('drawData', drawData);
 
-	drawData.$inject = ['drawAssemble','drawRegexCons'];
+	drawData.$inject = ['$timeout' , 'drawAssemble','drawRegexCons','drawStrCode'];
 
 
-	function drawData(drawAssemble, drawRegexCons){
+	function drawData($timeout , drawAssemble, drawRegexCons, drawStrCode){
 		
 
 		var obj = {
@@ -51,8 +51,8 @@
 			getStr:getStr,
 			// serializeNode:serializeNode,
 			changeNode:changeNode,
-			stringUpdate:stringUpdate,
-			strSplice:strSplice
+			stringUpdateflag:false,
+			// strSplice:strSplice
 		};
 		return obj;
 
@@ -69,8 +69,25 @@
 			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
-			stringUpdate(res);			
+			// obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1))
 			
+			if( obj.stringUpdateflag === false){
+				obj.stringUpdateflag = true;
+				 $timeout( function(){ 
+					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
+					obj.stringUpdateflag = false;
+				 }, 100 );
+
+			}
+			// 	obj.stringUpdateflag = true;
+			// 	console.log('entered timeout')
+			// 	$timeout( function(){ return strUpdater(res); }, 1500 );
+			// }
+			
+			// function strUpdater(args){
+			// 	obj.string = drawStrCode.update( pointTo.o[args[0]], obj.string, args.splice(1));			
+			// 	obj.stringUpdateflag = false;
+			// }
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
@@ -81,53 +98,52 @@
 		}
 
 		// util for changeNode it updates the str in the end of cycle
-		function stringUpdate(res){
+		// function stringUpdate(res){
 
-			var elObj= pointTo.o[res[0]];
-			var vals = res.splice( 1 ) ;
-			vals.forEach(x=>{
-				// x : ['cx',33]
-			obj.string = drawData.strSplice(
-								obj.string,
-								elObj.attrsStringRef[x[0]].start , 
-								elObj.attrsStringRef[x[0]].end   ,
-								x[1]
-							);
-			});
-		}
+		// 	var elObj= pointTo.o[res[0]];
+		// 	var vals = res.splice( 1 ) ;
+		// 	vals.forEach(x=>{
+		// 		// x : ['cx',33]
+		// 	obj.string = strSplice(
+		// 						obj.string,
+		// 						elObj.attrsStringRef[x[0]].start , 
+		// 						elObj.attrsStringRef[x[0]].end   ,
+		// 						x[1]
+		// 					);
+		// 	});
+		// }
 
-		function strSplice(str, start, end, sub ) {
-			// while making simultaneous changes
-			// if the string changes length we should update all attrsStringRef properties ...
-			// without updating all attrsStringRef we could add a 
-			// strSplice.offset property that add or reduces attrsStringRef values accordingly
-//TODO cleanup strSplice.offset
-  			if( strSplice.offset === undefined){
-	  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
-	  		}
+		// function strSplice(str, start, end, sub ) {
+		// 	// while making simultaneous changes
+		// 	// if the string changes length we should update all attrsStringRef properties ...
+		// 	// without updating all attrsStringRef we could add a 
+		// 	// strSplice.offset property that add or reduces attrsStringRef values accordingly
+  // 			if( strSplice.offset === undefined){
+	 //  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
+	 //  		}
 
-			//if needed update stringindexs
-			for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
-				if (strSplice.offset.ar[i] <  start){
-					start += strSplice.offset[ strSplice.offset.ar[i] ];
-				}
-				if (strSplice.offset.ar[i] <= end){
-					end += strSplice.offset[ strSplice.offset.ar[i] ];
-				}
-			}
+		// 	//if needed update stringindexs
+		// 	for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
+		// 		if (strSplice.offset.ar[i] <  start){
+		// 			start += strSplice.offset[ strSplice.offset.ar[i] ];
+		// 		}
+		// 		if (strSplice.offset.ar[i] <= end){
+		// 			end += strSplice.offset[ strSplice.offset.ar[i] ];
+		// 		}
+		// 	}
 
-			// keep track if there are variation on sub length 
-			if( sub.length !== (end - start) ){
-				strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
+		// 	// keep track if there are variation on sub length 
+		// 	if( sub.length !== (end - start) ){
+		// 		strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
 				
-				if(strSplice.offset[end] === 0){//we splice it out
-					strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
-				}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
-					strSplice.offset.ar.push(end);
-				}
-			} 
-  			return str.slice(0, start) + (sub || '') + str.slice(end)
-		}
+		// 		if(strSplice.offset[end] === 0){//we splice it out
+		// 			strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
+		// 		}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
+		// 			strSplice.offset.ar.push(end);
+		// 		}
+		// 	} 
+  // 			return str.slice(0, start) + (sub || '') + str.slice(end)
+		// }
 
 		function setNode(a,str){
 			obj.node = serializeNode(a,str);
@@ -144,6 +160,12 @@
 			});
 
 			function mapNode(node){
+			// this procedure creates a structure which is utilized by
+			// .pointTo() to create a flatnode Reference table (.pointTo.o property) and
+			// by drawStrCode.update to track length of string when values in string change
+			// since the structure changes we need to initialize these properties
+			drawStrCode.initStrOffset();
+			pointTo.o = undefined;
 				
 				function mappedAttributes(nA){
 					// this regex strips out wrong attributes compiled by angular
@@ -230,7 +252,7 @@
 			}, []);
 		}
 		function pointTo(h){
-			pointTo.o = flatNodeList();
+			pointTo.o = pointTo.o || flatNodeList();
 
 			if(pointTo.o[h].nodeName === 'path'){
 				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);

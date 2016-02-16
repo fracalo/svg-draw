@@ -1,3 +1,4 @@
+'use strict';
 const gulp = require('gulp'),
 	sass = require('gulp-ruby-sass'),
 	compass = require('gulp-compass'),

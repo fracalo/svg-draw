@@ -11,7 +11,7 @@
 			present:presentational(),
 			lenVal : lenVal(),
 		};
-	};
+	}
 	function lenVal() {
 		return ['r' ,'cy' ,'cx','rx','ry','x1','x2','y1','y2','width','height'];
 	}

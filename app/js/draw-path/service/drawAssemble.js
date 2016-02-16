@@ -88,16 +88,6 @@
 			return rect.end(p,attrObj);
 		}
 
-		// function responder(h){
-		// 	//arguments: 1, ['cx', 44] , ['cy', 422]
-		// 	responder.args = [].splice.call(arguments,1).map(x=>{
-		// 			return { prop:x[0], val:x[1] };
-		// 	});
-		// 	return {
-		// 			hashSvg:h,
-		// 			update:responder.args,
-		// 	};
-		// }
 
 		function circle(p, obj){
 			var attrObj = obj.attributes;
@@ -112,7 +102,6 @@
 				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
 
 				// update attributes obj 
-// console.log(obj.attrsLength)
 				attrObj.cx = obj.attrsLength.cx.baseVal.valueAsString;
 				attrObj.cy = obj.attrsLength.cy.baseVal.valueAsString;
 
@@ -120,20 +109,21 @@
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
 
-
-// console.log(obj)		
 				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ]
 
 			};
 
 			circle.rad = function(p, attrObj){
-				attrObj.r = pytha(
+				obj.attrsLength.r.baseVal.updateConvertSVGLen( 
+					pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
-					[p.point.x, p.point.y] );
-//TODO need to update attrObj after
-				obj.attrsLength.r.baseVal.updateConvertSVGLen( attrObj.r );
-
+					[p.point.x, p.point.y]
+					)
+				);
+				attrObj.r = obj.attrsLength.r.baseVal.valueAsString;
 				return [ obj.hashSvg , ['r',attrObj.r] ]
+
+
 			};
 
 			// check if it's the point responsible for center[0](cx and cy) or rad[1]
@@ -221,9 +211,3 @@
 
 })();
 
-
-		// function updateConvertSVGLen(v,a,obj){
-		// 	var val = obj[a].baseVal.unitType;
-		// 	obj[a].baseVal.newValueSpecifiedUnits(1, v);
-		// 	obj[a].baseVal.convertToSpecifiedUnits(val);
-		// }
