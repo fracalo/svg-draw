@@ -1122,9 +1122,9 @@ function drawVector(){
 		.module('draw.path')
 		.factory('drawAssemble', drawAssemble);
 	
-	drawAssemble.$inject = ['drawDeconstruct'];
+	drawAssemble.$inject = ['drawDeconstruct' , 'drawStrCode'];
 
-	function drawAssemble(drawDeconstruct) {
+	function drawAssemble( drawDeconstruct, drawStrCode ) {
 		// add methods on proto
 		if(SVGLength.prototype && !SVGLength.prototype.updateConvertSVGLen)
 		SVGLength.prototype.updateConvertSVGLen = function(v){
@@ -1147,17 +1147,26 @@ function drawVector(){
 
 			path.pointByI = obj.pathDataPointList[p.index];
 			
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     =  p.point.x;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] =  p.point.y;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x =  p.point.x;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y =  p.point.y;
 
 			obj.domObj.setPathData(obj.pathData);
+			obj.attributes.d = 
+			drawStrCode.preUpdateD( obj , path.pointByI ,
+				[ [path.pointByI.subI * 2 ,p.point.x] , [path.pointByI.subI * 2 + 1,p.point.y] ]) ;
+
+
+			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
 		function polygon(p,obj){
- console.log(obj.attributes)
-//TODO need to update obj.attributes.points  (the strnig)
+
 			obj.pointList.points[p.index].x = p.point.x;
 			obj.pointList.points[p.index].y = p.point.y;
 
+			obj.attributes.points = 
+			drawStrCode.preUpdatePoints( obj , p.index ,[ ['x',p.point.x] , ['y',p.point.y] ]) ;
+			
+			return [ obj.hashSvg , ['points', obj.attributes.points] ];
 		}
 
 
@@ -1169,22 +1178,34 @@ function drawVector(){
 				oldX = obj.attrsLength.x.baseVal.value;
 				oldY = obj.attrsLength.y.baseVal.value;
 
-				attrObj.x = p.point.x;
-				attrObj.y = p.point.y;
-
 				obj.attrsLength.x.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.y.baseVal.updateConvertSVGLen(p.point.y);
+
+				// update attributes obj
+				attrObj.x = obj.attrsLength.x.baseVal.valueAsString;
+				attrObj.y = obj.attrsLength.y.baseVal.valueAsString;
 
 				//adjust end point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldX;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldY;
+
+				return [ obj.hashSvg , ['x',attrObj.x] , ['y',attrObj.y] ];
 			};
 			rect.end   = function(p, attrObj){
 				attrObj.width  = p.point.x - attrObj.x;
 				attrObj.height = p.point.y - attrObj.y;
 
-				obj.attrsLength.width.baseVal.updateConvertSVGLen(attrObj.width);
-				obj.attrsLength.height.baseVal.updateConvertSVGLen(attrObj.height);
+				obj.attrsLength.width.baseVal.updateConvertSVGLen(
+					p.point.x - obj.attrsLength.x.baseVal.value
+				);
+				obj.attrsLength.height.baseVal.updateConvertSVGLen(
+					p.point.y - obj.attrsLength.y.baseVal.value
+				);
+
+				attrObj.width  = obj.attrsLength.width.baseVal.valueAsString;
+				attrObj.height = obj.attrsLength.height.baseVal.valueAsString;
+
+				return [ obj.hashSvg , ['width',attrObj.width] , ['height',attrObj.height] ];
 			};
 
 			if(p.index === 0)
@@ -1214,7 +1235,7 @@ function drawVector(){
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
 
-				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ]
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ];
 
 			};
 
@@ -1226,7 +1247,7 @@ function drawVector(){
 					)
 				);
 				attrObj.r = obj.attrsLength.r.baseVal.valueAsString;
-				return [ obj.hashSvg , ['r',attrObj.r] ]
+				return [ obj.hashSvg , ['r',attrObj.r] ];
 
 
 			};
@@ -1246,34 +1267,41 @@ function drawVector(){
 			ellipse.center = function(p, attrObj){
 				oldCx = obj.attrsLength.cx.baseVal.value;
 				oldCy = obj.attrsLength.cy.baseVal.value;
-				
-				attrObj.cx = p.point.x;
-				attrObj.cy = p.point.y;
 
 				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				attrObj.cx = obj.attrsLength.cx.baseVal.valueAsString;
+				attrObj.cy = obj.attrsLength.cy.baseVal.valueAsString;
+
 
 				//adjust both radius point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
 				drawDeconstruct.structure[obj.hashSvg][2].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][2].y += p.point.y - oldCy;
+
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ];
 			};
 
 			ellipse.radX = function(p, attrObj){
-				attrObj.rx = pytha(
+				obj.attrsLength.rx.baseVal.updateConvertSVGLen(
+					pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
-					[p.point.x, p.point.y] );
-
-				obj.attrsLength.rx.baseVal.updateConvertSVGLen( attrObj.rx );
+					[p.point.x, p.point.y] )
+				);
+				attrObj.rx = obj.attrsLength.rx.baseVal.valueAsString;
+				return [ obj.hashSvg , ['rx',attrObj.rx] ];
 			};
 
 			ellipse.radY = function(p, attrObj){
-				attrObj.ry = pytha(
+				obj.attrsLength.ry.baseVal.updateConvertSVGLen(
+					pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
-					[p.point.x, p.point.y] );
-
-				obj.attrsLength.ry.baseVal.updateConvertSVGLen( attrObj.ry );
+					[p.point.x, p.point.y] )
+				);
+				attrObj.ry = obj.attrsLength.ry.baseVal.valueAsString;
+				return [ obj.hashSvg , ['ry',attrObj.ry] ];
 			};
 
 			if (p.index === 0)
@@ -1288,17 +1316,20 @@ function drawVector(){
 			var attrObj = obj.attributes;
 
 			line.x = function(p, attrObj){
-				attrObj.x1 = p.point.x;
-				attrObj.y1 = p.point.y;
 				obj.attrsLength.x1.baseVal.updateConvertSVGLen(p.point.x);
-				obj.attrsLength.y1.baseVal.updateConvertSVGLen(p.point.y); 
+				obj.attrsLength.y1.baseVal.updateConvertSVGLen(p.point.y);
+				attrObj.x1 = obj.attrsLength.x1.baseVal.valueAsString;
+				attrObj.y1 = obj.attrsLength.y1.baseVal.valueAsString;
+
+				return [ obj.hashSvg , ['x1',attrObj.x1] , ['y1',attrObj.y1] ];
 			};
 			line.y = function(p, attrObj){
-				attrObj.x2 = p.point.x;
-				attrObj.y2 = p.point.y;
 				obj.attrsLength.x2.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.y2.baseVal.updateConvertSVGLen(p.point.y); 
+				attrObj.x2 = obj.attrsLength.x2.baseVal.valueAsString;
+				attrObj.y2 = obj.attrsLength.y2.baseVal.valueAsString;
 
+				return [ obj.hashSvg , ['x2',attrObj.x2] , ['y2',attrObj.y2] ];
 			};
 			if (p.index === 0)
 			return line.x(p,attrObj);
@@ -1626,81 +1657,23 @@ function drawVector(){
 			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
-			// obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1))
 			
 			if( obj.stringUpdateflag === false){
 				obj.stringUpdateflag = true;
 				 $timeout( function(){ 
 					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
 					obj.stringUpdateflag = false;
-				 }, 100 );
-
+				 }, 30 );
 			}
-			// 	obj.stringUpdateflag = true;
-			// 	console.log('entered timeout')
-			// 	$timeout( function(){ return strUpdater(res); }, 1500 );
-			// }
-			
-			// function strUpdater(args){
-			// 	obj.string = drawStrCode.update( pointTo.o[args[0]], obj.string, args.splice(1));			
-			// 	obj.stringUpdateflag = false;
-			// }
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
-				setTimeout(function(){ changeNode.pointer = null ;},0)
+				setTimeout(function(){ changeNode.pointer = null ;},0);
 			}
 
-			// now we should update the string
 		}
 
-		// util for changeNode it updates the str in the end of cycle
-		// function stringUpdate(res){
 
-		// 	var elObj= pointTo.o[res[0]];
-		// 	var vals = res.splice( 1 ) ;
-		// 	vals.forEach(x=>{
-		// 		// x : ['cx',33]
-		// 	obj.string = strSplice(
-		// 						obj.string,
-		// 						elObj.attrsStringRef[x[0]].start , 
-		// 						elObj.attrsStringRef[x[0]].end   ,
-		// 						x[1]
-		// 					);
-		// 	});
-		// }
-
-		// function strSplice(str, start, end, sub ) {
-		// 	// while making simultaneous changes
-		// 	// if the string changes length we should update all attrsStringRef properties ...
-		// 	// without updating all attrsStringRef we could add a 
-		// 	// strSplice.offset property that add or reduces attrsStringRef values accordingly
-  // 			if( strSplice.offset === undefined){
-	 //  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
-	 //  		}
-
-		// 	//if needed update stringindexs
-		// 	for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
-		// 		if (strSplice.offset.ar[i] <  start){
-		// 			start += strSplice.offset[ strSplice.offset.ar[i] ];
-		// 		}
-		// 		if (strSplice.offset.ar[i] <= end){
-		// 			end += strSplice.offset[ strSplice.offset.ar[i] ];
-		// 		}
-		// 	}
-
-		// 	// keep track if there are variation on sub length 
-		// 	if( sub.length !== (end - start) ){
-		// 		strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
-				
-		// 		if(strSplice.offset[end] === 0){//we splice it out
-		// 			strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
-		// 		}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
-		// 			strSplice.offset.ar.push(end);
-		// 		}
-		// 	} 
-  // 			return str.slice(0, start) + (sub || '') + str.slice(end)
-		// }
 
 		function setNode(a,str){
 			obj.node = serializeNode(a,str);
@@ -1743,15 +1716,62 @@ function drawVector(){
 				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
 //TODO  create a match for points and d and other values...
-					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
-					  var strI = {};
-					  str.replace(pat, function(m, m2, startI) {
 
+
+
+					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
+					var strI = {};
+					  str.replace(pat, function(m, m2, startI) {
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
-					  acc[x] =  strI;
-					  return acc;
+					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
+							patNum = /-?\d+(\.\d+)?/g ;
+						if(x === 'points'){
+							// exaple 			points:{
+							// 							0:{
+							//								x:{start:13, end:15},
+							// 								y:{start:17, end:20}
+							//  						}
+							// 					}
+							
+							var counter = 0 , XorY = true;
+							attrs[x].replace( patNum, function(m, _ ,start){
+
+								if (XorY){
+									strI[ counter ] = {};
+									strI[ counter ].x = {};
+									strI[ counter ].x.start = start ;
+									strI[ counter ].x.end = start + m.length ;
+									return  XorY = ! XorY;
+								}
+
+								strI[ counter ].y = {};
+								strI[ counter ].y.start = start ;
+								strI[ counter ].y.end = start + m.length ;
+								return counter++ , XorY = ! XorY ;
+							});
+						}
+						if(x === 'd'){
+							var comCount = 0 , valCount; 
+							attrs[x].replace( commandPat, function(m, com, start){
+								strI[ comCount ] = {
+									start : start,
+									end	  : start + m.length
+								};
+								valCount = 0
+								m.replace( patNum , function(ma, _ , s){
+									strI[ comCount ][ valCount++ ] = {
+										start: start + s,
+										end  : start + s + ma.length
+									};
+								});
+								comCount ++;
+
+							})
+						}
+					acc[x] = strI;
+					return acc;
 				}, {} );
 
 				// check svgAnimatedLength for conversion values
@@ -1763,7 +1783,7 @@ function drawVector(){
 
 					if (node[x] instanceof SVGPointList )
 					pointList[x] = node[x]; 
-				};
+				}
 
 				var res ={
 					nodeName   		: node.nodeName,
@@ -1787,6 +1807,7 @@ function drawVector(){
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
+
 				return res; 
 			}
 		}
@@ -1827,7 +1848,7 @@ function drawVector(){
 				}, acc);
 				return acc;
 			}, [])
-			.sort( (a,b) => {return a.hashSvg - b.hashSvg});
+			.sort( (a,b) => {return a.hashSvg - b.hashSvg; } );
 		}
 
 		
@@ -2418,23 +2439,61 @@ function drawService($filter){
 
 		function drawStrCode(){
 		
-		var offset = {},
-		    temp   = {};
+		var offset = {};
+		   /* temp   = {};*/
 
 		return {
 				update:update,
 				initStrOffset:initStrOffset,
-				offsetMerge:offsetMerge,
+				preUpdatePoints: preUpdatePoints,
+				preUpdateD: preUpdateD,
 			};
 
+		function preUpdateD(ref, pointByI, xYpairs ){
 
+			var dSubtracker = 'd'+ ref.hashSvg;
+
+			if( ! offset[ dSubtracker ] )
+			offset[ dSubtracker ] = {};
+
+			return stringUpdate (
+				ref.attrsStringRef.d[ pointByI.comI ],
+				ref.attributes.d,
+				xYpairs,
+				offset[ dSubtracker ]
+				);
+		}
+		function preUpdatePoints(ref, index, xYpairs ){
+
+			var pointsSubtracker = 'points'+ ref.hashSvg;
+			
+			if( ! offset[ pointsSubtracker ] )
+			offset[ pointsSubtracker ] = {};
+
+			return stringUpdate (
+				ref.attrsStringRef.points[index],
+				ref.attributes.points,
+				xYpairs,
+				offset[ pointsSubtracker ]
+				);
+
+		}
 		function update( ref , string, pairs ){
-		
+			// we could sort these while dispatching them..
+			// but if they're not in order it will break string slicing.
+
 			pairs = pairs.sort((a,b)=>{
 				return ref.attrsStringRef[a[0]].start - ref.attrsStringRef[b[0]].start;
 			});
 			
-			var  tmpShift = 0, 
+			return stringUpdate (ref.attrsStringRef, string, pairs, offset);
+
+		}
+		// this method is used also in substitution of points
+		function stringUpdate( reference , string, pairs, offsetTracker ){
+
+			
+			var  tmpShift = 0, temp = {},
 			start , end , beginSlice , origEnd , origStart ,origBeginSlice ;
 			
 
@@ -2443,62 +2502,61 @@ function drawService($filter){
 				x[1] = x[1].toString();
 
 				origBeginSlice = (i === 0)? 0 :
-				ref.attrsStringRef[ pairs[ i-1 ][0] ].end  ;
-				beginSlice = valShift(origBeginSlice  ) ;
+				reference[ pairs[ i-1 ][0] ].end  ;
+		/*	*/	beginSlice = valShift(origBeginSlice , offsetTracker ) ;
 				
-				origStart = ref.attrsStringRef[ x[0] ].start;
-				start = valShift( origStart  );
+				origStart = reference[ x[0] ].start;
+		/*	*/	start = valShift( origStart , offsetTracker );
 
-				origEnd = ref.attrsStringRef[ x[0] ].end;
-				end = valShift( origEnd  ) ;
+				origEnd = reference[ x[0] ].end;
+		/*	*/	end = valShift( origEnd , offsetTracker ) ;
 
+				/*********************/
 				acc +=  string.slice(  beginSlice , start  ) +  x[1];
 					
 				if( tmpShift !== 0){
-					offsetManager( origStart  , start + tmpShift );
+		/*\\*/		offsetManager( origStart  , start + tmpShift , temp );
 				}
 
 				var difference = x[1].length - ( end - start ) ; 
 				if( difference !== 0 || tmpShift !== 0){
-					offsetManager( origEnd  , origEnd + (end - origEnd )+ difference + tmpShift);
+		/*\\*/		offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
 					tmpShift += difference;
 				}
 
 				//additional operation on last substitution
 				if (i === pairs.length - 1){
+					
+					/*********************/
 					acc += string.slice( end );
 
 					//maintainence
-					offsetMerge(offset);
-					resetTemp();
-					tmpShift = 0;
+		/*\\*/		offsetMerge( offsetTracker , temp);
+		
 				}
 
 				return acc;
 			},'');
 
 		}
-		function valShift(val){
+		function valShift( val, offsetTracker){
+			//loop over an obj as if it was an array .. 
 			for (var i = val ; i > 0 ; i--){
-				if (offset[i]  ){
-					var diff = offset[ i ] - i ;
+				if (offsetTracker[i]  ){
+					var diff = offsetTracker[ i ] - i ;
 					val = val + diff;
 					break;
 				}
 			}
 			return val;
-
 		}
-		function offsetManager(index, modVal){
-			temp[ index ] =  modVal ;
+		function offsetManager(index, modVal , offsetTracker){
+			offsetTracker[ index ] =  modVal ;
 		}
-		function offsetMerge(o){
-			for (var i in temp){
-					o[i] = temp[i] ;
+		function offsetMerge(d ,s ){
+			for (var i in s){
+				d[i] = s[i] ;
 			}
-		}
-		function resetTemp(){
-			temp = {};
 		}
 		function initStrOffset(){
 			offset = {};

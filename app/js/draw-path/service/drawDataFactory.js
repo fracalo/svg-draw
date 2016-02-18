@@ -69,81 +69,23 @@
 			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
-			// obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1))
 			
 			if( obj.stringUpdateflag === false){
 				obj.stringUpdateflag = true;
 				 $timeout( function(){ 
 					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
 					obj.stringUpdateflag = false;
-				 }, 100 );
-
+				 }, 30 );
 			}
-			// 	obj.stringUpdateflag = true;
-			// 	console.log('entered timeout')
-			// 	$timeout( function(){ return strUpdater(res); }, 1500 );
-			// }
-			
-			// function strUpdater(args){
-			// 	obj.string = drawStrCode.update( pointTo.o[args[0]], obj.string, args.splice(1));			
-			// 	obj.stringUpdateflag = false;
-			// }
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
-				setTimeout(function(){ changeNode.pointer = null ;},0)
+				setTimeout(function(){ changeNode.pointer = null ;},0);
 			}
 
-			// now we should update the string
 		}
 
-		// util for changeNode it updates the str in the end of cycle
-		// function stringUpdate(res){
 
-		// 	var elObj= pointTo.o[res[0]];
-		// 	var vals = res.splice( 1 ) ;
-		// 	vals.forEach(x=>{
-		// 		// x : ['cx',33]
-		// 	obj.string = strSplice(
-		// 						obj.string,
-		// 						elObj.attrsStringRef[x[0]].start , 
-		// 						elObj.attrsStringRef[x[0]].end   ,
-		// 						x[1]
-		// 					);
-		// 	});
-		// }
-
-		// function strSplice(str, start, end, sub ) {
-		// 	// while making simultaneous changes
-		// 	// if the string changes length we should update all attrsStringRef properties ...
-		// 	// without updating all attrsStringRef we could add a 
-		// 	// strSplice.offset property that add or reduces attrsStringRef values accordingly
-  // 			if( strSplice.offset === undefined){
-	 //  			strSplice.offset = { ar: [ /*11 */ ],  /*11 : 1*/};
-	 //  		}
-
-		// 	//if needed update stringindexs
-		// 	for (var i = 0 ; i < strSplice.offset.ar.length ; i++){
-		// 		if (strSplice.offset.ar[i] <  start){
-		// 			start += strSplice.offset[ strSplice.offset.ar[i] ];
-		// 		}
-		// 		if (strSplice.offset.ar[i] <= end){
-		// 			end += strSplice.offset[ strSplice.offset.ar[i] ];
-		// 		}
-		// 	}
-
-		// 	// keep track if there are variation on sub length 
-		// 	if( sub.length !== (end - start) ){
-		// 		strSplice.offset[end] =  (sub.length - (end - start)) + (strSplice.offset[end] || 0) ;
-				
-		// 		if(strSplice.offset[end] === 0){//we splice it out
-		// 			strSplice.offset.ar.splice(  strSplice.offset.ar.indexOf(end) ,  1  )
-		// 		}else if(strSplice.offset.ar.indexOf(end) < 0){//if it's not in array we push it in
-		// 			strSplice.offset.ar.push(end);
-		// 		}
-		// 	} 
-  // 			return str.slice(0, start) + (sub || '') + str.slice(end)
-		// }
 
 		function setNode(a,str){
 			obj.node = serializeNode(a,str);
@@ -186,15 +128,62 @@
 				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
 //TODO  create a match for points and d and other values...
-					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
-					  var strI = {};
-					  str.replace(pat, function(m, m2, startI) {
 
+
+
+					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
+					var strI = {};
+					  str.replace(pat, function(m, m2, startI) {
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
-					  acc[x] =  strI;
-					  return acc;
+					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
+							patNum = /-?\d+(\.\d+)?/g ;
+						if(x === 'points'){
+							// exaple 			points:{
+							// 							0:{
+							//								x:{start:13, end:15},
+							// 								y:{start:17, end:20}
+							//  						}
+							// 					}
+							
+							var counter = 0 , XorY = true;
+							attrs[x].replace( patNum, function(m, _ ,start){
+
+								if (XorY){
+									strI[ counter ] = {};
+									strI[ counter ].x = {};
+									strI[ counter ].x.start = start ;
+									strI[ counter ].x.end = start + m.length ;
+									return  XorY = ! XorY;
+								}
+
+								strI[ counter ].y = {};
+								strI[ counter ].y.start = start ;
+								strI[ counter ].y.end = start + m.length ;
+								return counter++ , XorY = ! XorY ;
+							});
+						}
+						if(x === 'd'){
+							var comCount = 0 , valCount; 
+							attrs[x].replace( commandPat, function(m, com, start){
+								strI[ comCount ] = {
+									start : start,
+									end	  : start + m.length
+								};
+								valCount = 0
+								m.replace( patNum , function(ma, _ , s){
+									strI[ comCount ][ valCount++ ] = {
+										start: start + s,
+										end  : start + s + ma.length
+									};
+								});
+								comCount ++;
+
+							})
+						}
+					acc[x] = strI;
+					return acc;
 				}, {} );
 
 				// check svgAnimatedLength for conversion values
@@ -206,7 +195,7 @@
 
 					if (node[x] instanceof SVGPointList )
 					pointList[x] = node[x]; 
-				};
+				}
 
 				var res ={
 					nodeName   		: node.nodeName,
@@ -230,6 +219,7 @@
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
+
 				return res; 
 			}
 		}
@@ -270,7 +260,7 @@
 				}, acc);
 				return acc;
 			}, [])
-			.sort( (a,b) => {return a.hashSvg - b.hashSvg});
+			.sort( (a,b) => {return a.hashSvg - b.hashSvg; } );
 		}
 
 		

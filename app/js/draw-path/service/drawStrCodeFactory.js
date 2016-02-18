@@ -7,23 +7,61 @@
 
 		function drawStrCode(){
 		
-		var offset = {},
-		    temp   = {};
+		var offset = {};
+		   /* temp   = {};*/
 
 		return {
 				update:update,
 				initStrOffset:initStrOffset,
-				offsetMerge:offsetMerge,
+				preUpdatePoints: preUpdatePoints,
+				preUpdateD: preUpdateD,
 			};
 
+		function preUpdateD(ref, pointByI, xYpairs ){
 
+			var dSubtracker = 'd'+ ref.hashSvg;
+
+			if( ! offset[ dSubtracker ] )
+			offset[ dSubtracker ] = {};
+
+			return stringUpdate (
+				ref.attrsStringRef.d[ pointByI.comI ],
+				ref.attributes.d,
+				xYpairs,
+				offset[ dSubtracker ]
+				);
+		}
+		function preUpdatePoints(ref, index, xYpairs ){
+
+			var pointsSubtracker = 'points'+ ref.hashSvg;
+			
+			if( ! offset[ pointsSubtracker ] )
+			offset[ pointsSubtracker ] = {};
+
+			return stringUpdate (
+				ref.attrsStringRef.points[index],
+				ref.attributes.points,
+				xYpairs,
+				offset[ pointsSubtracker ]
+				);
+
+		}
 		function update( ref , string, pairs ){
-		
+			// we could sort these while dispatching them..
+			// but if they're not in order it will break string slicing.
+
 			pairs = pairs.sort((a,b)=>{
 				return ref.attrsStringRef[a[0]].start - ref.attrsStringRef[b[0]].start;
 			});
 			
-			var  tmpShift = 0, 
+			return stringUpdate (ref.attrsStringRef, string, pairs, offset);
+
+		}
+		// this method is used also in substitution of points
+		function stringUpdate( reference , string, pairs, offsetTracker ){
+
+			
+			var  tmpShift = 0, temp = {},
 			start , end , beginSlice , origEnd , origStart ,origBeginSlice ;
 			
 
@@ -32,62 +70,61 @@
 				x[1] = x[1].toString();
 
 				origBeginSlice = (i === 0)? 0 :
-				ref.attrsStringRef[ pairs[ i-1 ][0] ].end  ;
-				beginSlice = valShift(origBeginSlice  ) ;
+				reference[ pairs[ i-1 ][0] ].end  ;
+		/*	*/	beginSlice = valShift(origBeginSlice , offsetTracker ) ;
 				
-				origStart = ref.attrsStringRef[ x[0] ].start;
-				start = valShift( origStart  );
+				origStart = reference[ x[0] ].start;
+		/*	*/	start = valShift( origStart , offsetTracker );
 
-				origEnd = ref.attrsStringRef[ x[0] ].end;
-				end = valShift( origEnd  ) ;
+				origEnd = reference[ x[0] ].end;
+		/*	*/	end = valShift( origEnd , offsetTracker ) ;
 
+				/*********************/
 				acc +=  string.slice(  beginSlice , start  ) +  x[1];
 					
 				if( tmpShift !== 0){
-					offsetManager( origStart  , start + tmpShift );
+		/*\\*/		offsetManager( origStart  , start + tmpShift , temp );
 				}
 
 				var difference = x[1].length - ( end - start ) ; 
 				if( difference !== 0 || tmpShift !== 0){
-					offsetManager( origEnd  , origEnd + (end - origEnd )+ difference + tmpShift);
+		/*\\*/		offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
 					tmpShift += difference;
 				}
 
 				//additional operation on last substitution
 				if (i === pairs.length - 1){
+					
+					/*********************/
 					acc += string.slice( end );
 
 					//maintainence
-					offsetMerge(offset);
-					resetTemp();
-					tmpShift = 0;
+		/*\\*/		offsetMerge( offsetTracker , temp);
+		
 				}
 
 				return acc;
 			},'');
 
 		}
-		function valShift(val){
+		function valShift( val, offsetTracker){
+			//loop over an obj as if it was an array .. 
 			for (var i = val ; i > 0 ; i--){
-				if (offset[i]  ){
-					var diff = offset[ i ] - i ;
+				if (offsetTracker[i]  ){
+					var diff = offsetTracker[ i ] - i ;
 					val = val + diff;
 					break;
 				}
 			}
 			return val;
-
 		}
-		function offsetManager(index, modVal){
-			temp[ index ] =  modVal ;
+		function offsetManager(index, modVal , offsetTracker){
+			offsetTracker[ index ] =  modVal ;
 		}
-		function offsetMerge(o){
-			for (var i in temp){
-					o[i] = temp[i] ;
+		function offsetMerge(d ,s ){
+			for (var i in s){
+				d[i] = s[i] ;
 			}
-		}
-		function resetTemp(){
-			temp = {};
 		}
 		function initStrOffset(){
 			offset = {};

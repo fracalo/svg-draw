@@ -115,80 +115,73 @@ describe('drawData',function(){
 
 		});
 
-		// we have movef this to drawDataStr
-		// describe('strSplice() utility', function(){
-		// 		var n, a;
-		// 	beforeEach(function(){
-		// 		drawData.string = "<circle cy=99 cx=99 r=3 fill='blue' />";
-		// 		n = {
-		// 			 nodeName :'circle',
-		// 			 hashSvg: 0,
-		// 			 attributes: {
-		// 						cx   : 99,
-		// 				        cy   : 99,
-		// 				        r    : 3,
-		// 				        fill : 'blue'
-		// 			 			},
-		// 			 childNodes:[],
-		// 			 attrsStringRef:{
-		// 						cx   : {start: 17, end: 19},
-		// 				        cy   : {start: 11, end: 13},
-		// 				        fill : {start: 30, end: 34},
-		// 				        r    : {start: 22, end: 23}
-		// 			 			},
-		// 		};
-		// 		a = [0,['cy','100']];
-		// 		drawData.stringUpdate = function(res){
-		// 			var elObj= n/*pointTo.o[res[0]] mocked */;
-		// 			var vals = res.splice( 1 ) ;
-
-		// 			var string;
-		// 			var counter = vals.length;
-		// 			vals.forEach(x=>{
-		// 				// x : ['cx',33]
-		// 			drawData.string = drawData.strSplice(
-		// 								drawData.string,
-		// 								elObj.attrsStringRef[x[0]].start , 
-		// 								elObj.attrsStringRef[x[0]].end   ,
-		// 								x[1]
-		// 							);
-		// 			// counter = counter - 1;
-		// 			// if(counter === 0)
-		// 			// console.log(string)
-		// 			});
-
-
-		// 		}
-
-		// 	});
-
-		// 	it('should adjust string if the subtitution in strSplice function changes length',function(){
-
-		// 		drawData.stringUpdate(a);
-		// 		expect(drawData.string).toBe( "<circle cy=100 cx=99 r=3 fill='blue' />" )
+		describe('setNode method setting attribute str lenght for \'points\' ',function(){
+			var node;
+			var str ='<polygon points="100 200  200 100, 300 200 400 100" stroke="black" fill="none" stroke-width="5">';
+			beforeEach(function(){
+					node = [
+							{
+							 nodeName :'polygon',
+							 hashSvg: 0,
+							 attributes:[
+										{name:'points'  	, value : "100 200  200 100, 300 200 400 100"	},
+								        {name:'stroke'  	, value : "black"	},
+								        {name:'fill'		, value : 'none'	},
+								        {name:'stroke-width', value : '5'	}
+							 			],
+							 childNodes:[]
+							}
+						];
+			
+				drawData.setNode(node,str);
+			})
+			it(' should add subproperty to the attrsStringRef  each point (ex.:   0: {x: {start:22, end:33}, y: {start:22, end:33} },) ', function(){
 				
+				 expect(drawData.node[0].attrsStringRef.points[0].x.start).toBe(0)
+				 expect(drawData.node[0].attrsStringRef.points[0].x.end).toBe(3)
+				 expect(drawData.node[0].attrsStringRef.points[0].y.start).toBe(4)
+				 expect(drawData.node[0].attrsStringRef.points[0].y.end).toBe(7)
 
+ 				 expect(drawData.node[0].attrsStringRef.points[1].x.start).toBe(9)
 
-		// 		a= [0,['cx','77']];
-		// 		drawData.stringUpdate(a);
-		// 		expect(drawData.string).toBe( "<circle cy=100 cx=77 r=3 fill='blue' />" )
 				
-		// 		a= [0,['cx','1776']];
-		// 		drawData.stringUpdate(a);
-		// 		expect(drawData.string).toBe( "<circle cy=100 cx=1776 r=3 fill='blue' />" )
-				
-		// 		a= [0,['cx','555']];
-		// 		drawData.stringUpdate(a);
-		// 		expect(drawData.string).toBe( "<circle cy=100 cx=555 r=3 fill='blue' />" )
-				
-		// 		a= [0, ['r','3em'] , ['fill','red'] , ['cy',1]];
-		// 		drawData.stringUpdate(a);
-		// 		expect(drawData.string).toBe( "<circle cy=1 cx=555 r=3em fill='red' />" )
-				
-		// 	})
+			});
 
-		// })
-	
+		});
+
+		describe('setNode method setting attribute str lenght for "d" ',function(){
+			var node;
+			var str ='<path d="M100.3  200 C200 100, 300 200 400 100" stroke="black" fill="none" stroke-width="5">';
+			beforeEach(function(){
+					node = [
+							{
+							 nodeName :'path',
+							 hashSvg: 0,
+							 attributes:[
+										{name:'d'  			, value : "M100.3  200 C200 100, 300 200 400 100"	},
+								        {name:'stroke'  	, value : "black"	},
+								        {name:'fill'		, value : 'none'	},
+								        {name:'stroke-width', value : '5'	}
+							 			],
+							 childNodes:[]
+							}
+						];
+			
+				drawData.setNode(node,str);
+			})
+			it(' should add subproperty to the attrsStringRef  each value in command', function(){
+				
+				  expect(drawData.node[0].attrsStringRef.d[0][0].start).toBe(1)
+				  expect(drawData.node[0].attrsStringRef.d[0][0].end).toBe(6)
+				 
+				  expect(drawData.node[0].attrsStringRef.d[0][1].start).toBe(8)
+
+				
+			});
+
+		});
+
+		
 
 
 

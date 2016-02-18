@@ -10,7 +10,7 @@ describe('drawStrCode',function(){
 			});	
 		});
 
-		describe(' .update() ', function(){
+		describe(' .update() for circles ', function(){
 					var n, a, str;
 				beforeEach(function(){
 					str = "<circle cy=99 cx=99 r=3 fill='blue' />";
@@ -36,7 +36,7 @@ describe('drawStrCode',function(){
 
 
 				});
-				it('should be able to deal with float rems ( issues )', function(){
+				it('circles should be able to deal with float rems ', function(){
 					drawStrCode.initStrOffset();
 
 					a= [['cy','12345'],['cx','123']];
@@ -90,7 +90,7 @@ describe('drawStrCode',function(){
 				});
 
 
-				it('should adjust string if the subtitution in strSplice function changes length',function(){
+				it('circle should adjust string if the subtitution changes length',function(){
 					drawStrCode.initStrOffset();
 
 					expect( drawStrCode.update(n,str,a) )
@@ -114,7 +114,7 @@ describe('drawStrCode',function(){
 					
 				});
 
-				it('should be able to deal with float rems ( issues )', function(){
+				it('should be able to deal with escaped char', function(){
 					drawStrCode.initStrOffset();
 					
 					a= [['cy','"3.0625em"']];
@@ -140,6 +140,67 @@ describe('drawStrCode',function(){
 					a= [ ['cy','"3.125em"'] ];
 					expect( drawStrCode.update(n,str,a) )
 					.toBe( str = "<circle cy=\"3.125em\" cx=99 r=4 fill='blue' />" );
+
+				});
+
+		});		
+
+		describe(' .update() for rect ', function(){
+					var n, a, str;
+				beforeEach(function(){
+					str = "<rect x=9 y=9 height=123 width=246 fill='blue' />";
+					n = {
+						 nodeName :'rect',
+						 hashSvg: 0,
+						 attributes: {
+									x  		  : 9,
+							        y   	  : 9,
+							        height    : 123,
+							        height    : 246,
+							        fill	  : 'blue'
+						 			},
+						 childNodes:[],
+						 attrsStringRef:{
+									x    	: {start: 8,  end: 9},
+									y    	: {start: 12, end: 13},
+									height  : {start: 21, end: 24},
+									width   : {start: 31, end: 34},
+							        fill 	: {start: 41, end: 45},
+						 			},
+					};
+
+
+
+				});
+				it('rect x-y update ', function(){
+					drawStrCode.initStrOffset();
+
+					a= [['y','12345'],['x','123']];
+					expect( drawStrCode.update(n,str,a) )
+					.toBe( str = "<rect x=123 y=12345 height=123 width=246 fill='blue' />" );
+
+					a= [['y','123456789'],['x','123']];
+					expect( drawStrCode.update(n,str,a) )
+					.toBe( str = "<rect x=123 y=123456789 height=123 width=246 fill='blue' />" );
+
+					a= [['y','1'],['x','1234567']];
+					expect( drawStrCode.update(n,str,a) )
+					.toBe( str = "<rect x=1234567 y=1 height=123 width=246 fill='blue' />" );
+
+					a= [['y','"2em"'],['x','8em'], ['fill','red']];
+					expect( drawStrCode.update(n,str,a) )
+					.toBe( str = "<rect x=8em y=\"2em\" height=123 width=246 fill='red' />" );
+
+					
+
+				});
+
+
+				xit('circle should adjust string if the subtitution changes length',function(){
+					
+				});
+
+				xit('should be able to deal with escaped char', function(){
 
 				});
 

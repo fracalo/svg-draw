@@ -17,9 +17,9 @@
 		.module('draw.path')
 		.factory('drawAssemble', drawAssemble);
 	
-	drawAssemble.$inject = ['drawDeconstruct'];
+	drawAssemble.$inject = ['drawDeconstruct' , 'drawStrCode'];
 
-	function drawAssemble(drawDeconstruct) {
+	function drawAssemble( drawDeconstruct, drawStrCode ) {
 		// add methods on proto
 		if(SVGLength.prototype && !SVGLength.prototype.updateConvertSVGLen)
 		SVGLength.prototype.updateConvertSVGLen = function(v){
@@ -42,17 +42,26 @@
 
 			path.pointByI = obj.pathDataPointList[p.index];
 			
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     =  p.point.x;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] =  p.point.y;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x =  p.point.x;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y =  p.point.y;
 
 			obj.domObj.setPathData(obj.pathData);
+			obj.attributes.d = 
+			drawStrCode.preUpdateD( obj , path.pointByI ,
+				[ [path.pointByI.subI * 2 ,p.point.x] , [path.pointByI.subI * 2 + 1,p.point.y] ]) ;
+
+
+			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
 		function polygon(p,obj){
- console.log(obj.attributes)
-//TODO need to update obj.attributes.points  (the strnig)
+
 			obj.pointList.points[p.index].x = p.point.x;
 			obj.pointList.points[p.index].y = p.point.y;
 
+			obj.attributes.points = 
+			drawStrCode.preUpdatePoints( obj , p.index ,[ ['x',p.point.x] , ['y',p.point.y] ]) ;
+			
+			return [ obj.hashSvg , ['points', obj.attributes.points] ];
 		}
 
 
@@ -64,22 +73,34 @@
 				oldX = obj.attrsLength.x.baseVal.value;
 				oldY = obj.attrsLength.y.baseVal.value;
 
-				attrObj.x = p.point.x;
-				attrObj.y = p.point.y;
-
 				obj.attrsLength.x.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.y.baseVal.updateConvertSVGLen(p.point.y);
+
+				// update attributes obj
+				attrObj.x = obj.attrsLength.x.baseVal.valueAsString;
+				attrObj.y = obj.attrsLength.y.baseVal.valueAsString;
 
 				//adjust end point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldX;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldY;
+
+				return [ obj.hashSvg , ['x',attrObj.x] , ['y',attrObj.y] ];
 			};
 			rect.end   = function(p, attrObj){
 				attrObj.width  = p.point.x - attrObj.x;
 				attrObj.height = p.point.y - attrObj.y;
 
-				obj.attrsLength.width.baseVal.updateConvertSVGLen(attrObj.width);
-				obj.attrsLength.height.baseVal.updateConvertSVGLen(attrObj.height);
+				obj.attrsLength.width.baseVal.updateConvertSVGLen(
+					p.point.x - obj.attrsLength.x.baseVal.value
+				);
+				obj.attrsLength.height.baseVal.updateConvertSVGLen(
+					p.point.y - obj.attrsLength.y.baseVal.value
+				);
+
+				attrObj.width  = obj.attrsLength.width.baseVal.valueAsString;
+				attrObj.height = obj.attrsLength.height.baseVal.valueAsString;
+
+				return [ obj.hashSvg , ['width',attrObj.width] , ['height',attrObj.height] ];
 			};
 
 			if(p.index === 0)
@@ -109,7 +130,7 @@
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
 
-				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ]
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ];
 
 			};
 
@@ -121,7 +142,7 @@
 					)
 				);
 				attrObj.r = obj.attrsLength.r.baseVal.valueAsString;
-				return [ obj.hashSvg , ['r',attrObj.r] ]
+				return [ obj.hashSvg , ['r',attrObj.r] ];
 
 
 			};
@@ -141,34 +162,41 @@
 			ellipse.center = function(p, attrObj){
 				oldCx = obj.attrsLength.cx.baseVal.value;
 				oldCy = obj.attrsLength.cy.baseVal.value;
-				
-				attrObj.cx = p.point.x;
-				attrObj.cy = p.point.y;
 
 				obj.attrsLength.cx.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.cy.baseVal.updateConvertSVGLen(p.point.y);
+
+				attrObj.cx = obj.attrsLength.cx.baseVal.valueAsString;
+				attrObj.cy = obj.attrsLength.cy.baseVal.valueAsString;
+
 
 				//adjust both radius point
 				drawDeconstruct.structure[obj.hashSvg][1].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][1].y += p.point.y - oldCy;
 				drawDeconstruct.structure[obj.hashSvg][2].x += p.point.x - oldCx;
 				drawDeconstruct.structure[obj.hashSvg][2].y += p.point.y - oldCy;
+
+				return [ obj.hashSvg , ['cx',attrObj.cx] , ['cy',attrObj.cy] ];
 			};
 
 			ellipse.radX = function(p, attrObj){
-				attrObj.rx = pytha(
+				obj.attrsLength.rx.baseVal.updateConvertSVGLen(
+					pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
-					[p.point.x, p.point.y] );
-
-				obj.attrsLength.rx.baseVal.updateConvertSVGLen( attrObj.rx );
+					[p.point.x, p.point.y] )
+				);
+				attrObj.rx = obj.attrsLength.rx.baseVal.valueAsString;
+				return [ obj.hashSvg , ['rx',attrObj.rx] ];
 			};
 
 			ellipse.radY = function(p, attrObj){
-				attrObj.ry = pytha(
+				obj.attrsLength.ry.baseVal.updateConvertSVGLen(
+					pytha(
 					[obj.attrsLength.cx.baseVal.value, obj.attrsLength.cy.baseVal.value],
-					[p.point.x, p.point.y] );
-
-				obj.attrsLength.ry.baseVal.updateConvertSVGLen( attrObj.ry );
+					[p.point.x, p.point.y] )
+				);
+				attrObj.ry = obj.attrsLength.ry.baseVal.valueAsString;
+				return [ obj.hashSvg , ['ry',attrObj.ry] ];
 			};
 
 			if (p.index === 0)
@@ -183,17 +211,20 @@
 			var attrObj = obj.attributes;
 
 			line.x = function(p, attrObj){
-				attrObj.x1 = p.point.x;
-				attrObj.y1 = p.point.y;
 				obj.attrsLength.x1.baseVal.updateConvertSVGLen(p.point.x);
-				obj.attrsLength.y1.baseVal.updateConvertSVGLen(p.point.y); 
+				obj.attrsLength.y1.baseVal.updateConvertSVGLen(p.point.y);
+				attrObj.x1 = obj.attrsLength.x1.baseVal.valueAsString;
+				attrObj.y1 = obj.attrsLength.y1.baseVal.valueAsString;
+
+				return [ obj.hashSvg , ['x1',attrObj.x1] , ['y1',attrObj.y1] ];
 			};
 			line.y = function(p, attrObj){
-				attrObj.x2 = p.point.x;
-				attrObj.y2 = p.point.y;
 				obj.attrsLength.x2.baseVal.updateConvertSVGLen(p.point.x);
 				obj.attrsLength.y2.baseVal.updateConvertSVGLen(p.point.y); 
+				attrObj.x2 = obj.attrsLength.x2.baseVal.valueAsString;
+				attrObj.y2 = obj.attrsLength.y2.baseVal.valueAsString;
 
+				return [ obj.hashSvg , ['x2',attrObj.x2] , ['y2',attrObj.y2] ];
 			};
 			if (p.index === 0)
 			return line.x(p,attrObj);
