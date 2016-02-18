@@ -49,10 +49,8 @@
 			setNode:setNode,
 			flatNodeList:flatNodeList,
 			getStr:getStr,
-			// serializeNode:serializeNode,
 			changeNode:changeNode,
 			stringUpdateflag:false,
-			// strSplice:strSplice
 		};
 		return obj;
 
@@ -61,6 +59,7 @@
 		}
 
 		function changeNode(msg){
+			changeNode.stringUpdateflag = false;
 			// this should return the new string value an update node [] (sideEff)
 
 			// if it's needed we need to get a new-reference to elem we're modifying
@@ -70,11 +69,11 @@
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
 			
-			if( obj.stringUpdateflag === false){
-				obj.stringUpdateflag = true;
+			if( changeNode.stringUpdateflag === false){
+				changeNode.stringUpdateflag = true;
 				 $timeout( function(){ 
 					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
-					obj.stringUpdateflag = false;
+					changeNode.stringUpdateflag = false;
 				 }, 30 );
 			}
 
@@ -127,9 +126,6 @@
 
 				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
-//TODO  create a match for points and d and other values...
-
-
 
 					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
 					var strI = {};
@@ -140,7 +136,7 @@
 					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
 							patNum = /-?\d+(\.\d+)?/g ;
 						if(x === 'points'){
-							// exaple 			points:{
+							// example 			points:{
 							// 							0:{
 							//								x:{start:13, end:15},
 							// 								y:{start:17, end:20}
@@ -171,7 +167,7 @@
 									start : start,
 									end	  : start + m.length
 								};
-								valCount = 0
+								valCount = 0;
 								m.replace( patNum , function(ma, _ , s){
 									strI[ comCount ][ valCount++ ] = {
 										start: start + s,
@@ -180,7 +176,7 @@
 								});
 								comCount ++;
 
-							})
+							});
 						}
 					acc[x] = strI;
 					return acc;

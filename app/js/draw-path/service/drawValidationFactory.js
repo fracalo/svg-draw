@@ -66,13 +66,7 @@
         }
         //utility of checkItem
         function stripBasicAttr(item){
-                /*for (var i in item.attributes){
-                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
-                    if(test)
-                    { delete item.attributes[i]; }
-                }
-                return item;*/
-               // var copy = JSON.parse(JSON.stringify(item));
+
                var copy = {
                 attributes:{},
                 hashSvg   :item.hashSvg,

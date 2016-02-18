@@ -1,4 +1,4 @@
-(function(){
+/*(function(){
 	angular
 		.module('draw.path')
 		.service('drawVectorAttr', drawVectorAttr);
@@ -28,4 +28,4 @@
 
 	}
 
-})();
+})();*/

@@ -1,436 +1,436 @@
-(function(){
+// (function(){
 
-  'use strict';
+//   'use strict';
 
-/* Filters */
-angular.module('draw.path')
-/*transform in an array like type (used for creating vector array*/ 
-.filter('toVectorArray',function(){
-  return function(ar){
-    if (ar.length === 0) return;
-    return ar.reduce(function(ac,x,i,ar){
-          if( x.type =='C' || x.type =='Q'){
-            ac.push({
-              type:'M',
-              list: [ ar[i-1].list[ ar[i-1].list.length - 1 ] ]
-              });
-            ac.push({
-              type:'L',
-              list: [ x.list[0] ]
-              });
-            ac.push({
-              type:'M',
-              list: [ x.list[ x.list.length - 1 ] ]
-              });
-            ac.push({
-              type:'L',
-              list: [ x.list[ x.list.length - 2 ] ]
-              });
-            }
-            return ac;
-        },[]);
-      };
-})
+// /* Filters */
+// angular.module('draw.path')
+// /*transform in an array like type (used for creating vector array*/ 
+// .filter('toVectorArray',function(){
+//   return function(ar){
+//     if (ar.length === 0) return;
+//     return ar.reduce(function(ac,x,i,ar){
+//           if( x.type =='C' || x.type =='Q'){
+//             ac.push({
+//               type:'M',
+//               list: [ ar[i-1].list[ ar[i-1].list.length - 1 ] ]
+//               });
+//             ac.push({
+//               type:'L',
+//               list: [ x.list[0] ]
+//               });
+//             ac.push({
+//               type:'M',
+//               list: [ x.list[ x.list.length - 1 ] ]
+//               });
+//             ac.push({
+//               type:'L',
+//               list: [ x.list[ x.list.length - 2 ] ]
+//               });
+//             }
+//             return ac;
+//         },[]);
+//       };
+// })
 
-/*from obj of path points and controlPoints to dval*/
-//sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
-.filter('arrayToDVal',function(){ 
-  return function(ar){
-      if (!ar)
-      return '';
-    var res = ar.reduce(function(ac,x,i,ar){
-          ac += x.type;
-          var tr = x.list.map(e => e.join(' '));
+// /*from obj of path points and controlPoints to dval*/
+// //sample point output  point=[type:'C', [22,33],[34,42],[66,88] ];
+// .filter('arrayToDVal',function(){ 
+//   return function(ar){
+//       if (!ar)
+//       return '';
+//     var res = ar.reduce(function(ac,x,i,ar){
+//           ac += x.type;
+//           var tr = x.list.map(e => e.join(' '));
           
-          ac += tr.join(',') + ' ';
-          return ac;
-        },'');
-    return res.trim(); 
-    };
-})
+//           ac += tr.join(',') + ' ';
+//           return ac;
+//         },'');
+//     return res.trim(); 
+//     };
+// })
 
-/*from (attrs) dval to explicit markup*/
-.filter('attrsToMarkup',function(){ 
-  return function(obj){
-    var str = '';
+// /*from (attrs) dval to explicit markup*/
+// .filter('attrsToMarkup',function(){ 
+//   return function(obj){
+//     var str = '';
 
-    for (var k in obj){
-      str+= k + '="' + obj[k] + '" ';
-    }
-    return '<path '+str +' />';
-  };
+//     for (var k in obj){
+//       str+= k + '="' + obj[k] + '" ';
+//     }
+//     return '<path '+str +' />';
+//   };
   
-})
+// })
 
-.filter('markupToAttrs',function(){ 
-  return function(str){
-      var pattern= /d\s*=\s*"\s*(.*?)\s*"/;
-      var res = str.match(pattern);
-    return res[1];
-    };
-})
+// .filter('markupToAttrs',function(){ 
+//   return function(str){
+//       var pattern= /d\s*=\s*"\s*(.*?)\s*"/;
+//       var res = str.match(pattern);
+//     return res[1];
+//     };
+// })
 
-.filter('dValToArray', function(){
-  return function(str){
-    if(!str || str === '')
-    return [];
+// .filter('dValToArray', function(){
+//   return function(str){
+//     if(!str || str === '')
+//     return [];
   
-        var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
+//         var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
 
-        var res = [];
-        str.replace(pat,function(a){
-        var p={
-            list:[]
-         };
-         p.type = a.slice(0,1);
+//         var res = [];
+//         str.replace(pat,function(a){
+//         var p={
+//             list:[]
+//          };
+//          p.type = a.slice(0,1);
          
-         var points= a.slice(1).trim().split(/\s*,\s*/);
-         points.forEach(function(x){
-                p.list.push( x.split(' ').map( item =>Number(item) ) );
-         });
+//          var points= a.slice(1).trim().split(/\s*,\s*/);
+//          points.forEach(function(x){
+//                 p.list.push( x.split(' ').map( item =>Number(item) ) );
+//          });
          
-          res.push(p);
-        });
-      return res;
-  };
-})
+//           res.push(p);
+//         });
+//       return res;
+//   };
+// })
 
-.filter('PromiseDValToArray', function(){
-  return function(str){
-    if(!str || str === '')
-    throw new Error('dValue isn\'t present');
+// .filter('PromiseDValToArray', function(){
+//   return function(str){
+//     if(!str || str === '')
+//     throw new Error('dValue isn\'t present');
   
-        var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
+//         var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
 
-        var res = [];
-        str.replace(pat,function(a){
-        var p={
-            list:[]
-         };
-         p.type = a.slice(0,1);
+//         var res = [];
+//         str.replace(pat,function(a){
+//         var p={
+//             list:[]
+//          };
+//          p.type = a.slice(0,1);
          
-         var points= a.slice(1).trim().split(/\s*,\s*/);
-         points.forEach(function(x){
-                p.list.push( x.split(' ').map( item =>Number(item) ) );
-         });
+//          var points= a.slice(1).trim().split(/\s*,\s*/);
+//          points.forEach(function(x){
+//                 p.list.push( x.split(' ').map( item =>Number(item) ) );
+//          });
          
-          res.push(p);
-        });
-      return res;
-  };
-})
+//           res.push(p);
+//         });
+//       return res;
+//   };
+// })
 
-.filter('parsePointArray',function(){
-  // 
-  return function(ar){
-  var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
-    ar.forEach( x => {
-      x.type = x.type.replace(pat, t =>{
-        if(x.list.length == 1 )
-        {return t='L';}
+// .filter('parsePointArray',function(){
+//   // 
+//   return function(ar){
+//   var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
+//     ar.forEach( x => {
+//       x.type = x.type.replace(pat, t =>{
+//         if(x.list.length == 1 )
+//         {return t='L';}
 
-        if(x-list.length == 2)
-        {return t='Q';}
+//         if(x-list.length == 2)
+//         {return t='Q';}
 
-        if(x.list.length == 3)
-        {return t= 'C';}
-      });
+//         if(x.list.length == 3)
+//         {return t= 'C';}
+//       });
 
-      x.list.forEach( a => {
-            if(a.length<2)
-            a[1]=a[0];
+//       x.list.forEach( a => {
+//             if(a.length<2)
+//             a[1]=a[0];
 
-            if(a.length>2)
-            a.splice(2,a.length);
-        })
-    });
-    return ar;
-  };
-})
+//             if(a.length>2)
+//             a.splice(2,a.length);
+//         })
+//     });
+//     return ar;
+//   };
+// })
 
-.filter('testParsePointArray',function(){
-  // 
-  return function(ar){
-  var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
-    ar.forEach( (x,i) => {
-      x.type = x.type.replace(pat, t =>{
+// .filter('testParsePointArray',function(){
+//   // 
+//   return function(ar){
+//   var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
+//     ar.forEach( (x,i) => {
+//       x.type = x.type.replace(pat, t =>{
         
-      throw new Error('error on point # ' + i)
+//       throw new Error('error on point # ' + i)
 
       
-      });
+//       });
 
-      x.list.forEach( a => {
-            if(a.length<2)
-      throw new Error('error on point # ' + i+' (not enogh values)')
+//       x.list.forEach( a => {
+//             if(a.length<2)
+//       throw new Error('error on point # ' + i+' (not enogh values)')
 
-            if(a.length>2)
-      throw new Error('error on point # ' + i+' (too many values)')
+//             if(a.length>2)
+//       throw new Error('error on point # ' + i+' (too many values)')
 
-        })
-    });
-    return ar;
-  };
-})
+//         })
+//     });
+//     return ar;
+//   };
+// })
 
-.filter('parseMarkup',function(){
-  return function(str){
-    var obj = Object.create(null);
-    var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
-
-    str.replace(pat,function(match, k, v){
-       obj[k]=v;
-    });
-    return obj;
-  };
-})
-
-.filter('parsePath',function($q){
-  return function(str){
-  
-
-
-        var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
-        var obj = Object.create(null);
-        var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
-    return $q(function(resolve, reject){
-        str.replace(pat,function(match, k, v,offset){
-      
-            //while parsing the string we can check attributes and values
-            if(attrOp.every( attr => attr !== k))
-            { reject(k +' isn\'t a supported attribute name '+ offset); }
-            obj[k]=v;
-        });
-
-        resolve(obj)
-    });
-
-
-//     var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
+// .filter('parseMarkup',function(){
+//   return function(str){
 //     var obj = Object.create(null);
 //     var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
 
 //     str.replace(pat,function(match, k, v){
-      
-//       //while parsing the string we can check attributes and values
-//       if(attrOp.every( attr => attr !== k))
-//       { throw new Error(k +' is not a supported attribute name'); }
-
-// /*      if(k == 'd'){
-//       }*/
-
-//       obj[k]=v;
+//        obj[k]=v;
 //     });
 //     return obj;
+//   };
+// })
 
-
-  }
-})
-/* modify's pathArray(dValue) when changing point type*/
-.filter('normalizePointType',function(){
-   function createP(bef , aft, n){
-      
-      var res = [];
-      
-      var dividers =
-        (n==2)?
-        [1.667, 2.5]:
-        [ 2 ];
-
-      dividers.forEach(i =>{
-        var p = [];
-        p[0] = (bef[0] + aft[0])/i |0;
-        p[1] = (bef[1] + aft[1])/i |0;
-        res.push(p);
-      });
-      return res;
-   }
-  return function(arr){
-    var before, after, p;
-    arr.forEach( function(x,i,arr){
-         if ((x.type === 'M' || x.type === 'L') && x.list.length !== 1){
-            x.list = x.list.splice(-1 , 1 );
-          }
-
-         if (x.type === 'Q' && x.list.length != 2){
-              if ( ! (arr[i-1]) ){
-                x.type = 'M';
-                return;
-              }
-
-              if(x.list.length<2){
-                   before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
-                   after = x.list[0];
-                   p = createP(before,after);
-                  
-                  x.list.unshift( p[0] );
-              }else{
-                  x.list = x.list.splice(-2 , 2 );
-              }
-
-          }
-
-          if (x.type === 'C' && x.list.length !== 3){
-              if ( ! (arr[i-1]) ){
-                x.type = 'M';
-                return;
-              }
-              //it seems er're adding some points to list
-                before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
-                after = x.list[0];
- 
-              if (x.list.length === 2){
-                   p = createP(before,after);
-                  x.list.unshift( p[0] );
-              }
-              if (x.list.length === 1){
-                   p = createP(before,after,2);
-                  x.list = p.concat(x.list);
-                  
-              }
-          }
-        });
-        return arr;
-      };
-})
-
-})();
-(function(){
-
-  'use strict';
-
-/* Controllers */
-angular
-  .module('draw.path')
-  .controller('DrawCtrl',DrawCtrl)
-
-  DrawCtrl.$inject = ['$scope', '$filter' , '$timeout','drawService', 'drawPathAttr', 'drawVectorAttr']
+// .filter('parsePath',function($q){
+//   return function(str){
   
-  function DrawCtrl($scope, $filter, $timeout, drawService, drawPathAttr, drawVectorAttr) {
-    var tmpAttr, tmpArr;
-    var drw = this;
-   };
+
+
+//         var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
+//         var obj = Object.create(null);
+//         var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
+//     return $q(function(resolve, reject){
+//         str.replace(pat,function(match, k, v,offset){
+      
+//             //while parsing the string we can check attributes and values
+//             if(attrOp.every( attr => attr !== k))
+//             { reject(k +' isn\'t a supported attribute name '+ offset); }
+//             obj[k]=v;
+//         });
+
+//         resolve(obj)
+//     });
+
+
+// //     var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
+// //     var obj = Object.create(null);
+// //     var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
+
+// //     str.replace(pat,function(match, k, v){
+      
+// //       //while parsing the string we can check attributes and values
+// //       if(attrOp.every( attr => attr !== k))
+// //       { throw new Error(k +' is not a supported attribute name'); }
+
+// // /*      if(k == 'd'){
+// //       }*/
+
+// //       obj[k]=v;
+// //     });
+// //     return obj;
+
+
+//   }
+// })
+// /* modify's pathArray(dValue) when changing point type*/
+// .filter('normalizePointType',function(){
+//    function createP(bef , aft, n){
+      
+//       var res = [];
+      
+//       var dividers =
+//         (n==2)?
+//         [1.667, 2.5]:
+//         [ 2 ];
+
+//       dividers.forEach(i =>{
+//         var p = [];
+//         p[0] = (bef[0] + aft[0])/i |0;
+//         p[1] = (bef[1] + aft[1])/i |0;
+//         res.push(p);
+//       });
+//       return res;
+//    }
+//   return function(arr){
+//     var before, after, p;
+//     arr.forEach( function(x,i,arr){
+//          if ((x.type === 'M' || x.type === 'L') && x.list.length !== 1){
+//             x.list = x.list.splice(-1 , 1 );
+//           }
+
+//          if (x.type === 'Q' && x.list.length != 2){
+//               if ( ! (arr[i-1]) ){
+//                 x.type = 'M';
+//                 return;
+//               }
+
+//               if(x.list.length<2){
+//                    before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
+//                    after = x.list[0];
+//                    p = createP(before,after);
+                  
+//                   x.list.unshift( p[0] );
+//               }else{
+//                   x.list = x.list.splice(-2 , 2 );
+//               }
+
+//           }
+
+//           if (x.type === 'C' && x.list.length !== 3){
+//               if ( ! (arr[i-1]) ){
+//                 x.type = 'M';
+//                 return;
+//               }
+//               //it seems er're adding some points to list
+//                 before = arr[i-1].list[ arr[i-1].list.length  - 1 ];
+//                 after = x.list[0];
+ 
+//               if (x.list.length === 2){
+//                    p = createP(before,after);
+//                   x.list.unshift( p[0] );
+//               }
+//               if (x.list.length === 1){
+//                    p = createP(before,after,2);
+//                   x.list = p.concat(x.list);
+                  
+//               }
+//           }
+//         });
+//         return arr;
+//       };
+// })
+
+// })();
+// (function(){
+
+//   'use strict';
+
+// /* Controllers */
+// angular
+//   .module('draw.path')
+//   .controller('DrawCtrl',DrawCtrl)
+
+//   DrawCtrl.$inject = ['$scope', '$filter' , '$timeout','drawService', 'drawPathAttr', 'drawVectorAttr']
+  
+//   function DrawCtrl($scope, $filter, $timeout, drawService, drawPathAttr, drawVectorAttr) {
+//     var tmpAttr, tmpArr;
+//     var drw = this;
+//    };
    
-})();
+// })();
 
-(function(){
+// (function(){
 
-  'use strict';
+//   'use strict';
 
-/* Controllers */
-angular
-  .module('draw.path')
-  .controller('DrawEventsCtrl',DrawEventsCtrl)
+// /* Controllers */
+// angular
+//   .module('draw.path')
+//   .controller('DrawEventsCtrl',DrawEventsCtrl)
 
-  DrawEventsCtrl.$inject = ['$scope', '$element' , '$attrs','$rootScope','drawService']; 
+//   DrawEventsCtrl.$inject = ['$scope', '$element' , '$attrs','$rootScope','drawService']; 
 
- function DrawEventsCtrl($scope, $element, $attrs, $rootScope, drawService){
-        var tollerance = 20;
-        var down =Object.create(null);
+//  function DrawEventsCtrl($scope, $element, $attrs, $rootScope, drawService){
+//         var tollerance = 20;
+//         var down =Object.create(null);
 
-        var artboard = drawService;
+//         var artboard = drawService;
         
-        $element.on('mousedown',mousedown);
+//         $element.on('mousedown',mousedown);
 
-        function mousedown(e){
-          artboard.mousedown(e);
-          $scope.$digest();
+//         function mousedown(e){
+//           artboard.mousedown(e);
+//           $scope.$digest();
           
-          down.x = e.clientX;
-          down.y = e.clientY;
-        $element.on('mousemove',mousemove);
-        $element.on('mouseup',mouseup);
-        }
+//           down.x = e.clientX;
+//           down.y = e.clientY;
+//         $element.on('mousemove',mousemove);
+//         $element.on('mouseup',mouseup);
+//         }
 
-        function mousemove(e){
-          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
-              artboard.mousemove(e);
-              $scope.$digest();
-          }else{
-              artboard.mousemove.back(e);
-              $scope.$digest();
-          }
-        }
+//         function mousemove(e){
+//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
+//               artboard.mousemove(e);
+//               $scope.$digest();
+//           }else{
+//               artboard.mousemove.back(e);
+//               $scope.$digest();
+//           }
+//         }
 
-        function mouseup(e){
-          if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
-             artboard.mouseupLine(e);
-         }
+//         function mouseup(e){
+//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
+//              artboard.mouseupLine(e);
+//          }
 
-        $scope.$digest();
-        $element.off('mousemove',mousemove);
-        $element.off('mouseup',mouseup);
+//         $scope.$digest();
+//         $element.off('mousemove',mousemove);
+//         $element.off('mouseup',mouseup);
         
-        }
-        $rootScope.$on('pointMove', function (e, msg) {
-          artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
-          $scope.$digest();
+//         }
+//         $rootScope.$on('pointMove', function (e, msg) {
+//           artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
+//           $scope.$digest();
 
-        });
+//         });
 
-}
-})();
+// }
+// })();
 
 // controller for drawPath 
 
-+function(){
-	'use strict';
-	angular
-		.module('draw.path')
-		.controller('drawPathCtrl', drawPathCtrl)
+// +function(){
+// 	'use strict';
+// 	angular
+// 		.module('draw.path')
+// 		.controller('drawPathCtrl', drawPathCtrl)
 
-		function drawPathCtrl($scope, drawPathAttr){
+// 		function drawPathCtrl($scope, drawPathAttr){
 
-            var path = $element.find('path')[0];
+//             var path = $element.find('path')[0];
 
-            var checkAttr = function(){
-                return drawPathAttr.attributes;
-            };
+//             var checkAttr = function(){
+//                 return drawPathAttr.attributes;
+//             };
 
-           //dinamically include all attributes in the attr {}
-            function updateAttr(){
+//            //dinamically include all attributes in the attr {}
+//             function updateAttr(){
 
-              $scope.attr = drawPathAttr.attributes;
+//               $scope.attr = drawPathAttr.attributes;
 
-              //reset attributes
-              while(path.attributes.length > 0)
-              path.removeAttribute( path.attributes[0].name );
+//               //reset attributes
+//               while(path.attributes.length > 0)
+//               path.removeAttribute( path.attributes[0].name );
 
             
-                  //repopulate atributes
-                  for ( var a in $scope.attr){
-                        path.setAttribute(a , $scope.attr[a] );
-                  }
+//                   //repopulate atributes
+//                   for ( var a in $scope.attr){
+//                         path.setAttribute(a , $scope.attr[a] );
+//                   }
 
-            }
+//             }
 
-            $scope.$watchCollection( checkAttr , updateAttr );
+//             $scope.$watchCollection( checkAttr , updateAttr );
 
-         };
+//          };
 
-}();
-(function(){
-  'use strict';
+// }();
+// (function(){
+//   'use strict';
 
 
-//directive module
-angular
-    .module('draw.path')
-    .controller('DrawPointsCtrl', DrawPointsCtrl);
+// //directive module
+// angular
+//     .module('draw.path')
+//     .controller('DrawPointsCtrl', DrawPointsCtrl);
     
-    DrawPointsCtrl.$inject = ['$scope','drawService'];
+//     DrawPointsCtrl.$inject = ['$scope','drawService'];
     
-    function DrawPointsCtrl($scope, drawService){
-         var watchPoints = function(){
-          return drawService.points;
+//     function DrawPointsCtrl($scope, drawService){
+//          var watchPoints = function(){
+//           return drawService.points;
 
-         };
-        $scope.$watch(watchPoints, function(){
-          this.points = drawService.points;
-          console.log(this.points)
-        });
-    }
-})();
+//          };
+//         $scope.$watch(watchPoints, function(){
+//           this.points = drawService.points;
+//           console.log(this.points)
+//         });
+//     }
+// })();
 // directive for dealing events on artboard
 
 (function(){
@@ -492,33 +492,33 @@ angular
 
 //directive for code in textarea
 
-(function(){
+// (function(){
 
-  angular
-    .module('draw.path')
-    .directive('drawPath',drawPath);
+//   angular
+//     .module('draw.path')
+//     .directive('drawPath',drawPath);
 
-    drawPath.$inject =['$compile']
+//     drawPath.$inject =['$compile']
       
-      function drawPath($compile){
-        return function(scope, element, attrs) {
-          scope.$watch(
-            function(scope) {
-               // watch  'code' expression for changes
-              return scope.$eval(attrs.drawPath);
-            },
-            function(value) {
+//       function drawPath($compile){
+//         return function(scope, element, attrs) {
+//           scope.$watch(
+//             function(scope) {
+//                // watch  'code' expression for changes
+//               return scope.$eval(attrs.drawPath);
+//             },
+//             function(value) {
               
-              element.html(value);
+//               element.html(value);
 
-              $compile(element.contents());
-            }
-          );
-        };
-      }
+//               $compile(element.contents());
+//             }
+//           );
+//         };
+//       }
 
 
-})();
+// })();
 //directive for code in textarea
 
 (function(){
@@ -1006,103 +1006,103 @@ function drawVector(){
 
 
 })();
-(function(){
-	angular
-		.module('draw.path')
-		.service('codeInput', codeInput);
+// (function(){
+// 	angular
+// 		.module('draw.path')
+// 		.service('codeInput', codeInput);
 
-	codeInput.$inject = ['$q'];
+// 	codeInput.$inject = ['$q'];
 
 
-	function codeInput($q){
-	return {
-		parseAttr:function(str){ 
-			var obj = Object.create(null);
-        	var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
-    		return $q(function(resolve, reject){
-        		str.replace(pat,function(match, k, v,offset){
+// 	function codeInput($q){
+// 	return {
+// 		parseAttr:function(str){ 
+// 			var obj = Object.create(null);
+//         	var pat = /([a-zA-Z\-]+)\s*=\s*"\s*(.*?)\s*"/g;
+//     		return $q(function(resolve, reject){
+//         		str.replace(pat,function(match, k, v,offset){
       
-            	obj[k]=v;
-        		});
+//             	obj[k]=v;
+//         		});
 
-        	resolve(obj);
-        	});
-		},
-			//also need to add errorcallback on Promise:
-			//-wrong node wraps -etc,,
+//         	resolve(obj);
+//         	});
+// 		},
+// 			//also need to add errorcallback on Promise:
+// 			//-wrong node wraps -etc,,
 
-		checkKeys: function(res){
-			 var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
-			 var keys = Object.keys(res);
-			 var filteredArray = keys.filter(k => {
-			 			 return (attrOp.every( attr => attr !== k));
-			 });
-			 return $q(function(resolve, reject){
-			 	if( filteredArray.length > 0){
-			 	 return reject(filteredArray +' isn\'t a supported attribute name ');
-			 	}
-			 	//this is not a fatal errot so always fullfill it
-			 	 // console.log(res)
-			 	 // return resolve(res);
+// 		checkKeys: function(res){
+// 			 var attrOp = ['fill','stroke','stroke-width','stroke-dasharray','stroke-linecap','d'];
+// 			 var keys = Object.keys(res);
+// 			 var filteredArray = keys.filter(k => {
+// 			 			 return (attrOp.every( attr => attr !== k));
+// 			 });
+// 			 return $q(function(resolve, reject){
+// 			 	if( filteredArray.length > 0){
+// 			 	 return reject(filteredArray +' isn\'t a supported attribute name ');
+// 			 	}
+// 			 	//this is not a fatal errot so always fullfill it
+// 			 	 // console.log(res)
+// 			 	 // return resolve(res);
 			 	
 			 	
-			 });
-		},
+// 			 });
+// 		},
 
 
 
-		checkDvalArrify : function(code){
-			var d = code.d;
-			var list = dValToList(d);
-			var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
-			return $q (function(resolve,reject){
-				list.forEach ( (x,i) => {
-					x.type.replace( pat, t => {
-						reject('error on point # ' +i+' - ' +t+ ': wrong point type')
-					});
+// 		checkDvalArrify : function(code){
+// 			var d = code.d;
+// 			var list = dValToList(d);
+// 			var pat= /([^(M|L|C|Q|Z|S|A|H|V)])/;
+// 			return $q (function(resolve,reject){
+// 				list.forEach ( (x,i) => {
+// 					x.type.replace( pat, t => {
+// 						reject('error on point # ' +i+' - ' +t+ ': wrong point type')
+// 					});
 
-					x.list.forEach( a => {
-            			if(a.length<2)
-                 		reject('error on point # ' + i+' (not enough values)')
+// 					x.list.forEach( a => {
+//             			if(a.length<2)
+//                  		reject('error on point # ' + i+' (not enough values)')
 
-           				if(a.length>2)
-      					reject('error on point # ' + i+' (too many values)')
-        			})
-				});
-			//resolve the d value ready to be set in next fullfillment
-				resolve(list);
-			});
-		}
+//            				if(a.length>2)
+//       					reject('error on point # ' + i+' (too many values)')
+//         			})
+// 				});
+// 			//resolve the d value ready to be set in next fullfillment
+// 				resolve(list);
+// 			});
+// 		}
 
-	};
+// 	};
 
-		function dValToList(str){
-	    if(!str || str === '')
-	    return [];
+// 		function dValToList(str){
+// 	    if(!str || str === '')
+// 	    return [];
 	  
-	        var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
+// 	        var pat= /([A-Z][\d+|\s|,|\b]*)[^\A-Z]?/gi;
 
-	        var res = [];
-	        str.replace(pat,function(a){
-	        var p={
-	            list:[]
-	         };
-	         p.type = a.slice(0,1);
+// 	        var res = [];
+// 	        str.replace(pat,function(a){
+// 	        var p={
+// 	            list:[]
+// 	         };
+// 	         p.type = a.slice(0,1);
 	         
-	         var points= a.slice(1).trim().split(/\s*,\s*/);
-	         points.forEach(function(x){
-	                p.list.push( x.split(' ').map( item =>Number(item) ) );
-	         });
+// 	         var points= a.slice(1).trim().split(/\s*,\s*/);
+// 	         points.forEach(function(x){
+// 	                p.list.push( x.split(' ').map( item =>Number(item) ) );
+// 	         });
 	         
-	          res.push(p);
-	        });
-	      return res;
-	  	};
+// 	          res.push(p);
+// 	        });
+// 	      return res;
+// 	  	};
 
 
-};
+// };
 
-})();
+// })();
 // drawAssemble is used to update SVG and update the GUI value every time a certain attribute is modified.
 // utility of drawData
 // Process:
@@ -1469,7 +1469,7 @@ function drawVector(){
 
 })();
 // drawDCommands is a utility of drawDeconstruct to specifically check path's dValue
-// it parses each command checking for errors
+// it parses each command checking for certain types of errors
 // in the response it stores  
 //			return{
 //				bool: false,
@@ -1637,10 +1637,8 @@ function drawVector(){
 			setNode:setNode,
 			flatNodeList:flatNodeList,
 			getStr:getStr,
-			// serializeNode:serializeNode,
 			changeNode:changeNode,
 			stringUpdateflag:false,
-			// strSplice:strSplice
 		};
 		return obj;
 
@@ -1649,6 +1647,7 @@ function drawVector(){
 		}
 
 		function changeNode(msg){
+			changeNode.stringUpdateflag = false;
 			// this should return the new string value an update node [] (sideEff)
 
 			// if it's needed we need to get a new-reference to elem we're modifying
@@ -1658,11 +1657,11 @@ function drawVector(){
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
 			
-			if( obj.stringUpdateflag === false){
-				obj.stringUpdateflag = true;
+			if( changeNode.stringUpdateflag === false){
+				changeNode.stringUpdateflag = true;
 				 $timeout( function(){ 
 					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
-					obj.stringUpdateflag = false;
+					changeNode.stringUpdateflag = false;
 				 }, 30 );
 			}
 
@@ -1715,9 +1714,6 @@ function drawVector(){
 
 				// attrsStringRef is a reference on the char-string-index in str
 				var attrsStringRef = Object.keys(attrs).reduce(function(acc, x) {
-//TODO  create a match for points and d and other values...
-
-
 
 					var pat = drawRegexCons.attrsStrLen(node.nodeName , x, attrs[x]);
 					var strI = {};
@@ -1728,7 +1724,7 @@ function drawVector(){
 					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
 							patNum = /-?\d+(\.\d+)?/g ;
 						if(x === 'points'){
-							// exaple 			points:{
+							// example 			points:{
 							// 							0:{
 							//								x:{start:13, end:15},
 							// 								y:{start:17, end:20}
@@ -1759,7 +1755,7 @@ function drawVector(){
 									start : start,
 									end	  : start + m.length
 								};
-								valCount = 0
+								valCount = 0;
 								m.replace( patNum , function(ma, _ , s){
 									strI[ comCount ][ valCount++ ] = {
 										start: start + s,
@@ -1768,7 +1764,7 @@ function drawVector(){
 								});
 								comCount ++;
 
-							})
+							});
 						}
 					acc[x] = strI;
 					return acc;
@@ -2117,6 +2113,7 @@ function drawVector(){
 			};
 		}
 		function path(o){
+// TODO solve relative commands 
 			var points = o.optional.reduce((acc, x) => {
 				if(x.type ==='a' || x.type ==='A'){
 					acc.push({
@@ -2183,37 +2180,37 @@ function drawVector(){
 	}
 
 })();
-(function(){
-	angular
-		.module('draw.path')
-		.service('drawPathAttr', drawPathAttr);
+// (function(){
+// 	angular
+// 		.module('draw.path')
+// 		.service('drawPathAttr', drawPathAttr);
 
 
 
-	function drawPathAttr(){
+// 	function drawPathAttr(){
 
-		var obj={
+// 		var obj={
 
-				attributes:{
-					fill :'rgba(222,0,222,0.5)',
-					stroke :'green',
-					//['stroke-width']:5
+// 				attributes:{
+// 					fill :'rgba(222,0,222,0.5)',
+// 					stroke :'green',
+// 					//['stroke-width']:5
 					
-				},
+// 				},
 
-				setAttr : function(swapObj){
-					obj.attributes = swapObj;
-				},
-				getAttr : function() {
-			    	return obj.attributes;
-			  	}
-			};
-			obj.attributes['stroke-width']=5;
-		return obj;
+// 				setAttr : function(swapObj){
+// 					obj.attributes = swapObj;
+// 				},
+// 				getAttr : function() {
+// 			    	return obj.attributes;
+// 			  	}
+// 			};
+// 			obj.attributes['stroke-width']=5;
+// 		return obj;
 
-		}
+// 		}
 
-})();
+// })();
 // directive for checking point realtion during event pointMove
 // and eventually react
 (function(){
@@ -2283,153 +2280,153 @@ function drawVector(){
 		}
 	}
 	})();
-(function(){
-	 'use strict';
-	angular
-		.module('draw.path')
-		.factory('drawService', drawService);
+// (function(){
+// 	 'use strict';
+// 	angular
+// 		.module('draw.path')
+// 		.factory('drawService', drawService);
 
-	drawService.$inject = ['$filter'];
-/*service*/
-function drawService($filter){
+// 	drawService.$inject = ['$filter'];
+// /*service*/
+// function drawService($filter){
 
-    var obj = {
-	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
-	points : [] ,
-	rawPoints : rawPoints,
-	setPoints : setPoints,
-	getPoints : getPoints,
-	dValue: dValue,
+//     var obj = {
+// 	//sample point output  point={type:'C', list:[ {x:22,y:33,id:1},{x:32,y:453,id:2},{x:33,y:33,id:3} ] };
+// 	points : [] ,
+// 	rawPoints : rawPoints,
+// 	setPoints : setPoints,
+// 	getPoints : getPoints,
+// 	dValue: dValue,
 
-	vectorDValue : vectorDValue,
-	code : code,
-	 // options for point types
- 	curveOp:['M','L','Q','C'],
+// 	vectorDValue : vectorDValue,
+// 	code : code,
+// 	 // options for point types
+//  	curveOp:['M','L','Q','C'],
 
-	/*obj.click captures click event and registers lastPoint and adds to points  array*/
-	mousedown :  mousedown,
-	mouseupLine :mouseupLine,
-	mousemove : mousemove,
-	mousemoveback : mousemoveback
-	};
-	return obj;
+// 	/*obj.click captures click event and registers lastPoint and adds to points  array*/
+// 	mousedown :  mousedown,
+// 	mouseupLine :mouseupLine,
+// 	mousemove : mousemove,
+// 	mousemoveback : mousemoveback
+// 	};
+// 	return obj;
 	
 
-	function mousedown(e){
+// 	function mousedown(e){
 		  
-			if(!e || e.target instanceof SVGCircleElement)
-			return;
+// 			if(!e || e.target instanceof SVGCircleElement)
+// 			return;
 
-            var point = {
-            	type:'',
-            	list :[]
-            };
-            point.list[0]=[];
+//             var point = {
+//             	type:'',
+//             	list :[]
+//             };
+//             point.list[0]=[];
 
-            //polyfill for FF
-            if(!e.target.offsetLeft)
-            var boundClientRect = e.target.getBoundingClientRect();
+//             //polyfill for FF
+//             if(!e.target.offsetLeft)
+//             var boundClientRect = e.target.getBoundingClientRect();
 
-			//coercing int with bitwise for FF support
-		    point.list[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;
-			point.list[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
+// 			//coercing int with bitwise for FF support
+// 		    point.list[0][0]=e.pageX - e.target.offsetLeft || e.pageX - boundClientRect.left|0;
+// 			point.list[0][1]=e.pageY - e.target.offsetTop  || e.pageY - boundClientRect.top |0;
 
-			// we temporarly set type to 'M' for rendering point
-			point.type='M';
+// 			// we temporarly set type to 'M' for rendering point
+// 			point.type='M';
 
-			//inserts point
-			obj.points.push(point);
+// 			//inserts point
+// 			obj.points.push(point);
 			
-	}
-	function mouseupLine(e){
+// 	}
+// 	function mouseupLine(e){
 
-		var pointLen = obj.points.length;
-		var typeOfPoint = (pointLen <= 1)?'M':'L';
+// 		var pointLen = obj.points.length;
+// 		var typeOfPoint = (pointLen <= 1)?'M':'L';
 		    
-		obj.points[pointLen - 1].type = typeOfPoint;
+// 		obj.points[pointLen - 1].type = typeOfPoint;
 			
-	};
+// 	};
 
-	function mousemove(e){
-			if (e.target instanceof SVGCircleElement )
-			return;
+// 	function mousemove(e){
+// 			if (e.target instanceof SVGCircleElement )
+// 			return;
 
-		var pointLen = obj.points.length;
+// 		var pointLen = obj.points.length;
 
-		var leftOffset =  e.target.offsetLeft,
-			topOffset  =  e.target.offsetTop ;
+// 		var leftOffset =  e.target.offsetLeft,
+// 			topOffset  =  e.target.offsetTop ;
 
-		//polyfill for target.offsetLeft in FF
-            if(!e.target.offsetLeft || e.target.offsetLeft == undefined){
-         	var boundClientRect = e.target.getBoundingClientRect();
-        	leftOffset =  boundClientRect.left;
-			topOffset  =  boundClientRect.top;
-			}
+// 		//polyfill for target.offsetLeft in FF
+//             if(!e.target.offsetLeft || e.target.offsetLeft == undefined){
+//          	var boundClientRect = e.target.getBoundingClientRect();
+//         	leftOffset =  boundClientRect.left;
+// 			topOffset  =  boundClientRect.top;
+// 			}
 
 
-		//if it's the first point just move around M point and return
-		if (pointLen == 1)
-		 return obj.points[0].list[0][0] = e.pageX - leftOffset |0,
-		   		obj.points[0].list[0][1] = e.pageY - topOffset  |0;
+// 		//if it's the first point just move around M point and return
+// 		if (pointLen == 1)
+// 		 return obj.points[0].list[0][0] = e.pageX - leftOffset |0,
+// 		   		obj.points[0].list[0][1] = e.pageY - topOffset  |0;
 
-			//if no vector exist create one andinsert it on index 1
-			// and change type of point if needed
-		if (obj.points[pointLen - 1].list.length < 2)
-			obj.points[pointLen -1].list.unshift([]),
-		    obj.points[pointLen - 1].type  = 'Q';
+// 			//if no vector exist create one andinsert it on index 1
+// 			// and change type of point if needed
+// 		if (obj.points[pointLen - 1].list.length < 2)
+// 			obj.points[pointLen -1].list.unshift([]),
+// 		    obj.points[pointLen - 1].type  = 'Q';
 			
-			//update position of vector																
-			//coercing paseInt with bitwise
-     		obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
-			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
-	};
-	function mousemoveback(e){
-			var pointLen = obj.points.length;
+// 			//update position of vector																
+// 			//coercing paseInt with bitwise
+//      		obj.points[pointLen - 1].list[0][0] = e.pageX - leftOffset |0;
+// 			obj.points[pointLen - 1].list[0][1] = e.pageY - topOffset  |0;
+// 	};
+// 	function mousemoveback(e){
+// 			var pointLen = obj.points.length;
 
-			if(obj.points[pointLen - 1].list.length < 2)
-				return;
+// 			if(obj.points[pointLen - 1].list.length < 2)
+// 				return;
 
 
-			obj.points[pointLen - 1].list.shift();
-					    //change type of point
-			var typeOfPoint = (pointLen <= 1)?'M':'L';
-		    obj.points[pointLen - 1].type = typeOfPoint;
+// 			obj.points[pointLen - 1].list.shift();
+// 					    //change type of point
+// 			var typeOfPoint = (pointLen <= 1)?'M':'L';
+// 		    obj.points[pointLen - 1].type = typeOfPoint;
 
-	}
-	function getPoints(){
-		return obj.points;
-	}
-	function setPoints(a){
-		obj.points = a;
-	}
-	function rawPoints(points){
-		return points.reduce((acc,x) =>{
-			var i=0;
-			while(i < x.list.length){
-				acc.push({
-					x:x.list[i][0],
-					y:x.list[i][1]
-				});
-				i++;
-			};
-			return acc;
-		},[]);
-	}
-	function dValue(){
-		return $filter('arrayToDVal')(obj.points);
-	}
-	function vectorDValue(){
-		var arr = $filter('toVectorArray')(obj.points);
-		return $filter('arrayToDVal')(arr);
+// 	}
+// 	function getPoints(){
+// 		return obj.points;
+// 	}
+// 	function setPoints(a){
+// 		obj.points = a;
+// 	}
+// 	function rawPoints(points){
+// 		return points.reduce((acc,x) =>{
+// 			var i=0;
+// 			while(i < x.list.length){
+// 				acc.push({
+// 					x:x.list[i][0],
+// 					y:x.list[i][1]
+// 				});
+// 				i++;
+// 			};
+// 			return acc;
+// 		},[]);
+// 	}
+// 	function dValue(){
+// 		return $filter('arrayToDVal')(obj.points);
+// 	}
+// 	function vectorDValue(){
+// 		var arr = $filter('toVectorArray')(obj.points);
+// 		return $filter('arrayToDVal')(arr);
 
-	}
-	function code(attributes){
-	 return $filter('attrsToMarkup')(attributes);
-	}
+// 	}
+// 	function code(attributes){
+// 	 return $filter('attrsToMarkup')(attributes);
+// 	}
 
-}
+// }
 
-})();
+// })();
 (function(){
 	'use strict';
 
@@ -2440,7 +2437,6 @@ function drawService($filter){
 		function drawStrCode(){
 		
 		var offset = {};
-		   /* temp   = {};*/
 
 		return {
 				update:update,
@@ -2503,24 +2499,24 @@ function drawService($filter){
 
 				origBeginSlice = (i === 0)? 0 :
 				reference[ pairs[ i-1 ][0] ].end  ;
-		/*	*/	beginSlice = valShift(origBeginSlice , offsetTracker ) ;
+				beginSlice = valShift(origBeginSlice , offsetTracker ) ;
 				
 				origStart = reference[ x[0] ].start;
-		/*	*/	start = valShift( origStart , offsetTracker );
+				start = valShift( origStart , offsetTracker );
 
 				origEnd = reference[ x[0] ].end;
-		/*	*/	end = valShift( origEnd , offsetTracker ) ;
+				end = valShift( origEnd , offsetTracker ) ;
 
 				/*********************/
 				acc +=  string.slice(  beginSlice , start  ) +  x[1];
 					
 				if( tmpShift !== 0){
-		/*\\*/		offsetManager( origStart  , start + tmpShift , temp );
+				offsetManager( origStart  , start + tmpShift , temp );
 				}
 
 				var difference = x[1].length - ( end - start ) ; 
 				if( difference !== 0 || tmpShift !== 0){
-		/*\\*/		offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
+				offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
 					tmpShift += difference;
 				}
 
@@ -2531,7 +2527,7 @@ function drawService($filter){
 					acc += string.slice( end );
 
 					//maintainence
-		/*\\*/		offsetMerge( offsetTracker , temp);
+				offsetMerge( offsetTracker , temp);
 		
 				}
 
@@ -2636,13 +2632,7 @@ function drawService($filter){
         }
         //utility of checkItem
         function stripBasicAttr(item){
-                /*for (var i in item.attributes){
-                    var test = drawAttributes.basic[item.nodeName].some(x => x.prop == i);
-                    if(test)
-                    { delete item.attributes[i]; }
-                }
-                return item;*/
-               // var copy = JSON.parse(JSON.stringify(item));
+
                var copy = {
                 attributes:{},
                 hashSvg   :item.hashSvg,
@@ -2714,7 +2704,7 @@ function drawService($filter){
     }
 })();
 
-(function(){
+/*(function(){
 	angular
 		.module('draw.path')
 		.service('drawVectorAttr', drawVectorAttr);
@@ -2744,7 +2734,7 @@ function drawService($filter){
 
 	}
 
-})();
+})();*/
 (function() {
     'use strict';
     angular

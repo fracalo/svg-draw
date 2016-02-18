@@ -8,7 +8,6 @@
 		function drawStrCode(){
 		
 		var offset = {};
-		   /* temp   = {};*/
 
 		return {
 				update:update,
@@ -71,24 +70,24 @@
 
 				origBeginSlice = (i === 0)? 0 :
 				reference[ pairs[ i-1 ][0] ].end  ;
-		/*	*/	beginSlice = valShift(origBeginSlice , offsetTracker ) ;
+				beginSlice = valShift(origBeginSlice , offsetTracker ) ;
 				
 				origStart = reference[ x[0] ].start;
-		/*	*/	start = valShift( origStart , offsetTracker );
+				start = valShift( origStart , offsetTracker );
 
 				origEnd = reference[ x[0] ].end;
-		/*	*/	end = valShift( origEnd , offsetTracker ) ;
+				end = valShift( origEnd , offsetTracker ) ;
 
 				/*********************/
 				acc +=  string.slice(  beginSlice , start  ) +  x[1];
 					
 				if( tmpShift !== 0){
-		/*\\*/		offsetManager( origStart  , start + tmpShift , temp );
+				offsetManager( origStart  , start + tmpShift , temp );
 				}
 
 				var difference = x[1].length - ( end - start ) ; 
 				if( difference !== 0 || tmpShift !== 0){
-		/*\\*/		offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
+				offsetManager( origEnd , origEnd + (end - origEnd ) + difference + tmpShift , temp );
 					tmpShift += difference;
 				}
 
@@ -99,7 +98,7 @@
 					acc += string.slice( end );
 
 					//maintainence
-		/*\\*/		offsetMerge( offsetTracker , temp);
+				offsetMerge( offsetTracker , temp);
 		
 				}
 

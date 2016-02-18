@@ -94,6 +94,7 @@
 			};
 		}
 		function path(o){
+// TODO solve relative commands 
 			var points = o.optional.reduce((acc, x) => {
 				if(x.type ==='a' || x.type ==='A'){
 					acc.push({

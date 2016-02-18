@@ -1,5 +1,5 @@
 // drawDCommands is a utility of drawDeconstruct to specifically check path's dValue
-// it parses each command checking for errors
+// it parses each command checking for certain types of errors
 // in the response it stores  
 //			return{
 //				bool: false,
