@@ -185,7 +185,7 @@
 				// check svgAnimatedLength for conversion values
 				var attrsLength = {};
 				var pointList ={};
-				for( let x in attrs){
+				for( var x in attrs){
 					if (node[x] instanceof SVGAnimatedLength )
 					attrsLength[x] = node[x];
 
