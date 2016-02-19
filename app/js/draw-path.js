@@ -295,82 +295,6 @@
 // })
 
 // })();
-// (function(){
-
-//   'use strict';
-
-// /* Controllers */
-// angular
-//   .module('draw.path')
-//   .controller('DrawCtrl',DrawCtrl)
-
-//   DrawCtrl.$inject = ['$scope', '$filter' , '$timeout','drawService', 'drawPathAttr', 'drawVectorAttr']
-  
-//   function DrawCtrl($scope, $filter, $timeout, drawService, drawPathAttr, drawVectorAttr) {
-//     var tmpAttr, tmpArr;
-//     var drw = this;
-//    };
-   
-// })();
-
-// (function(){
-
-//   'use strict';
-
-// /* Controllers */
-// angular
-//   .module('draw.path')
-//   .controller('DrawEventsCtrl',DrawEventsCtrl)
-
-//   DrawEventsCtrl.$inject = ['$scope', '$element' , '$attrs','$rootScope','drawService']; 
-
-//  function DrawEventsCtrl($scope, $element, $attrs, $rootScope, drawService){
-//         var tollerance = 20;
-//         var down =Object.create(null);
-
-//         var artboard = drawService;
-        
-//         $element.on('mousedown',mousedown);
-
-//         function mousedown(e){
-//           artboard.mousedown(e);
-//           $scope.$digest();
-          
-//           down.x = e.clientX;
-//           down.y = e.clientY;
-//         $element.on('mousemove',mousemove);
-//         $element.on('mouseup',mouseup);
-//         }
-
-//         function mousemove(e){
-//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
-//               artboard.mousemove(e);
-//               $scope.$digest();
-//           }else{
-//               artboard.mousemove.back(e);
-//               $scope.$digest();
-//           }
-//         }
-
-//         function mouseup(e){
-//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
-//              artboard.mouseupLine(e);
-//          }
-
-//         $scope.$digest();
-//         $element.off('mousemove',mousemove);
-//         $element.off('mouseup',mouseup);
-        
-//         }
-//         $rootScope.$on('pointMove', function (e, msg) {
-//           artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
-//           $scope.$digest();
-
-//         });
-
-// }
-// })();
-
 // controller for drawPath 
 
 // +function(){
@@ -409,28 +333,6 @@
 //          };
 
 // }();
-// (function(){
-//   'use strict';
-
-
-// //directive module
-// angular
-//     .module('draw.path')
-//     .controller('DrawPointsCtrl', DrawPointsCtrl);
-    
-//     DrawPointsCtrl.$inject = ['$scope','drawService'];
-    
-//     function DrawPointsCtrl($scope, drawService){
-//          var watchPoints = function(){
-//           return drawService.points;
-
-//          };
-//         $scope.$watch(watchPoints, function(){
-//           this.points = drawService.points;
-//           console.log(this.points)
-//         });
-//     }
-// })();
 // directive for dealing events on artboard
 
 (function(){
@@ -490,35 +392,6 @@
 })();
 
 
-//directive for code in textarea
-
-// (function(){
-
-//   angular
-//     .module('draw.path')
-//     .directive('drawPath',drawPath);
-
-//     drawPath.$inject =['$compile']
-      
-//       function drawPath($compile){
-//         return function(scope, element, attrs) {
-//           scope.$watch(
-//             function(scope) {
-//                // watch  'code' expression for changes
-//               return scope.$eval(attrs.drawPath);
-//             },
-//             function(value) {
-              
-//               element.html(value);
-
-//               $compile(element.contents());
-//             }
-//           );
-//         };
-//       }
-
-
-// })();
 //directive for code in textarea
 
 (function(){
@@ -2180,37 +2053,6 @@ function drawVector(){
 	}
 
 })();
-// (function(){
-// 	angular
-// 		.module('draw.path')
-// 		.service('drawPathAttr', drawPathAttr);
-
-
-
-// 	function drawPathAttr(){
-
-// 		var obj={
-
-// 				attributes:{
-// 					fill :'rgba(222,0,222,0.5)',
-// 					stroke :'green',
-// 					//['stroke-width']:5
-					
-// 				},
-
-// 				setAttr : function(swapObj){
-// 					obj.attributes = swapObj;
-// 				},
-// 				getAttr : function() {
-// 			    	return obj.attributes;
-// 			  	}
-// 			};
-// 			obj.attributes['stroke-width']=5;
-// 		return obj;
-
-// 		}
-
-// })();
 // directive for checking point realtion during event pointMove
 // and eventually react
 (function(){
