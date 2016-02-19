@@ -156,7 +156,7 @@ describe('drawStrCode',function(){
 									x  		  : 9,
 							        y   	  : 9,
 							        height    : 123,
-							        height    : 246,
+							        width    : 246,
 							        fill	  : 'blue'
 						 			},
 						 childNodes:[],
