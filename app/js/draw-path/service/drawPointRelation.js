@@ -33,6 +33,20 @@
 				relate.ellipse = relate.circle;
 				relate.rect = relate.circle;
 
+				relate.path = function(l,r){
+					if(r.pathPointType === 'controlPoint')
+					return;
+					if(r.index > l.index){
+					return;}
+					if(!l.relative)
+					return;
+				
+					return [ 
+						l.point.x + (r.point.x - r.start.x),
+						l.point.y + (r.point.y - r.start.y)
+					];
+					
+				}
 
 				if(relate[drawData.changeNode.pointer.nodeName])
 				return relate[drawData.changeNode.pointer.nodeName](loc,rem);

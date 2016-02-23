@@ -206,9 +206,10 @@ describe('drawDeconstructFactory',function(){
 								attributes: {
 									d:'M-11 0 C-12,22mh'
 								},
-								childNodes: []
+								childNodes: [],
+								}
 							}
-						},];
+						];
 		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0]).toEqual(
 		 	{
 		 		property:'d',
@@ -233,22 +234,6 @@ describe('drawDeconstructFactory',function(){
 						},];
 		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0].valid).toBe(false)
 		 expect(drawDeconstruct.parseBasic(pipedArgForElement)[0].hashSvg).toBe( 1 )
-	});
-	it(' should find wrong d values (checks each command )',function(){
-		pipedArgForElement = [
-						{
-							propertyCheck: 'd',
-							item:{
-								nodeName: 'path',
-								hashSvg: 1,
-								attributes: {
-									d:'M500 88 a 30 50 0 1 1 162.55 162.45 ,c    50  ,0 -5.0 100     , -1.100 ,100 50,0 50 ,   100 100,100z'
-								},
-								childNodes: []
-							}
-						},];
-			var res = drawDeconstruct.parseBasic(pipedArgForElement);
-		 	expect(res[0].valid).toBe(true)
 	});
 
 	it(' should parse "points" ',function(){

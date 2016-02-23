@@ -65,6 +65,7 @@
 			// if it's needed we need to get a new-reference to elem we're modifying
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
+
 			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
@@ -79,7 +80,10 @@
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
-				setTimeout(function(){ changeNode.pointer = null ;},0);
+				setTimeout(function(){ 
+					changeNode.pointer = null ;
+					drawAssemble.resetPathDiff();
+				},0);
 			}
 
 		}
@@ -133,7 +137,7 @@
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
-					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
+					  	var commandPat = /([a-zA-Z])[ .,0-9-]+/g ,
 							patNum = /-?\d+(\.\d+)?/g ;
 						if(x === 'points'){
 							// example 			points:{
@@ -215,7 +219,7 @@
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-
+	// console.log(res)
 				return res; 
 			}
 		}
@@ -243,6 +247,8 @@
 			if(pointTo.o[h].nodeName === 'path'){
 				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
 				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
+				pointTo.o[h].pathDataABS = pointTo.o[h].domObj.getPathData({normalize:true});
+				pointTo.o[h].pathDataAbsolutize = pointTo.o[h].domObj.getPathData({absolutize:true});
 			}
 			return pointTo.o[h];
 		}
@@ -264,11 +270,3 @@
 	}
 })();
 
-		/*function parseNode(n){
-			var parsed ;
-			n =n.replace(/\n|\r/g, "");
-			
-			var nodePat = /<\s*([a-zA-Z]+)(.+)\s*(>\s*<\s*\1)\/\s*>/; 
-			n.replace(nodePat)
-
-		}*/

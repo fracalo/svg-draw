@@ -171,10 +171,41 @@ describe('drawData',function(){
 			})
 			it(' should add subproperty to the attrsStringRef  each value in command', function(){
 				
+				  expect(drawData.node[0].attrsStringRef.d[0][0].start).toBe(1);
+				  expect(drawData.node[0].attrsStringRef.d[0][0].end).toBe(6);
+				 
+				  expect(drawData.node[0].attrsStringRef.d[1][0].start).toBe(13);
+				  expect(drawData.node[0].attrsStringRef.d[1][1].start).toBe(17);
+				
+			});
+		});
+		describe('setNode method setting attribute str lenght for "d" with negative ',function(){
+			var node;
+			var str ='<path d="M100.3  200 c-20 100, 300 200 400 100" stroke="black" fill="none" stroke-width="5">';
+			beforeEach(function(){
+					node = [
+							{
+							 nodeName :'path',
+							 hashSvg: 0,
+							 attributes:[
+										{name:'d'  			, value : "M100.3  200 c-20 100, 300 200 400 100"	},
+								        {name:'stroke'  	, value : "black"	},
+								        {name:'fill'		, value : 'none'	},
+								        {name:'stroke-width', value : '5'	}
+							 			],
+							 childNodes:[]
+							}
+						];
+			
+				drawData.setNode(node,str);
+			})
+			it(' should add subproperty to the attrsStringRef  each value in command', function(){
+				
 				  expect(drawData.node[0].attrsStringRef.d[0][0].start).toBe(1)
 				  expect(drawData.node[0].attrsStringRef.d[0][0].end).toBe(6)
 				 
-				  expect(drawData.node[0].attrsStringRef.d[0][1].start).toBe(8)
+				  expect(drawData.node[0].attrsStringRef.d[1][0].start).toBe(13);
+				  expect(drawData.node[0].attrsStringRef.d[1][1].start).toBe(17);
 
 				
 			});

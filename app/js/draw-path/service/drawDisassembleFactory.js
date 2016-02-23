@@ -94,8 +94,83 @@
 			};
 		}
 		function path(o){
-// TODO solve relative commands 
-			var points = o.optional.reduce((acc, x) => {
+			// since we need to know both absolute point values and
+			// specific point type relative we'll work on both arrays simultaneously
+ 			var abs= o.item.domObj.getPathData({absolutize:true});
+			var pointsAbs= o.item.domObj.getPathData().reduce((acc, x, i) =>{
+				var relativePat = /[a-z]/;
+				var relative = !!(o.optional[i].type.match(relativePat));
+				if(x.type === 'z' || x.type === 'Z')
+					return acc;
+				if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
+					acc.push({
+						hashSvg: o.hashSvg, 
+						x: abs[i].values[abs[i].values.length - 2],
+						y: abs[i].values[abs[i].values.length - 1],
+						pathPointType: 'vertex',
+						relative:relative
+					});
+					return acc;
+				}
+				while (abs[i].values.length > 0){
+					var res = {
+						hashSvg: o.hashSvg,
+						x: abs[i].values[0],
+						y: abs[i].values[1],
+						relative:relative
+						
+					};
+					if(abs[i].values.length === 2){
+						res.pathPointType = 'vertex';
+					}else{
+						res.pathPointType = 'controlPoint';
+					}
+					acc.push(res);
+					abs[i].values.splice(0,2);
+				}
+				return acc;
+			},[]);
+
+			// 	var pointsAbs= o.item.domObj.getPathData({normalize:true}).reduce((acc, x, i) =>{
+			// 	var relativePat = /[a-z]/;
+			// 	var relative = !!(o.optional[i].type.match(relativePat));
+			// 	if(x.type === 'z' || x.type === 'Z')
+			// 		return acc;
+			// 	if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
+			// 		acc.push({
+			// 			hashSvg: o.hashSvg, 
+			// 			x: x.values[x.values.length - 2],
+			// 			y: x.values[x.values.length - 1],
+			// 			pathPointType: 'vertex',
+			// 			relative:relative
+			// 		});
+			// 		return acc;
+			// 	}
+			// 	if( o.optional[i].type === 's' || o.optional[i].type === 'S' ||
+			// 		o.optional[i].type === 'T' || o.optional[i].type === 't' ){
+			// 	// getPathData will create a C curve
+			// 	// so we splice the first two points 	
+			// 		x.values.splice(0,2);
+			// 	}
+			// 	while (x.values.length > 0){
+			// 		var res = {
+			// 			hashSvg: o.hashSvg,
+			// 			x: x.values[0],
+			// 			y: x.values[1],
+			// 			relative:relative
+						
+			// 		};
+			// 		if(x.values.length === 2){
+			// 			res.pathPointType = 'vertex';
+			// 		}else{
+			// 			res.pathPointType = 'controlPoint';
+			// 		}
+			// 		acc.push(res);
+			// 		x.values.splice(0,2);
+			// 	}
+			// 	return acc;
+			// },[]);
+			/*var points = o.optional.reduce((acc, x, i) => {
 				if(x.type ==='a' || x.type ==='A'){
 					acc.push({
 						hashSvg: o.hashSvg, 
@@ -105,23 +180,23 @@
 					return acc;
 				}
 				//else
-				while (x.args.length > 0){
+				while (absPathData[i].values.length > 0){
 					acc.push({
 						hashSvg: o.hashSvg, 
 						x: x.args[0],
 						y: x.args[1]
 					});
-					x.args.shift();
-					x.args.shift();
+					absPathData[i].values.splice(0,2);
+					
 				}
 
 				return acc;
 
-			} , [] );
-
+			} , [] );*/
+console.log(pointsAbs)
 			return {
 				hashSvg   : o.hashSvg,
-				pointRappr: points
+				pointRappr: pointsAbs 
 			};
 
 		}

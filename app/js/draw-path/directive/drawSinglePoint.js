@@ -38,7 +38,7 @@
                     });
                     startX = ev.pageX - el.attr('cx');
                     startY = ev.pageY - el.attr('cy');
-                    // console.log(scope.$parent.$parent.$index )
+                    
                     sketchEl.on('mousemove', mousemove);
                     sketchEl.on('mouseup', mouseup);
                 });
@@ -50,6 +50,11 @@
                         elemHash:   grannyIndex,
                         index   :   parentIndex
                     };
+                    if(scope.point.pathPointType)
+                    org.pathPointType = scope.point.pathPointType;
+                    if(scope.point.relative)
+                    org.relative = scope.point.relative;
+
                     relRes = drawPointRelation.relate(org,a);
                     
                     if( relRes )
@@ -74,6 +79,12 @@
                         index   :   parentIndex,
                         start   :   startPoint,
                     };
+
+                    if(scope.point.pathPointType)
+                    res.pathPointType = scope.point.pathPointType;
+
+                    if(scope.point.relative)
+                    res.relative = scope.point.relative;
 
                     $rootScope.$emit("pointMove", res );//this event is for -> drawSvg
                     drawDeconstruct.movement(res);      //this is for the service directly 

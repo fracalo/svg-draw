@@ -295,6 +295,82 @@
 // })
 
 // })();
+// (function(){
+
+//   'use strict';
+
+// /* Controllers */
+// angular
+//   .module('draw.path')
+//   .controller('DrawCtrl',DrawCtrl)
+
+//   DrawCtrl.$inject = ['$scope', '$filter' , '$timeout','drawService', 'drawPathAttr', 'drawVectorAttr']
+  
+//   function DrawCtrl($scope, $filter, $timeout, drawService, drawPathAttr, drawVectorAttr) {
+//     var tmpAttr, tmpArr;
+//     var drw = this;
+//    };
+   
+// })();
+
+// (function(){
+
+//   'use strict';
+
+// /* Controllers */
+// angular
+//   .module('draw.path')
+//   .controller('DrawEventsCtrl',DrawEventsCtrl)
+
+//   DrawEventsCtrl.$inject = ['$scope', '$element' , '$attrs','$rootScope','drawService']; 
+
+//  function DrawEventsCtrl($scope, $element, $attrs, $rootScope, drawService){
+//         var tollerance = 20;
+//         var down =Object.create(null);
+
+//         var artboard = drawService;
+        
+//         $element.on('mousedown',mousedown);
+
+//         function mousedown(e){
+//           artboard.mousedown(e);
+//           $scope.$digest();
+          
+//           down.x = e.clientX;
+//           down.y = e.clientY;
+//         $element.on('mousemove',mousemove);
+//         $element.on('mouseup',mouseup);
+//         }
+
+//         function mousemove(e){
+//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) > tollerance){
+//               artboard.mousemove(e);
+//               $scope.$digest();
+//           }else{
+//               artboard.mousemove.back(e);
+//               $scope.$digest();
+//           }
+//         }
+
+//         function mouseup(e){
+//           if( Math.sqrt( Math.pow(e.clientX-down.x , 2) + Math.pow(e.clientY-down.y , 2) ) <= tollerance){
+//              artboard.mouseupLine(e);
+//          }
+
+//         $scope.$digest();
+//         $element.off('mousemove',mousemove);
+//         $element.off('mouseup',mouseup);
+        
+//         }
+//         $rootScope.$on('pointMove', function (e, msg) {
+//           artboard.points[ msg[1] ].list[ msg[2] ]= msg[0];
+//           $scope.$digest();
+
+//         });
+
+// }
+// })();
+
 // controller for drawPath 
 
 // +function(){
@@ -333,6 +409,26 @@
 //          };
 
 // }();
+/*(function(){
+  'use strict';
+
+
+//directive module
+angular
+    .module('draw.path')
+    .controller('drawPointsCtrl', drawPointsCtrl);
+    
+    drawPointsCtrl.$inject = ['$scope','drawService'];
+    
+    function drawPointsCtrl($scope, drawService){
+         var watchPoints = function(){
+          return drawService.points;
+         };
+         $scope.$watch(watchPoints, function(){
+          $scope.points = drawService.points;
+         });
+    }
+})();*/
 // directive for dealing events on artboard
 
 (function(){
@@ -601,7 +697,7 @@
                     });
                     startX = ev.pageX - el.attr('cx');
                     startY = ev.pageY - el.attr('cy');
-                    // console.log(scope.$parent.$parent.$index )
+                    
                     sketchEl.on('mousemove', mousemove);
                     sketchEl.on('mouseup', mouseup);
                 });
@@ -613,6 +709,11 @@
                         elemHash:   grannyIndex,
                         index   :   parentIndex
                     };
+                    if(scope.point.pathPointType)
+                    org.pathPointType = scope.point.pathPointType;
+                    if(scope.point.relative)
+                    org.relative = scope.point.relative;
+
                     relRes = drawPointRelation.relate(org,a);
                     
                     if( relRes )
@@ -637,6 +738,12 @@
                         index   :   parentIndex,
                         start   :   startPoint,
                     };
+
+                    if(scope.point.pathPointType)
+                    res.pathPointType = scope.point.pathPointType;
+
+                    if(scope.point.relative)
+                    res.relative = scope.point.relative;
 
                     $rootScope.$emit("pointMove", res );//this event is for -> drawSvg
                     drawDeconstruct.movement(res);      //this is for the service directly 
@@ -1061,22 +1168,38 @@ function drawVector(){
 			circle:circle,
 			ellipse:ellipse,
 			line:line,
-		};
-		function path(p,obj){
+			resetPathDiff: resetPathDiff,
 
+		};
+		function resetPathDiff(){
+			path.xDiff = null;
+			path.yDiff = null;
+		}
+		function path(p,obj){
 			path.pointByI = obj.pathDataPointList[p.index];
-			
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x =  p.point.x;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y =  p.point.y;
+
+			path.xDiff = path.xDiff ? path.xDiff :
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ] -
+			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ];
+			path.yDiff = path.yDiff ? path.yDiff :
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
+			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
+
+
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
 
 			obj.domObj.setPathData(obj.pathData);
 			obj.attributes.d = 
 			drawStrCode.preUpdateD( obj , path.pointByI ,
-				[ [path.pointByI.subI * 2 ,p.point.x] , [path.pointByI.subI * 2 + 1,p.point.y] ]) ;
+				[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
 
 
 			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
+
+
+
 		function polygon(p,obj){
 
 			obj.pointList.points[p.index].x = p.point.x;
@@ -1572,6 +1695,7 @@ function drawVector(){
 			// if it's needed we need to get a new-reference to elem we're modifying
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
+
 			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 			// with return  from draw assemble we update string
@@ -1586,7 +1710,10 @@ function drawVector(){
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
-				setTimeout(function(){ changeNode.pointer = null ;},0);
+				setTimeout(function(){ 
+					changeNode.pointer = null ;
+					drawAssemble.resetPathDiff();
+				},0);
 			}
 
 		}
@@ -1640,7 +1767,7 @@ function drawVector(){
 					    strI.end = startI + m.length;
 					    strI.start = strI.end - m2.length;
 					  });
-					  	var commandPat = /([a-zA-Z])[ .,0-9]+/g ,
+					  	var commandPat = /([a-zA-Z])[ .,0-9-]+/g ,
 							patNum = /-?\d+(\.\d+)?/g ;
 						if(x === 'points'){
 							// example 			points:{
@@ -1722,7 +1849,7 @@ function drawVector(){
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-
+	// console.log(res)
 				return res; 
 			}
 		}
@@ -1750,6 +1877,8 @@ function drawVector(){
 			if(pointTo.o[h].nodeName === 'path'){
 				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
 				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
+				pointTo.o[h].pathDataABS = pointTo.o[h].domObj.getPathData({normalize:true});
+				pointTo.o[h].pathDataAbsolutize = pointTo.o[h].domObj.getPathData({absolutize:true});
 			}
 			return pointTo.o[h];
 		}
@@ -1771,14 +1900,7 @@ function drawVector(){
 	}
 })();
 
-		/*function parseNode(n){
-			var parsed ;
-			n =n.replace(/\n|\r/g, "");
-			
-			var nodePat = /<\s*([a-zA-Z]+)(.+)\s*(>\s*<\s*\1)\/\s*>/; 
-			n.replace(nodePat)
 
-		}*/
 //drawDeconstruct service
 (function(){
 	'use strict';
@@ -2032,8 +2154,83 @@ function drawVector(){
 			};
 		}
 		function path(o){
-// TODO solve relative commands 
-			var points = o.optional.reduce((acc, x) => {
+			// since we need to know both absolute point values and
+			// specific point type relative we'll work on both arrays simultaneously
+ 			var abs= o.item.domObj.getPathData({absolutize:true});
+			var pointsAbs= o.item.domObj.getPathData().reduce((acc, x, i) =>{
+				var relativePat = /[a-z]/;
+				var relative = !!(o.optional[i].type.match(relativePat));
+				if(x.type === 'z' || x.type === 'Z')
+					return acc;
+				if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
+					acc.push({
+						hashSvg: o.hashSvg, 
+						x: abs[i].values[abs[i].values.length - 2],
+						y: abs[i].values[abs[i].values.length - 1],
+						pathPointType: 'vertex',
+						relative:relative
+					});
+					return acc;
+				}
+				while (abs[i].values.length > 0){
+					var res = {
+						hashSvg: o.hashSvg,
+						x: abs[i].values[0],
+						y: abs[i].values[1],
+						relative:relative
+						
+					};
+					if(abs[i].values.length === 2){
+						res.pathPointType = 'vertex';
+					}else{
+						res.pathPointType = 'controlPoint';
+					}
+					acc.push(res);
+					abs[i].values.splice(0,2);
+				}
+				return acc;
+			},[]);
+
+			// 	var pointsAbs= o.item.domObj.getPathData({normalize:true}).reduce((acc, x, i) =>{
+			// 	var relativePat = /[a-z]/;
+			// 	var relative = !!(o.optional[i].type.match(relativePat));
+			// 	if(x.type === 'z' || x.type === 'Z')
+			// 		return acc;
+			// 	if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
+			// 		acc.push({
+			// 			hashSvg: o.hashSvg, 
+			// 			x: x.values[x.values.length - 2],
+			// 			y: x.values[x.values.length - 1],
+			// 			pathPointType: 'vertex',
+			// 			relative:relative
+			// 		});
+			// 		return acc;
+			// 	}
+			// 	if( o.optional[i].type === 's' || o.optional[i].type === 'S' ||
+			// 		o.optional[i].type === 'T' || o.optional[i].type === 't' ){
+			// 	// getPathData will create a C curve
+			// 	// so we splice the first two points 	
+			// 		x.values.splice(0,2);
+			// 	}
+			// 	while (x.values.length > 0){
+			// 		var res = {
+			// 			hashSvg: o.hashSvg,
+			// 			x: x.values[0],
+			// 			y: x.values[1],
+			// 			relative:relative
+						
+			// 		};
+			// 		if(x.values.length === 2){
+			// 			res.pathPointType = 'vertex';
+			// 		}else{
+			// 			res.pathPointType = 'controlPoint';
+			// 		}
+			// 		acc.push(res);
+			// 		x.values.splice(0,2);
+			// 	}
+			// 	return acc;
+			// },[]);
+			/*var points = o.optional.reduce((acc, x, i) => {
 				if(x.type ==='a' || x.type ==='A'){
 					acc.push({
 						hashSvg: o.hashSvg, 
@@ -2043,23 +2240,23 @@ function drawVector(){
 					return acc;
 				}
 				//else
-				while (x.args.length > 0){
+				while (absPathData[i].values.length > 0){
 					acc.push({
 						hashSvg: o.hashSvg, 
 						x: x.args[0],
 						y: x.args[1]
 					});
-					x.args.shift();
-					x.args.shift();
+					absPathData[i].values.splice(0,2);
+					
 				}
 
 				return acc;
 
-			} , [] );
-
+			} , [] );*/
+console.log(pointsAbs)
 			return {
 				hashSvg   : o.hashSvg,
-				pointRappr: points
+				pointRappr: pointsAbs 
 			};
 
 		}
@@ -2099,6 +2296,37 @@ function drawVector(){
 	}
 
 })();
+// (function(){
+// 	angular
+// 		.module('draw.path')
+// 		.service('drawPathAttr', drawPathAttr);
+
+
+
+// 	function drawPathAttr(){
+
+// 		var obj={
+
+// 				attributes:{
+// 					fill :'rgba(222,0,222,0.5)',
+// 					stroke :'green',
+// 					//['stroke-width']:5
+					
+// 				},
+
+// 				setAttr : function(swapObj){
+// 					obj.attributes = swapObj;
+// 				},
+// 				getAttr : function() {
+// 			    	return obj.attributes;
+// 			  	}
+// 			};
+// 			obj.attributes['stroke-width']=5;
+// 		return obj;
+
+// 		}
+
+// })();
 // directive for checking point realtion during event pointMove
 // and eventually react
 (function(){
@@ -2134,6 +2362,20 @@ function drawVector(){
 				relate.ellipse = relate.circle;
 				relate.rect = relate.circle;
 
+				relate.path = function(l,r){
+					if(r.pathPointType === 'controlPoint')
+					return;
+					if(r.index > l.index){
+					return;}
+					if(!l.relative)
+					return;
+				
+					return [ 
+						l.point.x + (r.point.x - r.start.x),
+						l.point.y + (r.point.y - r.start.y)
+					];
+					
+				}
 
 				if(relate[drawData.changeNode.pointer.nodeName])
 				return relate[drawData.changeNode.pointer.nodeName](loc,rem);

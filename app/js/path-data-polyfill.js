@@ -12,6 +12,7 @@
 //   MIT License
 'use strict';
 
+/*jshint -W004 */  //jslint ignore 'var already defined' error
 if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathData) {
   (function() {
     var commandsMap = {
@@ -351,10 +352,10 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
     var symbols;
 
     if (window.Symbol) {
-      symbols = {cachedPathData: Symbol(), cachedNormalizedPathData: Symbol()};
+      symbols = {cachedPathData: Symbol(), cachedNormalizedPathData: Symbol(), cachedAbsolutizedPathData: Symbol() };
     }
     else {
-      symbols = {cachedPathData: "__cachedPathData", cachedNormalizedPathData: "__cachedNormalizedPathData"};
+      symbols = {cachedPathData: "__cachedPathData", cachedNormalizedPathData: "__cachedNormalizedPathData", cachedAbsolutizedPathData:"__cachedAbsolutizedPathData"};
     }
 
     // @info
@@ -925,6 +926,7 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
       if (name === "d") {
         this[symbols.cachedPathData] = null;
         this[symbols.cachedNormalizedPathData] = null;
+        this[symbols.cachedAbsolutizedPathData] = null;
       }
 
       setAttribute.call(this, name, value);
@@ -934,12 +936,37 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
       if (name === "d") {
         this[symbols.cachedPathData] = null;
         this[symbols.cachedNormalizedPathData] = null;
+        this[symbols.cachedAbsolutizedPathData] = null;
       }
 
       removeAttribute.call(this, name);
     };
 
     SVGPathElement.prototype.getPathData = function(options) {
+      if (options && options.absolutize){
+        if (this[symbols.cachedAbsolutizedPathData]) {
+          return clonePathData( this[symbols.cachedAbsolutizedPathData] )
+        }
+        else {
+          var pathData;
+
+          if (this[symbols.cachedPathData]) {
+            pathData = clonePathData( this[symbols.cachedPathData] );
+          }
+          else {
+            pathData = parsePathDataString(this.getAttribute('d') || '');
+            this[symbols.cachedPathData] = clonePathData( pathData );
+          }
+
+          var absolutizedPathData = absolutizePathData(pathData);
+          this[symbols.absolutizedPathData] = clonePathData(absolutizedPathData);
+          return absolutizedPathData; 
+
+        }
+      }
+
+
+
       if (options && options.normalize) {
         if (this[symbols.cachedNormalizedPathData]) {
           return clonePathData(this[symbols.cachedNormalizedPathData]);
@@ -960,6 +987,10 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
           return normalizedPathData;
         }
       }
+
+
+
+
       else {
         if (this[symbols.cachedPathData]) {
           return clonePathData(this[symbols.cachedPathData]);

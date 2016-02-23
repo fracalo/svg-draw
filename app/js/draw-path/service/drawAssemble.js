@@ -37,22 +37,38 @@
 			circle:circle,
 			ellipse:ellipse,
 			line:line,
-		};
-		function path(p,obj){
+			resetPathDiff: resetPathDiff,
 
+		};
+		function resetPathDiff(){
+			path.xDiff = null;
+			path.yDiff = null;
+		}
+		function path(p,obj){
 			path.pointByI = obj.pathDataPointList[p.index];
-			
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x =  p.point.x;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y =  p.point.y;
+
+			path.xDiff = path.xDiff ? path.xDiff :
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ] -
+			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ];
+			path.yDiff = path.yDiff ? path.yDiff :
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
+			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
+
+
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
+			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
 
 			obj.domObj.setPathData(obj.pathData);
 			obj.attributes.d = 
 			drawStrCode.preUpdateD( obj , path.pointByI ,
-				[ [path.pointByI.subI * 2 ,p.point.x] , [path.pointByI.subI * 2 + 1,p.point.y] ]) ;
+				[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
 
 
 			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
+
+
+
 		function polygon(p,obj){
 
 			obj.pointList.points[p.index].x = p.point.x;
