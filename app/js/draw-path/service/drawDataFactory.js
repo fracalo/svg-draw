@@ -50,7 +50,6 @@
 			flatNodeList:flatNodeList,
 			getStr:getStr,
 			changeNode:changeNode,
-			stringUpdateflag:false,
 		};
 		return obj;
 
@@ -59,27 +58,25 @@
 		}
 
 		function changeNode(msg){
-			changeNode.stringUpdateflag = false;
 			// this should return the new string value an update node [] (sideEff)
 
 			// if it's needed we need to get a new-reference to elem we're modifying
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
 
-			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+
 			// with return  from draw assemble we update string
+			var changing = $timeout( 20 )
+				 .then(function(){
+				 	obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
+
+				 },function(e){	console.log(e) });
 			
-			if( changeNode.stringUpdateflag === false){
-				changeNode.stringUpdateflag = true;
-				 $timeout( function(){ 
-					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
-					changeNode.stringUpdateflag = false;
-				 }, 30 );
-			}
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
+				$timeout.cancel(changing);
 				setTimeout(function(){ 
 					changeNode.pointer = null ;
 					drawAssemble.resetPathDiff();
@@ -99,7 +96,9 @@
 			//the dom rappresentation is good we just need to map what we want
 			//maybe there are some JQlite methods for this..
 			var hashSvg = 0;
-			if(a)
+			if(a.length === 0)
+			return [];
+
 			return [].slice.call(a).map(function(n){
 				return mapNode(n);
 			});
@@ -111,7 +110,7 @@
 			// since the structure changes we need to initialize these properties
 			drawStrCode.initStrOffset();
 			pointTo.o = undefined;
-				
+
 				function mappedAttributes(nA){
 					// this regex strips out wrong attributes compiled by angular
 					// when dealing with 'd'
@@ -219,7 +218,6 @@
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-	// console.log(res)
 				return res; 
 			}
 		}
@@ -247,7 +245,7 @@
 			if(pointTo.o[h].nodeName === 'path'){
 				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
 				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
-				pointTo.o[h].pathDataABS = pointTo.o[h].domObj.getPathData({normalize:true});
+				pointTo.o[h].pathDataNormalized = pointTo.o[h].domObj.getPathData({normalize:true});
 				pointTo.o[h].pathDataAbsolutize = pointTo.o[h].domObj.getPathData({absolutize:true});
 			}
 			return pointTo.o[h];

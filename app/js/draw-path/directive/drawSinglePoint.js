@@ -18,7 +18,7 @@
                 'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' +
                 'r="3" fill="{{point.color}}" index={{$index}} />',
             link: function (scope, el, attr) {
-                scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
+                // scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
                 var startX, startY;
                 var sketchEl = $document;
                 var grannyIndex = scope.point.hashSvg; //scope.$parent.$parent.$index;//will use hashsvg for tracking element
@@ -36,8 +36,10 @@
                         stroke: 'red',
                         cursor: 'crosshair'
                     });
+ 
                     startX = ev.pageX - el.attr('cx');
                     startY = ev.pageY - el.attr('cy');
+
                     
                     sketchEl.on('mousemove', mousemove);
                     sketchEl.on('mouseup', mouseup);
@@ -57,9 +59,15 @@
 
                     relRes = drawPointRelation.relate(org,a);
                     
-                    if( relRes )
-                    el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
-
+                    if( relRes ){
+                        if( scope.point.specialPathCom ==='V' ){
+                            el.attr('cx', relRes[0])
+                        } else if ( scope.point.specialPathCom ==='H' ){
+                            el.attr('cy', relRes[1])
+                        } else {
+                            el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
+                        }
+                    }
                 });
 
                 var res, moveX, moveY,startPoint;
@@ -69,11 +77,15 @@
                     moveY = ev.pageY - startY;
 
                     startPoint = { x: el.attr('cx') , y: el.attr('cy') } ;
-
-                    el.attr('cx', moveX);
-                    el.attr('cy', moveY);
-
-                    res = { 
+                   if(scope.point.oneAxis && scope.point.oneAxis === 'horizontal'){
+                        el.attr('cx', moveX);
+                    }else if(scope.point.oneAxis && scope.point.oneAxis === 'vertical'){
+                        el.attr('cy', moveY);
+                    }else{
+                        el.attr('cx', moveX);
+                        el.attr('cy', moveY);
+                    }
+                   res = { 
                         point   :{x:Number(el.attr('cx')), y:Number(el.attr('cy'))},
                         elemHash:   grannyIndex,
                         index   :   parentIndex,

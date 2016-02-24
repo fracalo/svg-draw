@@ -39,7 +39,11 @@
                   */
 
 
-			if(!a){	console.log('if we get here let me know');	return;  }
+			if(!a){
+			// this is a shorcut to update GUI point array in case no node is set
+			deconstructData.structure =[];
+			return; 
+			 }
         	
 			
 

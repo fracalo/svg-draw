@@ -470,14 +470,14 @@ angular
 				var self = this;
 				this.list = drawValidation.list;
 				
-				$scope.$watch(exceptList,function(){
+				$scope.$watch(watchNode,function(){
 					
 					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
 					drawValidation.checkExc();
 					self.list = drawValidation.list.specific;
 				});
 				
-				function exceptList(){
+				function watchNode(){
 					return drawData.node;
 				}
 				
@@ -677,7 +677,7 @@ angular
                 'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' +
                 'r="3" fill="{{point.color}}" index={{$index}} />',
             link: function (scope, el, attr) {
-                scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
+                // scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
                 var startX, startY;
                 var sketchEl = $document;
                 var grannyIndex = scope.point.hashSvg; //scope.$parent.$parent.$index;//will use hashsvg for tracking element
@@ -695,8 +695,10 @@ angular
                         stroke: 'red',
                         cursor: 'crosshair'
                     });
+ 
                     startX = ev.pageX - el.attr('cx');
                     startY = ev.pageY - el.attr('cy');
+
                     
                     sketchEl.on('mousemove', mousemove);
                     sketchEl.on('mouseup', mouseup);
@@ -716,9 +718,15 @@ angular
 
                     relRes = drawPointRelation.relate(org,a);
                     
-                    if( relRes )
-                    el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
-
+                    if( relRes ){
+                        if( scope.point.specialPathCom ==='V' ){
+                            el.attr('cx', relRes[0])
+                        } else if ( scope.point.specialPathCom ==='H' ){
+                            el.attr('cy', relRes[1])
+                        } else {
+                            el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
+                        }
+                    }
                 });
 
                 var res, moveX, moveY,startPoint;
@@ -728,11 +736,15 @@ angular
                     moveY = ev.pageY - startY;
 
                     startPoint = { x: el.attr('cx') , y: el.attr('cy') } ;
-
-                    el.attr('cx', moveX);
-                    el.attr('cy', moveY);
-
-                    res = { 
+                   if(scope.point.oneAxis && scope.point.oneAxis === 'horizontal'){
+                        el.attr('cx', moveX);
+                    }else if(scope.point.oneAxis && scope.point.oneAxis === 'vertical'){
+                        el.attr('cy', moveY);
+                    }else{
+                        el.attr('cx', moveX);
+                        el.attr('cy', moveY);
+                    }
+                   res = { 
                         point   :{x:Number(el.attr('cx')), y:Number(el.attr('cy'))},
                         elemHash:   grannyIndex,
                         index   :   parentIndex,
@@ -1176,6 +1188,7 @@ function drawVector(){
 			path.yDiff = null;
 		}
 		function path(p,obj){
+
 			path.pointByI = obj.pathDataPointList[p.index];
 
 			path.xDiff = path.xDiff ? path.xDiff :
@@ -1185,15 +1198,23 @@ function drawVector(){
 			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
 			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
 
+			if( path.pointByI.command ==='v' || path.pointByI.command ==='V' ){
+				//we need to use Xdiff in this case because it rappresents the first (and only) value
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI   ] = path.pointByI.y = p.point.y + path.xDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI , [ [path.pointByI.subI  , path.pointByI.y] ]);
 
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
+			}else if( path.pointByI.command ==='h' || path.pointByI.command ==='H' ){
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI   ] = path.pointByI.x = p.point.x + path.xDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI , [ [path.pointByI.subI  , path.pointByI.x] ]);
+			}else{
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI ,
+					[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
+
+			}
 
 			obj.domObj.setPathData(obj.pathData);
-			obj.attributes.d = 
-			drawStrCode.preUpdateD( obj , path.pointByI ,
-				[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
-
 
 			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
@@ -1680,7 +1701,6 @@ function drawVector(){
 			flatNodeList:flatNodeList,
 			getStr:getStr,
 			changeNode:changeNode,
-			stringUpdateflag:false,
 		};
 		return obj;
 
@@ -1689,27 +1709,25 @@ function drawVector(){
 		}
 
 		function changeNode(msg){
-			changeNode.stringUpdateflag = false;
 			// this should return the new string value an update node [] (sideEff)
 
 			// if it's needed we need to get a new-reference to elem we're modifying
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
 
-			
 			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+
 			// with return  from draw assemble we update string
+			var changing = $timeout( 20 )
+				 .then(function(){
+				 	obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
+
+				 },function(e){	console.log(e) });
 			
-			if( changeNode.stringUpdateflag === false){
-				changeNode.stringUpdateflag = true;
-				 $timeout( function(){ 
-					obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
-					changeNode.stringUpdateflag = false;
-				 }, 30 );
-			}
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
+				$timeout.cancel(changing);
 				setTimeout(function(){ 
 					changeNode.pointer = null ;
 					drawAssemble.resetPathDiff();
@@ -1729,7 +1747,9 @@ function drawVector(){
 			//the dom rappresentation is good we just need to map what we want
 			//maybe there are some JQlite methods for this..
 			var hashSvg = 0;
-			if(a)
+			if(a.length === 0)
+			return [];
+
 			return [].slice.call(a).map(function(n){
 				return mapNode(n);
 			});
@@ -1741,7 +1761,7 @@ function drawVector(){
 			// since the structure changes we need to initialize these properties
 			drawStrCode.initStrOffset();
 			pointTo.o = undefined;
-				
+
 				function mappedAttributes(nA){
 					// this regex strips out wrong attributes compiled by angular
 					// when dealing with 'd'
@@ -1849,7 +1869,6 @@ function drawVector(){
 					res.childNodes = [].slice.call(node.childNodes).map(function(x){
 						return mapNode(x);
 					});
-	// console.log(res)
 				return res; 
 			}
 		}
@@ -1877,7 +1896,7 @@ function drawVector(){
 			if(pointTo.o[h].nodeName === 'path'){
 				pointTo.o[h].pathDataPointList = pathDataPointList(pointTo.o[h].domObj);
 				pointTo.o[h].pathData = pointTo.o[h].domObj.getPathData();
-				pointTo.o[h].pathDataABS = pointTo.o[h].domObj.getPathData({normalize:true});
+				pointTo.o[h].pathDataNormalized = pointTo.o[h].domObj.getPathData({normalize:true});
 				pointTo.o[h].pathDataAbsolutize = pointTo.o[h].domObj.getPathData({absolutize:true});
 			}
 			return pointTo.o[h];
@@ -1942,7 +1961,11 @@ function drawVector(){
                   */
 
 
-			if(!a){	console.log('if we get here let me know');	return;  }
+			if(!a){
+			// this is a shorcut to update GUI point array in case no node is set
+			deconstructData.structure =[];
+			return; 
+			 }
         	
 			
 
@@ -2155,11 +2178,27 @@ function drawVector(){
 		}
 		function path(o){
 			// since we need to know both absolute point values and
-			// specific point type relative we'll work on both arrays simultaneously
- 			var abs= o.item.domObj.getPathData({absolutize:true});
+			// specific point type (relative) we'll work on both arrays simultaneously
+			// (in order to get V H type points we'll also use normalized array)
+ 			var normalized = o.item.domObj.getPathData({normalize:true});
+ 			var abs= o.item.domObj.getPathData({absolutize:true}); 
 			var pointsAbs= o.item.domObj.getPathData().reduce((acc, x, i) =>{
 				var relativePat = /[a-z]/;
 				var relative = !!(o.optional[i].type.match(relativePat));
+				if(x.type === 'h' || x.type === 'H' || x.type === 'v' || x.type === 'V'){
+					var oneAxis = (x.type === 'h' || x.type === 'H')? 'horizontal' : 'vertical';
+					acc.push({
+						hashSvg: o.hashSvg, 
+						x: normalized[i].values[0],
+						y: normalized[i].values[1],
+						pathPointType: 'vertex',
+						relative:  true,
+						normalized:true,
+						oneAxis: oneAxis,
+						specialPathCom:x.type
+					});
+					return acc;	
+				}
 				if(x.type === 'z' || x.type === 'Z')
 					return acc;
 				if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
@@ -2191,69 +2230,6 @@ function drawVector(){
 				return acc;
 			},[]);
 
-			// 	var pointsAbs= o.item.domObj.getPathData({normalize:true}).reduce((acc, x, i) =>{
-			// 	var relativePat = /[a-z]/;
-			// 	var relative = !!(o.optional[i].type.match(relativePat));
-			// 	if(x.type === 'z' || x.type === 'Z')
-			// 		return acc;
-			// 	if(o.optional[i].type === 'a' || o.optional[i].type === 'A'){
-			// 		acc.push({
-			// 			hashSvg: o.hashSvg, 
-			// 			x: x.values[x.values.length - 2],
-			// 			y: x.values[x.values.length - 1],
-			// 			pathPointType: 'vertex',
-			// 			relative:relative
-			// 		});
-			// 		return acc;
-			// 	}
-			// 	if( o.optional[i].type === 's' || o.optional[i].type === 'S' ||
-			// 		o.optional[i].type === 'T' || o.optional[i].type === 't' ){
-			// 	// getPathData will create a C curve
-			// 	// so we splice the first two points 	
-			// 		x.values.splice(0,2);
-			// 	}
-			// 	while (x.values.length > 0){
-			// 		var res = {
-			// 			hashSvg: o.hashSvg,
-			// 			x: x.values[0],
-			// 			y: x.values[1],
-			// 			relative:relative
-						
-			// 		};
-			// 		if(x.values.length === 2){
-			// 			res.pathPointType = 'vertex';
-			// 		}else{
-			// 			res.pathPointType = 'controlPoint';
-			// 		}
-			// 		acc.push(res);
-			// 		x.values.splice(0,2);
-			// 	}
-			// 	return acc;
-			// },[]);
-			/*var points = o.optional.reduce((acc, x, i) => {
-				if(x.type ==='a' || x.type ==='A'){
-					acc.push({
-						hashSvg: o.hashSvg, 
-						x: x.args[x.args.length - 2],
-						y: x.args[x.args.length - 1],
-					});
-					return acc;
-				}
-				//else
-				while (absPathData[i].values.length > 0){
-					acc.push({
-						hashSvg: o.hashSvg, 
-						x: x.args[0],
-						y: x.args[1]
-					});
-					absPathData[i].values.splice(0,2);
-					
-				}
-
-				return acc;
-
-			} , [] );*/
-console.log(pointsAbs)
 			return {
 				hashSvg   : o.hashSvg,
 				pointRappr: pointsAbs 
@@ -2723,7 +2699,13 @@ console.log(pointsAbs)
             checkList.basicValues=[];
             checkList.presentational=[];
 
+
             drawData.node.forEach(x => checkItem(x) );
+
+            if(drawData.node.length === 0){
+            // this is a shorcut to update GUI point array in case no node is set
+            drawDeconstruct.parseBasic();
+            }
             
             service.list= checkList;
 

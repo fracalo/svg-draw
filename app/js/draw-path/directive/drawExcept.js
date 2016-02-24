@@ -22,14 +22,14 @@
 				var self = this;
 				this.list = drawValidation.list;
 				
-				$scope.$watch(exceptList,function(){
+				$scope.$watch(watchNode,function(){
 					
 					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
 					drawValidation.checkExc();
 					self.list = drawValidation.list.specific;
 				});
 				
-				function exceptList(){
+				function watchNode(){
 					return drawData.node;
 				}
 				

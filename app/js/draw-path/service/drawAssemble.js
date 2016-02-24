@@ -45,6 +45,7 @@
 			path.yDiff = null;
 		}
 		function path(p,obj){
+
 			path.pointByI = obj.pathDataPointList[p.index];
 
 			path.xDiff = path.xDiff ? path.xDiff :
@@ -54,15 +55,23 @@
 			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
 			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
 
+			if( path.pointByI.command ==='v' || path.pointByI.command ==='V' ){
+				//we need to use Xdiff in this case because it rappresents the first (and only) value
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI   ] = path.pointByI.y = p.point.y + path.xDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI , [ [path.pointByI.subI  , path.pointByI.y] ]);
 
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
+			}else if( path.pointByI.command ==='h' || path.pointByI.command ==='H' ){
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI   ] = path.pointByI.x = p.point.x + path.xDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI , [ [path.pointByI.subI  , path.pointByI.x] ]);
+			}else{
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ]     = path.pointByI.x = p.point.x + path.xDiff;
+				obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1 ] = path.pointByI.y = p.point.y + path.yDiff;
+				obj.attributes.d = drawStrCode.preUpdateD( obj , path.pointByI ,
+					[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
+
+			}
 
 			obj.domObj.setPathData(obj.pathData);
-			obj.attributes.d = 
-			drawStrCode.preUpdateD( obj , path.pointByI ,
-				[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
-
 
 			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
