@@ -64,12 +64,15 @@
 			if( !changeNode.pointer)
 			changeNode.pointer = pointTo(msg.elemHash);
 
-			var res = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
+			//deconstruct
+			var [res1, ...res2] = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 
 			// with return  from draw assemble we update string
 			var changing = $timeout( 20 )
 				 .then(function(){
-				 	obj.string = drawStrCode.update( pointTo.o[res[0]], obj.string, res.splice(1));			
+				 	obj.string = drawStrCode.update( pointTo.o[res1],
+				 										obj.string,
+				 										res2);			
 
 				 },function(e){	console.log(e) });
 			
@@ -80,7 +83,7 @@
 				setTimeout(function(){ 
 					changeNode.pointer = null ;
 					drawAssemble.resetPathDiff();
-				},0);
+				},40);
 			}
 
 		}

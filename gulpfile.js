@@ -5,7 +5,8 @@ const gulp = require('gulp'),
 	concat = require('gulp-concat'),
 	watch = require('gulp-watch'),
 	batch = require('gulp-batch'),
-	sourcemaps = require('gulp-sourcemaps');
+	sourcemaps = require('gulp-sourcemaps'),
+	babel = require("gulp-babel");
 	// livereload = require('gulp-livereload');
 
 gulp.task('default', function() {
@@ -33,6 +34,9 @@ gulp.task('compass', function() {
 gulp.task('bundlejs', function(){
 	gulp.src(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'])
 		.pipe(sourcemaps.init())
+		.pipe(babel({
+            presets: ['es2015']
+        }))
 		.pipe(concat('draw-path.js'))
 		.pipe(sourcemaps.write('../maps'))
 		.pipe(gulp.dest('./app/js'))

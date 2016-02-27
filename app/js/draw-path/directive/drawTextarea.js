@@ -22,7 +22,7 @@
             controllerAs:'inside',
             controller:function($scope, $timeout,$rootScope,drawData){
 
-                var wait, lastValid;
+                var wait, lastValid, mousemoving;
                 var inside = this;
                 this.code = $scope.code;
                 $scope.$watch('code',function(n,o){
@@ -32,7 +32,8 @@
                 $scope.$watch(
                     'inside.code',
                     function(n,o){
-                          
+                        if(mousemoving)
+                        return;
                         //cancel $timeout if exists
                         if(wait){
                           $timeout.cancel(wait);
@@ -51,10 +52,16 @@
                     }
                 );
 
-                $rootScope.$on('pointMove',function(){
+                $rootScope.$on('pointMove',function(_,m){
                     inside.code = drawData.getStr();
-                    $scope.$digest()
+                    $scope.$digest();
+                    mousemoving = true;
+                    if(m.mouseup)
+                    mousemoving = false;
                 })
+                // $rootScope.$on('pointMoveEnd',function(){
+                //     mousemoving = false;
+                // })
             }
         };
     }

@@ -101,7 +101,7 @@
  			var abs= o.item.domObj.getPathData({absolutize:true}); 
 			var pointsAbs= o.item.domObj.getPathData().reduce((acc, x, i) =>{
 				var relativePat = /[a-z]/;
-				var relative = !!(o.optional[i].type.match(relativePat));
+				var relative = !!(x.type.match(relativePat));
 				if(x.type === 'h' || x.type === 'H' || x.type === 'v' || x.type === 'V'){
 					var oneAxis = (x.type === 'h' || x.type === 'H')? 'horizontal' : 'vertical';
 					acc.push({
@@ -146,7 +146,6 @@
 				}
 				return acc;
 			},[]);
-
 			return {
 				hashSvg   : o.hashSvg,
 				pointRappr: pointsAbs 

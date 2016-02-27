@@ -50,7 +50,7 @@ describe('directives testing', function() {
             });
       });
 
-      describe('draw-except', function(){
+      xdescribe('draw-except', function(){
         var drawValidation, pElem;
         beforeEach(inject(function($rootScope,$compile,_drawValidation_){
             scope = $rootScope.$new();

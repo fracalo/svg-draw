@@ -3,31 +3,31 @@
 
 
 
-describe('service exception',function(){
-	var exception;
-		beforeEach(function(){
-		module('draw.path');
+// describe('service exception',function(){
+// 	var exception;
+// 		beforeEach(function(){
+// 		module('draw.path');
 
-		inject(function(_exception_){
-			exception = _exception_;
-		});
-	});
+// 		inject(function(_exception_){
+// 			exception = _exception_;
+// 		});
+// 	});
 
-	it('should add errors to a private list',function(){
-		var err = 'you got hacked';
+// 	it('should add errors to a private list',function(){
+// 		var err = 'you got hacked';
 
-		exception.setError(err);
+// 		exception.setError(err);
 
-		expect(exception.getError()).toEqual(err)
-	})
-
-
-
-});
+// 		expect(exception.getError()).toEqual(err)
+// 	})
 
 
 
-describe('drawValidation',function(){
+// });
+
+
+
+xdescribe('drawValidation',function(){
 	var drawValidation, drawData,scope ;
 		beforeEach(function(){
 			module('draw.path');

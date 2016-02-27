@@ -11,31 +11,46 @@
 
         var service = {
            list:[],
+           flatlist:[],
            deleteError: deleteError,
+           checkList:null,
            checkExc :checkExc,
+           getErrors:getErrors
       
         };
         return service;
-
+        function getErrors(){
+                service.flatlist= [].concat.call(
+                    service.list.basic,
+                    service.list.basicValues,
+                    service.list.presentational
+                )
+                return service.flatlist;
+        };
         function deleteError(i){
-            service.list.splice(i,1);
+            console.log(i);
+            //            service.flatlist.splice(i,1);
+            for( var o in service.list){
+                service.list[o] = service.list[o].filter(x=> x.$$hashKey !== i) 
+            }
         }
         function checkExc(){
             //reset list
-            var checkList= {};
-            checkList.basic=[];
-            checkList.basicValues=[];
-            checkList.presentational=[];
-
-
+            var checkList= {
+                basic:[],
+                basicValues:[],
+                presentational:[],
+            };
             drawData.node.forEach(x => checkItem(x) );
 
             if(drawData.node.length === 0){
-            // this is a shorcut to update GUI point array in case no node is set
-            drawDeconstruct.parseBasic();
+                // this is a shorcut to update GUI point array in case no node is set
+                drawDeconstruct.parseBasic();
             }
             
-            service.list= checkList;
+            service.list = checkList;
+            //update flatlist
+            getErrors();
 
             function checkItem(item){
                 /*do it recursivly on childNodes if any*/
@@ -55,8 +70,11 @@
                 // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals =  basicTestValues[1];
                 var basicValueErr = drawDeconstruct.parseBasic(basicVals);   //\\ -- //\\
-                checkList.basicValues = checkList.basicValues.concat(basicValueErr);
-               
+
+                basicValueErr.forEach(x=>{
+                    if( x.valid === false)
+                    checkList.basicValues = checkList.basicValues.concat(basicValueErr);
+                })
                 /*********************************************/
 
 

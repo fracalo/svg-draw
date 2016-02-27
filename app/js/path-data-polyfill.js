@@ -943,6 +943,7 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
     };
 
     SVGPathElement.prototype.getPathData = function(options) {
+
       if (options && options.absolutize){
         if (this[symbols.cachedAbsolutizedPathData]) {
           return clonePathData( this[symbols.cachedAbsolutizedPathData] )
@@ -964,9 +965,6 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
 
         }
       }
-
-
-
       if (options && options.normalize) {
         if (this[symbols.cachedNormalizedPathData]) {
           return clonePathData(this[symbols.cachedNormalizedPathData]);
@@ -987,10 +985,6 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
           return normalizedPathData;
         }
       }
-
-
-
-
       else {
         if (this[symbols.cachedPathData]) {
           return clonePathData(this[symbols.cachedPathData]);
