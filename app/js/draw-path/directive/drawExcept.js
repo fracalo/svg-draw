@@ -5,7 +5,7 @@
 	'use strict';
 	angular
 		.module('draw.path')
-		.directive('drawExcept' , drawExcept);
+		.directive('drawExcept' ,drawExcept);
 
 	drawExcept.$inject = ['drawValidation','drawData'];
 

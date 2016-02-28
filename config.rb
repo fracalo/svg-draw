@@ -1,4 +1,5 @@
 # basic config
 
-css_dir = "app/css"
+css_dir = "/app/css"
 sass_dir= "app/sass"
+sourcemap= true

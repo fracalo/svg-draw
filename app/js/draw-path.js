@@ -793,7 +793,7 @@ angular
             scope: {
                 code: '='
             },
-            template: "<label name='code'>SVG-Code </label>" + "<textarea name='code' ng-model='inside.code' ></textarea>",
+            template: "<textarea name='code' ng-model='inside.code' ></textarea>",
             controllerAs: 'inside',
             controller: function controller($scope, $timeout, $rootScope, drawData) {
 

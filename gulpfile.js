@@ -1,6 +1,9 @@
 'use strict';
+/* globals require */
+
 const gulp = require('gulp'),
-	sass = require('gulp-ruby-sass'),
+	// sass = require('gulp-ruby-sass'),
+	sass = require('gulp-sass'),
 	compass = require('gulp-compass'),
 	concat = require('gulp-concat'),
 	watch = require('gulp-watch'),
@@ -9,26 +12,13 @@ const gulp = require('gulp'),
 	babel = require("gulp-babel");
 	// livereload = require('gulp-livereload');
 
-gulp.task('default', function() {
-  console.log('woggie-boggie');
-});
 
-// gulp.task('css-process',function(){
-// 	return gulp.src('app/scss/app.scss')
-// 		.pipe(sass({style:'expanded'}))
-// 		.pipe(gulp.dest('app/css'));
-// });
-
- 
-gulp.task('compass', function() {
-  	gulp.src('./app/sass/*.scss')
-	    .pipe(compass({
-	      config_file: './config.rb',
-	      // css: 'app/css',
-	      sass: 'app/sass',
-	      style:'expanded'
-	    }))
-	.pipe(gulp.dest('./app/css'));
+gulp.task('bootstrap-css-process',function(){
+	return gulp.src('app/bootstrap/scss/**/*.scss')
+		.pipe(sourcemaps.init())
+		.pipe(sass({style:'expanded'}))
+		.pipe(sourcemaps.write('../maps'))
+		.pipe(gulp.dest('app/css'));
 });
 
 gulp.task('bundlejs', function(){
@@ -39,14 +29,44 @@ gulp.task('bundlejs', function(){
         }))
 		.pipe(concat('draw-path.js'))
 		.pipe(sourcemaps.write('../maps'))
-		.pipe(gulp.dest('./app/js'))
+		.pipe(gulp.dest('./app/js'));
 		// .pipe(livereload({ start: true }));
 
-})
+});
 
-gulp.task('watchjs',function(){
+gulp.task('compass', function() {
+  	gulp.src('./app/sass/*.scss')
+	    // .pipe(sourcemaps.init())
+	    .pipe(compass({
+	    	// config_file: './config.rb',
+			sourcemap:true,
+			sass: 'app/sass',
+			css:'app/css',
+	      	style:'expanded'
+	    }))
+	    // .pipe(sourcemaps.write('../maps'))
+	    .pipe(gulp.dest('./app/css'));
+});
+
+// watchers
+
+function watchJsAndCompass(){
+	// watch(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'],
+	// 	batch(function (events, done) {
+ //        gulp.start('bundlejs', done);
+ //    }));
+    watch(['./app/sass/*.scss','.app/sass/*/*.scss'],
+    	batch(function (events, done){
+    		gulp.start('compass',done);
+    }));
+}
+
+function watchjs(){
 	watch(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'],
 		batch(function (events, done) {
         gulp.start('bundlejs', done);
-    }))
-})
+    }));
+}
+gulp.task('watchjs',watchjs);
+
+gulp.task('watchJsAndCompass',watchJsAndCompass);

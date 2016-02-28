@@ -17,7 +17,6 @@
                 code:'='
             },
             template:
-            "<label name='code'>SVG-Code </label>"+
             "<textarea name='code' ng-model='inside.code' ></textarea>",
             controllerAs:'inside',
             controller:function($scope, $timeout,$rootScope,drawData){
