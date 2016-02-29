@@ -98,8 +98,9 @@
 		function structureNode(rd){
 			// @ex. return {hashSvg: number, pointRappr:[] }
 			var response = drawDisassemble[rd.nodeName](rd);
+
 			deconstructData.structure[response.hashSvg] = response.pointRappr;
-			
+
 		}
 
 

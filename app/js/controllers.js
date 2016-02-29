@@ -26,12 +26,12 @@
  };
 
 /**** this rappresents the value for points (should be integrated in another way)****/
-  var  watchNode = function(){
+  var  watchPoints = function(){
               // return drawData.node;
               return drawDeconstruct.structure;
             }
 
-  $scope.$watch( watchNode ,
+  $scope.$watch( watchPoints ,
       ()=>{
         this.points = drawDeconstruct.structure ;
     },true);

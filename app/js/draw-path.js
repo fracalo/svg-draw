@@ -462,20 +462,18 @@ angular
 				var self = this;
 				this.list = drawValidation.flatList;
 
-				$scope.$watch(watchNode, function () {
-					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
-					drawValidation.checkExc();
-					// self.list = drawValidation.list;
-				});
 				function watchNode() {
 					return drawData.node;
 				}
 				var watchList = function watchList() {
 					return drawValidation.list;
 				};
+				$scope.$watch(watchNode, function () {
+					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
+					drawValidation.checkExc();
+				});
 				$scope.$watch(watchList, function (n) {
 					self.list = drawValidation.getErrors();
-					console.log(self.list);
 				}, true);
 
 				this.deleteError = drawValidation.deleteError;
@@ -1516,7 +1514,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 
 			var changing = $timeout(20).then(function () {
-				obj.string = drawStrCode.update(pointTo.o[res1], obj.string, res2);
+				if (pointTo.o) obj.string = drawStrCode.update(pointTo.o[res1], obj.string, res2);
 			}, function (e) {
 				console.log(e);
 			});
@@ -1532,8 +1530,8 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		}
 
 		function setNode(a, str) {
-			obj.node = serializeNode(a, str);
 			obj.string = str;
+			obj.node = serializeNode(a, str);
 		}
 
 		function serializeNode(a, str) {
@@ -1542,11 +1540,11 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			var hashSvg = 0;
 			if (a.length === 0) return [];
 
-			return [].slice.call(a).map(function (n) {
-				return mapNode(n);
+			return [].slice.call(a).map(function (n, i) {
+				return mapNode(n, i);
 			});
 
-			function mapNode(node) {
+			function mapNode(node, index) {
 				// this procedure creates a structure which is utilized by
 				// .pointTo() to create a flatnode Reference table (.pointTo.o property) and
 				// by drawStrCode.update to track length of string when values in string change
@@ -1643,11 +1641,11 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					hashSvg: hashSvg++,
 					attrsStringRef: attrsStringRef
 				};
-				if (node.nodeName === 'path')
+				if (node.nodeName === 'path') {
 					// since we're using a shim for abstracting specific d getPathData()
 					// we'll pass the whole dom nodeName
-					res.domObj = a[0];
-
+					res.domObj = a[index];
+				}
 				if (Object.keys(attrsLength).length > 0) res.attrsLength = attrsLength;
 
 				if (Object.keys(pointList).length > 0) res.pointList = pointList;
@@ -1655,6 +1653,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 				if (node.childNodes.length > 0) res.childNodes = [].slice.call(node.childNodes).map(function (x) {
 					return mapNode(x);
 				});
+
 				return res;
 			}
 		}
@@ -1793,6 +1792,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		function structureNode(rd) {
 			// @ex. return {hashSvg: number, pointRappr:[] }
 			var response = drawDisassemble[rd.nodeName](rd);
+
 			deconstructData.structure[response.hashSvg] = response.pointRappr;
 		}
 
@@ -1968,6 +1968,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					acc.push(res);
 					abs[i].values.splice(0, 2);
 				}
+
 				return acc;
 			}, []);
 			return {

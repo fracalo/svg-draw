@@ -941,7 +941,6 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
 
       removeAttribute.call(this, name);
     };
-
     SVGPathElement.prototype.getPathData = function(options) {
 
       if (options && options.absolutize){
@@ -987,6 +986,7 @@ if (!SVGPathElement.prototype.getPathData || !SVGPathElement.prototype.setPathDa
       }
       else {
         if (this[symbols.cachedPathData]) {
+
           return clonePathData(this[symbols.cachedPathData]);
         }
         else {

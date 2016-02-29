@@ -144,6 +144,7 @@
 					acc.push(res);
 					abs[i].values.splice(0,2);
 				}
+
 				return acc;
 			},[]);
 			return {

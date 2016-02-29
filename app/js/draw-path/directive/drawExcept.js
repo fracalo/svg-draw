@@ -25,20 +25,19 @@
 				var self = this;
 				this.list = drawValidation.flatList;
 				
-				$scope.$watch(watchNode,function(){
-					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
-					drawValidation.checkExc();
-					// self.list = drawValidation.list;
-				});				
+			
 				function watchNode(){
 					return drawData.node;
 				}
 				let watchList = ()=>{
 					return drawValidation.list
 				}
+				$scope.$watch(watchNode,function(){
+					//\\ this is responsible  also for starting the creation of Gui-points etc. //\\
+					drawValidation.checkExc();
+				});	
 				$scope.$watch(watchList, function(n){
 					self.list = drawValidation.getErrors();
-					console.log(self.list)
 				},true);
 				
 				this.deleteError = drawValidation.deleteError;
