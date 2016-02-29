@@ -15,8 +15,9 @@
 			template:
 			"<div ng-repeat='i in exc.list'>"+
 			"	<p>"+
-			"		error with <strong>{{i.property}}</strong> ( {{i.reason}} )"+
 			"		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>"+
+			"		<span class='glyphicon glyphicon-retweet' ng-click='exc.deleteError(i.$$hashKey)'></span>"+
+			"		error with <strong>{{i.property}}</strong> ( {{i.reason}} )"+
 			"    </p>"+
 			"</div>",
 			controllerAs:'exc',

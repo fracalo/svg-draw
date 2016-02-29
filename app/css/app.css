@@ -1,4 +1,29 @@
+@font-face {
+  font-family: 'glyphicon';
+  src: url("../fonts/glyphicons-halflings-regular.woff") format("woff"), url("../fonts/glyphicons-halflings-regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+}
 /*  no glyphs  */
+/** skinny glyphicon support**/
+.glyphicon {
+  font-family: 'glyphicon';
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glyphicon-remove:before {
+  content: "\e014";
+}
+
+.glyphicon-retweet:before {
+  content: "\e115";
+}
+
 body {
   height: 100vh;
   display: flex;
@@ -14,6 +39,10 @@ body {
   line-height: 2.1rem;
   font-size: 3.3vmin;
   margin-bottom: 0;
+  color: #489af5;
+}
+.navbar-brand > h1:hover {
+  color: #78b4f8;
 }
 
 .btn-side-borded {
@@ -138,6 +167,29 @@ sup {
 }
 
 /* template bottom */
+.exception {
+  background-color: #eee;
+  border-top: 1px solid #3d3d3d;
+  font-size: 0.75rem;
+}
+.exception div > div:first-child {
+  padding-top: 0.25rem;
+}
+.exception p {
+  margin-bottom: 0.1rem;
+  margin-left: 0.2rem;
+}
+.exception p span.glyphicon {
+  color: #0B66CC;
+  padding-right: 0.3rem;
+}
+.exception p span.glyphicon:first-of-type {
+  padding-left: 0.4rem;
+}
+.exception p span.glyphicon:hover {
+  color: #031d3b;
+}
+
 .bottom {
   background-color: #3d3d3d;
   color: snow;

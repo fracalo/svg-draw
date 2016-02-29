@@ -35,7 +35,7 @@ gulp.task('bundlejs', function(){
 });
 
 gulp.task('compass', function() {
-  	gulp.src('./app/sass/*.scss')
+  	gulp.src('./app/sass/**/*.scss')
 	    // .pipe(sourcemaps.init())
 	    .pipe(compass({
 	    	// config_file: './config.rb',
@@ -51,11 +51,11 @@ gulp.task('compass', function() {
 // watchers
 
 function watchJsAndCompass(){
-	// watch(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'],
-	// 	batch(function (events, done) {
- //        gulp.start('bundlejs', done);
- //    }));
-    watch(['./app/sass/*.scss','.app/sass/*/*.scss'],
+	watch(['./app/js/draw-path/*.js','./app/js/draw-path/*/*.js'],
+		batch(function (events, done) {
+        gulp.start('bundlejs', done);
+    }));
+    watch(['./app/sass/*.scss','.app/sass/**/*.scss'],
     	batch(function (events, done){
     		gulp.start('compass',done);
     }));

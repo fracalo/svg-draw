@@ -456,7 +456,7 @@ angular
 	function drawExcept(drawValidation, drawData) {
 		return {
 			restrict: 'EA',
-			template: "<div ng-repeat='i in exc.list'>" + "	<p>" + "		error with <strong>{{i.property}}</strong> ( {{i.reason}} )" + "		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "    </p>" + "</div>",
+			template: "<div ng-repeat='i in exc.list'>" + "	<p>" + "		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		<span class='glyphicon glyphicon-retweet' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		error with <strong>{{i.property}}</strong> ( {{i.reason}} )" + "    </p>" + "</div>",
 			controllerAs: 'exc',
 			controller: function controller($scope, drawValidation, drawData) {
 				var self = this;

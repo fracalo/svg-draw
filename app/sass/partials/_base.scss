@@ -1,8 +1,38 @@
 // @import "compass/reset";
 @import "compass/css3";
 
+@font-face {
+    font-family: 'glyphicon';
+    src:  	url('../fonts/glyphicons-halflings-regular.woff') format('woff'),
+      		url('../fonts/glyphicons-halflings-regular.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 400;
+}
+
 
 $background-color1:snow;
 $background-color2:#3d3d3d;
+$front-color:#0B66CC;
 $text-color2:snow;
 /*  no glyphs  */
+
+
+/** skinny glyphicon support**/
+
+.glyphicon{
+	font-family: 'glyphicon';
+	position: relative;
+    top: 1px;
+    display: inline-block;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+   
+}
+
+.glyphicon-remove:before {
+	content:"\e014";
+}
+.glyphicon-retweet:before {
+    content: "\e115";
+}
