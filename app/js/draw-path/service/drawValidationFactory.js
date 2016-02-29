@@ -31,7 +31,7 @@
             console.log(i);
             //            service.flatlist.splice(i,1);
             for( var o in service.list){
-                service.list[o] = service.list[o].filter(x=> x.$$hashKey !== i) 
+                service.list[o] = service.list[o].filter( x=> x.$$hashKey !== i) 
             }
         }
         function checkExc(){

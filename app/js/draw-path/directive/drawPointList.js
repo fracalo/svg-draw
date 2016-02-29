@@ -1,8 +1,9 @@
 //directive for code in textarea
 
 (function(){
-
+  'use strict';
   angular
+  
     .module('draw.path')
     .directive('drawPointsList',drawPointsList)
       
@@ -31,7 +32,7 @@
                 '</tr>'+
                 '</table>',
 
-                 controller: function($scope,$element,$attrs,$filter,drawService){
+                 /*controller: function($scope,$element,$attrs,$filter,drawService){
                   var self = this;
                   this.pointsType = drawService.curveOp;
                   this.pointsArray=[];
@@ -57,7 +58,7 @@
                       drawService.points = self.pointsArray;
                     }
                   );
-                },
+                },*/
                 controllerAs:'list',
               }; 
       };

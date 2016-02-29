@@ -1,9 +1,4 @@
 /*  no glyphs  */
-/* @import "partials/_colorpicker";
- */
-/* *{
-	transition: all 0.3s;
-} */
 body {
   height: 100vh;
   display: flex;
@@ -11,7 +6,6 @@ body {
   flex-flow: column nowrap;
 }
 
-/* wrapping in three rows with flex */
 .navbar-brand {
   padding: 0;
   margin-right: 0;
@@ -74,6 +68,7 @@ body {
 }
 .sketch .artboard {
   padding: 0;
+  flex: 1;
 }
 
 table {

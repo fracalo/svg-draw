@@ -1,11 +1,5 @@
 
 @import "partials/_base";
-/* @import "partials/_colorpicker";
- */
-
-/* *{
-	transition: all 0.3s;
-} */
 body {
   height: 100vh;
   display:flex;
@@ -16,7 +10,6 @@ body {
 }
 
 
-/* wrapping in three rows with flex */
 
 .navbar-brand{
 	padding:0;
@@ -87,6 +80,7 @@ body {
 		}
 		.artboard{
 			padding:0;
+			flex: 1;
 		}
 }
 
