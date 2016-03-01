@@ -456,7 +456,7 @@ angular
 	function drawExcept(drawValidation, drawData) {
 		return {
 			restrict: 'EA',
-			template: "<div ng-repeat='i in exc.list'>" + "	<p>" + "		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		<span class='glyphicon glyphicon-retweet' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		error with <strong>{{i.property}}</strong> ( {{i.reason}} )" + "    </p>" + "</div>",
+			template: "<div ng-repeat='i in exc.list track by $index'>" + "	<p>" + "		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		<span class='glyphicon glyphicon-retweet' ng-click='exc.deleteError(i.$$hashKey)'></span>" + "		error with <strong>{{i.property}}</strong> ( {{i.reason}} )" + "    </p>" + "</div>",
 			controllerAs: 'exc',
 			controller: function controller($scope, drawValidation, drawData) {
 				var self = this;
@@ -474,6 +474,7 @@ angular
 				});
 				$scope.$watch(watchList, function (n) {
 					self.list = drawValidation.getErrors();
+					console.log(n);
 				}, true);
 
 				this.deleteError = drawValidation.deleteError;
@@ -588,36 +589,13 @@ angular
       },
       template: '<g ng-repeat="el in points track by $index" >' + '   <g ng-repeat="p in el track by $index" draw-single-point point="p">' + '</g>'
     };
-  } // template:
-  // '<g ng-repeat="segment in dpc.points track by $index" >'+
-  // '   <g ng-repeat="p in segment.list track by $index" >'+
-  // '      <draw-single-point point="p" ></draw-single-point>'+
-  // '   </g>'+
-  // '</g>',
+  } // link:function(scope,el){
+  //   let watchpoints =()=>{return scope.points};
 
-  // link:function(scope,el){
-  //   console.log(scope,el)
-  //   scope.$watch('dpc.points',function(n){
+  //   scope.$watch(watchpoints,function(n){
   //     console.log(n);
   //   },true)
   // },
-
-  // controller:'DrawPointsCtrl',
-  // controllerAs:'dpc',
-  // controller:function($scope, drawDisassemble){
-  //   $scope.points = drawDisassemble.structure;
-
-  //   var  watchStructure = function(){
-  //     return drawDisassemble.structure;
-  //   }
-
-  //   $scope.$watch( watchStructure() ,
-  //     function(n){
-  //       $scope.points = n ;
-  //       console.log(42)
-  //     },true);
-
-  // }
 
   ;
 })();
@@ -2427,11 +2405,11 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
                 if (item.childNodes.length > 0) item.childNodes.forEach(function (c) {
                     return checkItem(c);
                 });
-
+                console.log(item);
                 /*********************************************/
                 //check if basic per-element rendering properties are present
                 var basicTestValues = checkSpecific(item);
-
+                console.log("basicTestValues", basicTestValues);
                 var basicTest = basicTestValues[0];
                 checkList.basic = checkList.basic.concat(basicTest);
 
@@ -2440,9 +2418,11 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
                 // if there's no error the destructioring service uses the value
                 // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals = basicTestValues[1];
+                console.log(basicVals);
                 var basicValueErr = drawDeconstruct.parseBasic(basicVals); //\\ -- //\\
 
                 basicValueErr.forEach(function (x) {
+
                     if (x.valid === false) checkList.basicValues = checkList.basicValues.concat(basicValueErr);
                 });
                 /*********************************************/
@@ -2493,9 +2473,9 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
             res[1] = [];
             res[0] = drawAttributes.basic[item.nodeName] ? drawAttributes.basic[item.nodeName].filter(function (r) {
 
-                var result = Object.keys(item.attributes).every(function (itemAttr, i, arr) {
-                    if (r.renderOpt) return false;
+                if (r.renderOpt) return false;
 
+                var result = Object.keys(item.attributes).every(function (itemAttr, i, arr) {
                     return itemAttr != r.prop;
                 });
 

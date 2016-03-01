@@ -13,7 +13,7 @@
 		return {
 			restrict:'EA',
 			template:
-			"<div ng-repeat='i in exc.list'>"+
+			"<div ng-repeat='i in exc.list track by $index'>"+
 			"	<p>"+
 			"		<span class='glyphicon glyphicon-remove' ng-click='exc.deleteError(i.$$hashKey)'></span>"+
 			"		<span class='glyphicon glyphicon-retweet' ng-click='exc.deleteError(i.$$hashKey)'></span>"+
@@ -38,6 +38,7 @@
 				});	
 				$scope.$watch(watchList, function(n){
 					self.list = drawValidation.getErrors();
+console.log(n)
 				},true);
 				
 				this.deleteError = drawValidation.deleteError;

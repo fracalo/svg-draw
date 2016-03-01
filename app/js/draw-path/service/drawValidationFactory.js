@@ -56,11 +56,11 @@
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => checkItem(c) );
-
+console.log(item)
                 /*********************************************/
                 //check if basic per-element rendering properties are present
                 var basicTestValues =  checkSpecific(item);
-
+console.log("basicTestValues",basicTestValues)
                 var basicTest =  basicTestValues[0];
                 checkList.basic = checkList.basic.concat(basicTest);
                 
@@ -69,9 +69,11 @@
                 // if there's no error the destructioring service uses the value
                 // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals =  basicTestValues[1];
+console.log(basicVals)
                 var basicValueErr = drawDeconstruct.parseBasic(basicVals);   //\\ -- //\\
 
                 basicValueErr.forEach(x=>{
+
                     if( x.valid === false)
                     checkList.basicValues = checkList.basicValues.concat(basicValueErr);
                 })
@@ -128,13 +130,11 @@
             res[0]= (drawAttributes.basic[item.nodeName] )?
                      drawAttributes.basic[item.nodeName].filter(r => {
                         
-                        var result =  Object.keys(item.attributes)
-                         .every((itemAttr , i , arr) => {
-                            if(r.renderOpt)
-                            return false;
+                        if(r.renderOpt)
+                        return false;  
 
-                            return (itemAttr != r.prop);
-                        });
+                        var result =  Object.keys(item.attributes)
+                         .every((itemAttr , i , arr) => itemAttr != r.prop);
 
                         if (!result)
                         {  res[1].push(r);  }
