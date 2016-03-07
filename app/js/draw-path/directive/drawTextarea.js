@@ -46,6 +46,9 @@
 
                         // add a timeout for waiting typing
                         wait = $timeout( function(){
+                        if(mousemoving)
+                        return;
+console.log('$scope.code updated and ready for validation');
                             $scope.code = n;
                         }  , 900);
                     }
@@ -55,8 +58,10 @@
                     inside.code = drawData.getStr();
                     $scope.$digest();
                     mousemoving = true;
-                    if(m.mouseup)
+                    if(m.mouseup){
                     mousemoving = false;
+console.log('m.mouseup === ',m.mouseup)
+}
                 })
                 // $rootScope.$on('pointMoveEnd',function(){
                 //     mousemoving = false;

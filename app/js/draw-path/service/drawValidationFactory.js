@@ -28,7 +28,6 @@
                 return service.flatlist;
         };
         function deleteError(i){
-            console.log(i);
             //            service.flatlist.splice(i,1);
             for( var o in service.list){
                 service.list[o] = service.list[o].filter( x=> x.$$hashKey !== i) 
@@ -56,11 +55,9 @@
                 /*do it recursivly on childNodes if any*/
                 if (item.childNodes.length  >  0)
                 item.childNodes.forEach((c) => checkItem(c) );
-console.log(item)
                 /*********************************************/
                 //check if basic per-element rendering properties are present
                 var basicTestValues =  checkSpecific(item);
-console.log("basicTestValues",basicTestValues)
                 var basicTest =  basicTestValues[0];
                 checkList.basic = checkList.basic.concat(basicTest);
                 
@@ -69,11 +66,9 @@ console.log("basicTestValues",basicTestValues)
                 // if there's no error the destructioring service uses the value
                 // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals =  basicTestValues[1];
-console.log(basicVals)
                 var basicValueErr = drawDeconstruct.parseBasic(basicVals);   //\\ -- //\\
 
                 basicValueErr.forEach(x=>{
-
                     if( x.valid === false)
                     checkList.basicValues = checkList.basicValues.concat(basicValueErr);
                 })
@@ -134,7 +129,7 @@ console.log(basicVals)
                         return false;  
 
                         var result =  Object.keys(item.attributes)
-                         .every((itemAttr , i , arr) => itemAttr != r.prop);
+                         .every(itemAttr => itemAttr != r.prop);
 
                         if (!result)
                         {  res[1].push(r);  }

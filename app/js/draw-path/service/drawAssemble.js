@@ -45,15 +45,22 @@
 			path.yDiff = null;
 		}
 		function path(p,obj){
-
+			//if we change d commands obj.pathDataPointList needs to be reset
 			path.pointByI = obj.pathDataPointList[p.index];
 
+			if( path.xDiff === null) {
+// console.log("path.xDiff === null")
+// console.log(obj.pathData)
+// console.log(obj.domObj.getPathData())
+				// obj.pathData =  obj.domObj.getPathData();
+			}
 			path.xDiff = path.xDiff ? path.xDiff :
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ] -
-			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ];
+			obj.domObj.getPathData()[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ] -
+			obj.domObj.getPathData({absolutize:true})[ path.pointByI.comI ].values[ path.pointByI.subI * 2 ];
 			path.yDiff = path.yDiff ? path.yDiff :
-			obj.pathData[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
-			obj.pathDataAbsolutize[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
+			obj.domObj.getPathData()[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1] -
+			obj.domObj.getPathData({absolutize:true})[ path.pointByI.comI ].values[ path.pointByI.subI * 2 + 1];
+
 
 			if( path.pointByI.command ==='v' || path.pointByI.command ==='V' ){
 				//we need to use Xdiff in this case because it rappresents the first (and only) value
@@ -70,9 +77,10 @@
 					[ [path.pointByI.subI * 2 , path.pointByI.x] , [path.pointByI.subI * 2 + 1, path.pointByI.y] ]) ;
 
 			}
-
+			// with new d value we update path element
 			obj.domObj.setPathData(obj.pathData);
 
+			// we return path attribute d to drawData (which will update the code string)
 			return [ obj.hashSvg , ['d', obj.attributes.d] ];
 		}
 

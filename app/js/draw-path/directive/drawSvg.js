@@ -20,16 +20,25 @@
               var inner = element.contents();
               $compile(inner);/*(scope)*/
               /* we don't need scope as it's just reactiong to external changes*/
-            
+console.log('value',value)
+console.log('inner')
+console.log(inner)
             /*the setNode method sets data in drawData,
               we store the node that's been compiled by angular*/
              drawData.setNode(inner,value) ;
-             /**********this starts some woggieboggie*********/ 
+console.log(element[0].childNodes)
             });
           
          $rootScope.$on("pointMove",function(n, msg){
-          drawData.changeNode(msg)
-         })
+          drawData.changeNode(msg);
+        
+            if(msg.mouseup === true){
+              //we relaunch validation
+              // drawData.setNode(element.contents(),drawData.string)
+            console.log('rumba');
+            console.log(drawData.string);
+          }
+        })
         
           
         };

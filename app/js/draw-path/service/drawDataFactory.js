@@ -68,32 +68,36 @@
 			var [res1, ...res2] = drawAssemble[changeNode.pointer.nodeName]( msg , changeNode.pointer);
 
 			// with return  from draw assemble we update string
-			var changing = $timeout( 20 )
-				 .then(function(){
-				 	if(pointTo.o)
-				 	obj.string = drawStrCode.update( pointTo.o[res1],
+			// var changing = $timeout( 20 )
+			// 	 .then(function(){
+			// 	 	if(pointTo.o)
+
+				 	obj.string = drawStrCode.update( changeNode.pointer,
 				 										obj.string,
 				 										res2);			
 
-				 },function(e){	console.log(e) });
+				 // },function(e){	console.log(e) });
 			
 
 			// if mouseup we should clean up pointer and stop
 			if(msg.mouseup){
-				$timeout.cancel(changing);
-				setTimeout(function(){ 
-					changeNode.pointer = null ;
-					drawAssemble.resetPathDiff();
+				//$timeout.cancel(changing);
+				setTimeout(function(){
+console.log('registrin mouseup')
+				changeNode.pointer = null ;
+				 drawAssemble.resetPathDiff();
 				},40);
 			}
 
 		}
 
 
-
+		//set node is called from drawSvgPath directive
 		function setNode(a,str){
 			obj.string = str;
 			obj.node = serializeNode(a,str);
+console.log("validating",obj.string)
+console.log("valid nodes",obj.node)
 
 		}
 

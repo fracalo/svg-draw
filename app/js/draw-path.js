@@ -474,7 +474,6 @@ angular
 				});
 				$scope.$watch(watchList, function (n) {
 					self.list = drawValidation.getErrors();
-					console.log(n);
 				}, true);
 
 				this.deleteError = drawValidation.deleteError;
@@ -743,15 +742,24 @@ angular
         var inner = element.contents();
         $compile(inner); /*(scope)*/
         /* we don't need scope as it's just reactiong to external changes*/
-
+        console.log('value', value);
+        console.log('inner');
+        console.log(inner);
         /*the setNode method sets data in drawData,
           we store the node that's been compiled by angular*/
         drawData.setNode(inner, value);
-        /**********this starts some woggieboggie*********/
+        console.log(element[0].childNodes);
       });
 
       $rootScope.$on("pointMove", function (n, msg) {
         drawData.changeNode(msg);
+
+        if (msg.mouseup === true) {
+          //we relaunch validation
+          // drawData.setNode(element.contents(),drawData.string)
+          console.log('rumba');
+          console.log(drawData.string);
+        }
       });
     };
   }
@@ -800,6 +808,8 @@ angular
 
                     // add a timeout for waiting typing
                     wait = $timeout(function () {
+                        if (mousemoving) return;
+                        console.log('$scope.code updated and ready for validation');
                         $scope.code = n;
                     }, 900);
                 });
@@ -808,7 +818,10 @@ angular
                     inside.code = drawData.getStr();
                     $scope.$digest();
                     mousemoving = true;
-                    if (m.mouseup) mousemoving = false;
+                    if (m.mouseup) {
+                        mousemoving = false;
+                        console.log('m.mouseup === ', m.mouseup);
+                    }
                 });
                 // $rootScope.$on('pointMoveEnd',function(){
                 //     mousemoving = false;
@@ -1095,11 +1108,17 @@ angular
 			path.yDiff = null;
 		}
 		function path(p, obj) {
-
+			//if we change d commands obj.pathDataPointList needs to be reset
 			path.pointByI = obj.pathDataPointList[p.index];
 
-			path.xDiff = path.xDiff ? path.xDiff : obj.pathData[path.pointByI.comI].values[path.pointByI.subI * 2] - obj.pathDataAbsolutize[path.pointByI.comI].values[path.pointByI.subI * 2];
-			path.yDiff = path.yDiff ? path.yDiff : obj.pathData[path.pointByI.comI].values[path.pointByI.subI * 2 + 1] - obj.pathDataAbsolutize[path.pointByI.comI].values[path.pointByI.subI * 2 + 1];
+			if (path.xDiff === null) {
+				// console.log("path.xDiff === null")
+				// console.log(obj.pathData)
+				// console.log(obj.domObj.getPathData())
+				// obj.pathData =  obj.domObj.getPathData();
+			}
+			path.xDiff = path.xDiff ? path.xDiff : obj.domObj.getPathData()[path.pointByI.comI].values[path.pointByI.subI * 2] - obj.domObj.getPathData({ absolutize: true })[path.pointByI.comI].values[path.pointByI.subI * 2];
+			path.yDiff = path.yDiff ? path.yDiff : obj.domObj.getPathData()[path.pointByI.comI].values[path.pointByI.subI * 2 + 1] - obj.domObj.getPathData({ absolutize: true })[path.pointByI.comI].values[path.pointByI.subI * 2 + 1];
 
 			if (path.pointByI.command === 'v' || path.pointByI.command === 'V') {
 				//we need to use Xdiff in this case because it rappresents the first (and only) value
@@ -1113,9 +1132,10 @@ angular
 				obj.pathData[path.pointByI.comI].values[path.pointByI.subI * 2 + 1] = path.pointByI.y = p.point.y + path.yDiff;
 				obj.attributes.d = drawStrCode.preUpdateD(obj, path.pointByI, [[path.pointByI.subI * 2, path.pointByI.x], [path.pointByI.subI * 2 + 1, path.pointByI.y]]);
 			}
-
+			// with new d value we update path element
 			obj.domObj.setPathData(obj.pathData);
 
+			// we return path attribute d to drawData (which will update the code string)
 			return [obj.hashSvg, ['d', obj.attributes.d]];
 		}
 
@@ -1489,27 +1509,31 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			var res2 = _drawAssemble$changeN2.slice(1);
 
 			// with return  from draw assemble we update string
+			// var changing = $timeout( 20 )
+			// 	 .then(function(){
+			// 	 	if(pointTo.o)
 
+			obj.string = drawStrCode.update(changeNode.pointer, obj.string, res2);
 
-			var changing = $timeout(20).then(function () {
-				if (pointTo.o) obj.string = drawStrCode.update(pointTo.o[res1], obj.string, res2);
-			}, function (e) {
-				console.log(e);
-			});
+			// },function(e){	console.log(e) });
 
 			// if mouseup we should clean up pointer and stop
 			if (msg.mouseup) {
-				$timeout.cancel(changing);
+				//$timeout.cancel(changing);
 				setTimeout(function () {
+					console.log('registrin mouseup');
 					changeNode.pointer = null;
 					drawAssemble.resetPathDiff();
 				}, 40);
 			}
 		}
 
+		//set node is called from drawSvgPath directive
 		function setNode(a, str) {
 			obj.string = str;
 			obj.node = serializeNode(a, str);
+			console.log("validating", obj.string);
+			console.log("valid nodes", obj.node);
 		}
 
 		function serializeNode(a, str) {
@@ -1903,8 +1927,18 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			var normalized = o.item.domObj.getPathData({ normalize: true });
 			var abs = o.item.domObj.getPathData({ absolutize: true });
 			var pointsAbs = o.item.domObj.getPathData().reduce(function (acc, x, i) {
-				var relativePat = /[a-z]/;
-				var relative = !!x.type.match(relativePat);
+				var relative,
+				    relativePat = /[a-z]/;
+
+				if (!!x.type.match(relativePat)) {
+					console.log(path.relativeCount);
+					relative = path.relativeCount === 0 ? path.relativeCount : true;
+					console.log(relative);
+				} else {
+					//relativeCount rappresents the last Abs value for relativity constraint
+					path.relativeCount = i;
+				};
+
 				if (x.type === 'h' || x.type === 'H' || x.type === 'v' || x.type === 'V') {
 					var oneAxis = x.type === 'h' || x.type === 'H' ? 'horizontal' : 'vertical';
 					acc.push({
@@ -1912,7 +1946,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 						x: normalized[i].values[0],
 						y: normalized[i].values[1],
 						pathPointType: 'vertex',
-						relative: true,
+						relative: relative,
 						normalized: true,
 						oneAxis: oneAxis,
 						specialPathCom: x.type
@@ -1949,6 +1983,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 				return acc;
 			}, []);
+			path.relativeCount = null;
 			return {
 				hashSvg: o.hashSvg,
 				pointRappr: pointsAbs
@@ -2047,10 +2082,9 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 			relate.path = function (l, r) {
 				if (r.pathPointType === 'controlPoint') return;
-				if (r.index > l.index) {
-					return;
-				}
-				if (!l.relative) return;
+				if (r.index > l.index) return;
+				if (l.relative === false) return;
+				if (r.index < l.relative) return;
 
 				return [l.point.x + (r.point.x - r.start.x), l.point.y + (r.point.y - r.start.y)];
 			};
@@ -2251,7 +2285,9 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 			if (!offset[dSubtracker]) offset[dSubtracker] = {};
 
-			return stringUpdate(ref.attrsStringRef.d[pointByI.comI], ref.attributes.d, xYpairs, offset[dSubtracker]);
+			return stringUpdate(ref.attrsStringRef.d[pointByI.comI], ref.attributes.d, xYpairs, offset[dSubtracker]
+			// {nested:true}
+			);
 		}
 		function preUpdatePoints(ref, index, xYpairs) {
 
@@ -2264,16 +2300,14 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		function update(ref, string, pairs) {
 			// we could sort these while dispatching them..
 			// but if they're not in order it will break string slicing.
-
-			pairs = pairs.sort(function (a, b) {
+			if (pairs.length > 1) pairs = pairs.sort(function (a, b) {
 				return ref.attrsStringRef[a[0]].start - ref.attrsStringRef[b[0]].start;
 			});
 
 			return stringUpdate(ref.attrsStringRef, string, pairs, offset);
 		}
 		// this method is used also in substitution of points
-		function stringUpdate(reference, string, pairs, offsetTracker) {
-
+		function stringUpdate(reference, string, pairs, offsetTracker, offsetTrackerOption) {
 			var tmpShift = 0,
 			    temp = {},
 			    start,
@@ -2282,7 +2316,6 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			    origEnd,
 			    origStart,
 			    origBeginSlice;
-
 			return pairs.reduce(function (acc, x, i, pairs) {
 
 				x[1] = x[1].toString();
@@ -2298,7 +2331,6 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 				/*********************/
 				acc += string.slice(beginSlice, start) + x[1];
-
 				if (tmpShift !== 0) {
 					offsetManager(origStart, start + tmpShift, temp);
 				}
@@ -2316,7 +2348,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					acc += string.slice(end);
 
 					//maintainence
-					offsetMerge(offsetTracker, temp);
+					offsetMerge(offsetTrackerOption, offsetTracker, temp);
 				}
 
 				return acc;
@@ -2336,9 +2368,37 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		function offsetManager(index, modVal, offsetTracker) {
 			offsetTracker[index] = modVal;
 		}
-		function offsetMerge(d, s) {
-			for (var i in s) {
-				d[i] = s[i];
+		function offsetMerge(option, d, s) {
+
+			var ok = Object.keys(s).reduce(function (ac, x) {
+				if (!isNaN(Number(x))) ac.push(Number(x));
+
+				return ac;
+			}, []).sort(function (a, b) {
+				return a - b;
+			});
+
+			var okDest = Object.keys(d).reduce(function (ac, x) {
+				if (!isNaN(Number(x))) ac.push(Number(x));
+
+				return ac;
+			}, []).sort(function (a, b) {
+				return a - b;
+			});
+
+			var top = Math.max(ok.length > 0 ? ok[ok.length - 1] : 0, okDest.length > 0 ? okDest[okDest.length - 1] : 0);
+			var tempDiff = 0;
+			for (var i = 0; i <= top; i++) {
+				// this loops from 0 to max number
+
+				if (s[i]) {
+					tempDiff = s[i] - (d[i] || i);
+
+					d[i] = s[i];
+				} else if (d[i]) {
+
+					d[i] += tempDiff;
+				}
 			}
 		}
 		function initStrOffset() {
@@ -2372,7 +2432,6 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
             return service.flatlist;
         };
         function deleteError(i) {
-            console.log(i);
             //            service.flatlist.splice(i,1);
             for (var o in service.list) {
                 service.list[o] = service.list[o].filter(function (x) {
@@ -2405,11 +2464,9 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
                 if (item.childNodes.length > 0) item.childNodes.forEach(function (c) {
                     return checkItem(c);
                 });
-                console.log(item);
                 /*********************************************/
                 //check if basic per-element rendering properties are present
                 var basicTestValues = checkSpecific(item);
-                console.log("basicTestValues", basicTestValues);
                 var basicTest = basicTestValues[0];
                 checkList.basic = checkList.basic.concat(basicTest);
 
@@ -2418,11 +2475,9 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
                 // if there's no error the destructioring service uses the value
                 // to populate the GUI with points / mouseevents (sends values to drawDeconstruct)
                 var basicVals = basicTestValues[1];
-                console.log(basicVals);
                 var basicValueErr = drawDeconstruct.parseBasic(basicVals); //\\ -- //\\
 
                 basicValueErr.forEach(function (x) {
-
                     if (x.valid === false) checkList.basicValues = checkList.basicValues.concat(basicValueErr);
                 });
                 /*********************************************/
@@ -2475,7 +2530,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
                 if (r.renderOpt) return false;
 
-                var result = Object.keys(item.attributes).every(function (itemAttr, i, arr) {
+                var result = Object.keys(item.attributes).every(function (itemAttr) {
                     return itemAttr != r.prop;
                 });
 

@@ -28,6 +28,7 @@
 				ref.attributes.d,
 				xYpairs,
 				offset[ dSubtracker ]
+				// {nested:true}
 				);
 		}
 		function preUpdatePoints(ref, index, xYpairs ){
@@ -43,27 +44,21 @@
 				xYpairs,
 				offset[ pointsSubtracker ]
 				);
-
 		}
 		function update( ref , string, pairs ){
 			// we could sort these while dispatching them..
 			// but if they're not in order it will break string slicing.
-
+			if(pairs.length > 1)
 			pairs = pairs.sort((a,b)=>{
 				return ref.attrsStringRef[a[0]].start - ref.attrsStringRef[b[0]].start;
 			});
 			
 			return stringUpdate (ref.attrsStringRef, string, pairs, offset);
-
 		}
 		// this method is used also in substitution of points
-		function stringUpdate( reference , string, pairs, offsetTracker ){
-
-			
+		function stringUpdate( reference , string, pairs, offsetTracker, offsetTrackerOption ){
 			var  tmpShift = 0, temp = {},
 			start , end , beginSlice , origEnd , origStart ,origBeginSlice ;
-			
-
 			return pairs.reduce(function(acc, x, i, pairs){
 				
 				x[1] = x[1].toString();
@@ -71,16 +66,15 @@
 				origBeginSlice = (i === 0)? 0 :
 				reference[ pairs[ i-1 ][0] ].end  ;
 				beginSlice = valShift(origBeginSlice , offsetTracker ) ;
-				
-				origStart = reference[ x[0] ].start;
-				start = valShift( origStart , offsetTracker );
 
+				origStart = reference[ x[0] ].start;
+				start = valShift( origStart , offsetTracker ) ;
+				
 				origEnd = reference[ x[0] ].end;
 				end = valShift( origEnd , offsetTracker ) ;
 
 				/*********************/
 				acc +=  string.slice(  beginSlice , start  ) +  x[1];
-					
 				if( tmpShift !== 0){
 				offsetManager( origStart  , start + tmpShift , temp );
 				}
@@ -93,13 +87,12 @@
 
 				//additional operation on last substitution
 				if (i === pairs.length - 1){
-					
+		
 					/*********************/
 					acc += string.slice( end );
 
 					//maintainence
-				offsetMerge( offsetTracker , temp);
-		
+					offsetMerge(  offsetTrackerOption, offsetTracker , temp );
 				}
 
 				return acc;
@@ -120,10 +113,42 @@
 		function offsetManager(index, modVal , offsetTracker){
 			offsetTracker[ index ] =  modVal ;
 		}
-		function offsetMerge(d ,s ){
-			for (var i in s){
-				d[i] = s[i] ;
-			}
+		function offsetMerge(option, d ,s ){
+
+				let ok = Object.keys(s).reduce( (ac,x) => {
+					if(!isNaN( Number(x) ))
+					ac.push( Number(x) );
+					
+					return ac;
+				},[])
+				.sort((a,b) => { return a-b });
+
+				let okDest = Object.keys(d).reduce( (ac,x) => {
+					if(!isNaN( Number(x) ))
+					ac.push( Number(x) );
+					
+					return ac;
+				},[])
+				.sort((a,b) => { return a-b });
+
+				var top = Math.max( 
+					(ok.length     > 0 )? ok[ok.length - 1] : 0 ,
+				 	(okDest.length > 0 )? okDest[okDest.length - 1] : 0
+				)
+				var tempDiff = 0;
+				for( var i = 0 ; i <= top  ; i++){
+					// this loops from 0 to max number 
+
+					if ( s[ i ] ){
+						tempDiff =  s[i] - ( d[ i ] || i )  ;
+
+						d[ i ] = s[ i ] ;
+					}
+					else if ( d[ i ] )	{
+ 						
+						d[ i ] += tempDiff ;
+					}
+				}
 		}
 		function initStrOffset(){
 			offset = {};

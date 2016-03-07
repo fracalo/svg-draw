@@ -36,9 +36,11 @@
 				relate.path = function(l,r){
 					if(r.pathPointType === 'controlPoint')
 					return;
-					if(r.index > l.index){
-					return;}
-					if(!l.relative)
+					if(r.index > l.index)
+					return;
+					if(l.relative === false)
+					return;
+					if(r.index < l.relative)
 					return;
 				
 					return [ 

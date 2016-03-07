@@ -38,7 +38,6 @@
 				});	
 				$scope.$watch(watchList, function(n){
 					self.list = drawValidation.getErrors();
-console.log(n)
 				},true);
 				
 				this.deleteError = drawValidation.deleteError;
