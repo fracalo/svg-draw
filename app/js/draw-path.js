@@ -2285,9 +2285,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 			if (!offset[dSubtracker]) offset[dSubtracker] = {};
 
-			return stringUpdate(ref.attrsStringRef.d[pointByI.comI], ref.attributes.d, xYpairs, offset[dSubtracker]
-			// {nested:true}
-			);
+			return stringUpdate(ref.attrsStringRef.d[pointByI.comI], ref.attributes.d, xYpairs, offset[dSubtracker]);
 		}
 		function preUpdatePoints(ref, index, xYpairs) {
 
@@ -2307,7 +2305,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			return stringUpdate(ref.attrsStringRef, string, pairs, offset);
 		}
 		// this method is used also in substitution of points
-		function stringUpdate(reference, string, pairs, offsetTracker, offsetTrackerOption) {
+		function stringUpdate(reference, string, pairs, offsetTracker) {
 			var tmpShift = 0,
 			    temp = {},
 			    start,
@@ -2348,7 +2346,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					acc += string.slice(end);
 
 					//maintainence
-					offsetMerge(offsetTrackerOption, offsetTracker, temp);
+					offsetMerge(offsetTracker, temp);
 				}
 
 				return acc;
@@ -2368,25 +2366,12 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		function offsetManager(index, modVal, offsetTracker) {
 			offsetTracker[index] = modVal;
 		}
-		function offsetMerge(option, d, s) {
+		function offsetMerge(d, s) {
 
-			var ok = Object.keys(s).reduce(function (ac, x) {
-				if (!isNaN(Number(x))) ac.push(Number(x));
+			var ok = NumFromArr(Object.keys(s));
+			var okDest = NumFromArr(Object.keys(d));
+			var top = Math.max.apply(null, [0].concat(ok).concat(okDest));
 
-				return ac;
-			}, []).sort(function (a, b) {
-				return a - b;
-			});
-
-			var okDest = Object.keys(d).reduce(function (ac, x) {
-				if (!isNaN(Number(x))) ac.push(Number(x));
-
-				return ac;
-			}, []).sort(function (a, b) {
-				return a - b;
-			});
-
-			var top = Math.max(ok.length > 0 ? ok[ok.length - 1] : 0, okDest.length > 0 ? okDest[okDest.length - 1] : 0);
 			var tempDiff = 0;
 			for (var i = 0; i <= top; i++) {
 				// this loops from 0 to max number
@@ -2400,6 +2385,14 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					d[i] += tempDiff;
 				}
 			}
+		}
+		//utility that returns only numbers from an array
+		function NumFromArr(a) {
+			return a.reduce(function (ac, x) {
+				if (!isNaN(Number(x))) ac.push(Number(x));
+
+				return ac;
+			}, []);
 		}
 		function initStrOffset() {
 			offset = {};
