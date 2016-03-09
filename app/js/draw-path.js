@@ -616,7 +616,6 @@ angular
             },
             template: ' <circle ' + 'ng-mousedown="$event.stopPropagation()" ' + 'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' + 'r="3" fill="{{point.color}}" index={{$index}} />',
             link: function link(scope, el, attr) {
-                // scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
                 var startX, startY;
                 var sketchEl = $document;
                 var grannyIndex = scope.point.hashSvg; //scope.$parent.$parent.$index;//will use hashsvg for tracking element
@@ -650,19 +649,15 @@ angular
                         index: parentIndex
                     };
                     if (scope.point.pathPointType) org.pathPointType = scope.point.pathPointType;
-                    if (scope.point.relative) org.relative = scope.point.relative;
+                    if (scope.point.relative)
+                        //a reference is ok since we're not modifyng nothing
+                        org.relative = scope.point.relative;
+
+                    if (scope.point.specialPathCom) org.specialPathCom = scope.point.specialPathCom;
 
                     relRes = drawPointRelation.relate(org, a);
 
-                    if (relRes) {
-                        if (scope.point.specialPathCom === 'V') {
-                            el.attr('cx', relRes[0]);
-                        } else if (scope.point.specialPathCom === 'H') {
-                            el.attr('cy', relRes[1]);
-                        } else {
-                            el.attr('cx', relRes[0]), el.attr('cy', relRes[1]);
-                        }
-                    }
+                    if (relRes) el.attr('cx', relRes[0]), el.attr('cy', relRes[1]);
                 });
 
                 var res, moveX, moveY, startPoint;
@@ -1521,7 +1516,6 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			if (msg.mouseup) {
 				//$timeout.cancel(changing);
 				setTimeout(function () {
-					console.log('registrin mouseup');
 					changeNode.pointer = null;
 					drawAssemble.resetPathDiff();
 				}, 40);
@@ -1532,8 +1526,6 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		function setNode(a, str) {
 			obj.string = str;
 			obj.node = serializeNode(a, str);
-			console.log("validating", obj.string);
-			console.log("valid nodes", obj.node);
 		}
 
 		function serializeNode(a, str) {
@@ -1927,17 +1919,33 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			var normalized = o.item.domObj.getPathData({ normalize: true });
 			var abs = o.item.domObj.getPathData({ absolutize: true });
 			var pointsAbs = o.item.domObj.getPathData().reduce(function (acc, x, i) {
-				var relative,
-				    relativePat = /[a-z]/;
+				var relative = {},
+				    relativePat = /[a-zHV]/;
+
+				// if not present initialize path.relativeCount object
+				path.relativeCount = path.relativeCount ? path.relativeCount : {
+					index: 0
+				};
+
+				if (x.type === 'H') {
+					path.relativeCount.direction = 'ver';
+					path.relativeCount.dirIndex = i;
+				}
+				if (x.type === 'V') {
+					path.relativeCount.direction = 'hor';
+					path.relativeCount.dirIndex = i;
+				};
 
 				if (!!x.type.match(relativePat)) {
-					console.log(path.relativeCount);
-					relative = path.relativeCount === 0 ? path.relativeCount : true;
-					console.log(relative);
+					// copy path.relativeCount into the relative property of the command
+					relative = Object.assign({}, path.relativeCount);
 				} else {
 					//relativeCount rappresents the last Abs value for relativity constraint
-					path.relativeCount = i;
-				};
+					path.relativeCount = {
+						index: i
+					};
+					relative = false;
+				}
 
 				if (x.type === 'h' || x.type === 'H' || x.type === 'v' || x.type === 'V') {
 					var oneAxis = x.type === 'h' || x.type === 'H' ? 'horizontal' : 'vertical';
@@ -2067,6 +2075,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 		};
 
 		function relate(loc, rem) {
+
 			//if it's not the same elem || it's the same point we stop
 			if (loc.elemHash !== rem.elemHash || loc.elemHash === rem.elemHash && loc.index === rem.index) return;
 
@@ -2081,10 +2090,27 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 			relate.rect = relate.circle;
 
 			relate.path = function (l, r) {
+
 				if (r.pathPointType === 'controlPoint') return;
 				if (r.index > l.index) return;
-				if (l.relative === false) return;
-				if (r.index < l.relative) return;
+				if (l.relative.index === false) return;
+				if (r.index < l.relative.index) return;
+
+				//we add special cases with path commands h H v V
+				if (l.relative.direction && l.relative.direction === 'ver' && (!r.relative || l.relative.dirIndex > r.relative.dirIndex)) {
+					if (l.relative.dirIndex - l.relative.index > 1) return;
+
+					return [l.point.x, l.point.y + (r.point.y - r.start.y)];
+				}
+
+				if (l.relative.direction && l.relative.direction === 'hor' && (!r.relative || l.relative.dirIndex > r.relative.dirIndex)) {
+					if (l.relative.dirIndex - l.relative.index > 1) return;
+
+					return [l.point.x + (r.point.x - r.start.x), l.point.y];
+				}
+
+				if (l.specialPathCom && l.specialPathCom === 'H' /*|| l.specialPathCom && l.specialPathCom ==='h'*/) return [l.point.x, l.point.y + (r.point.y - r.start.y)];
+				if (l.specialPathCom && l.specialPathCom === 'V' /*|| l.specialPathCom && l.specialPathCom ==='v'*/) return [l.point.x + (r.point.x - r.start.x), l.point.y];
 
 				return [l.point.x + (r.point.x - r.start.x), l.point.y + (r.point.y - r.start.y)];
 			};

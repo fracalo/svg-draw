@@ -100,18 +100,34 @@
  			var normalized = o.item.domObj.getPathData({normalize:true});
  			var abs= o.item.domObj.getPathData({absolutize:true}); 
 			var pointsAbs= o.item.domObj.getPathData().reduce((acc, x, i) =>{
-				var relative,
-					relativePat = /[a-z]/;
-				
+				var relative = {},
+					relativePat = /[a-zHV]/;
+
+				// if not present initialize path.relativeCount object
+				path.relativeCount = (path.relativeCount)? path.relativeCount: {
+					index :0,
+				};
+
+				if(x.type ==='H' ){
+					path.relativeCount.direction = 'ver';
+					path.relativeCount.dirIndex	 = i;
+				}
+				if(x.type ==='V' ){
+					path.relativeCount.direction = 'hor';
+					path.relativeCount.dirIndex	 = i;
+				};
+
 				if(!! x.type.match(relativePat)){
-					console.log(path.relativeCount)
-					relative = (path.relativeCount === 0)? path.relativeCount: true;
-					console.log(relative)
+					// copy path.relativeCount into the relative property of the command
+					relative = Object.assign({}, path.relativeCount) ;
 				}
 				else{
 					//relativeCount rappresents the last Abs value for relativity constraint
-					path.relativeCount = i;
-				};
+					path.relativeCount = {
+						index :i,
+					};
+					relative = false;
+				}
 
 				if(x.type === 'h' || x.type === 'H' || x.type === 'v' || x.type === 'V'){
 					var oneAxis = (x.type === 'h' || x.type === 'H')? 'horizontal' : 'vertical';

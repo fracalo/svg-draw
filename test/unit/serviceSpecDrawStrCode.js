@@ -1,6 +1,6 @@
 "use strict";
 
-ddescribe('drawStrCode',function(){
+describe('drawStrCode',function(){
 		var drawStrCode, n, a;
 		beforeEach(function(){
 			module('draw.path');

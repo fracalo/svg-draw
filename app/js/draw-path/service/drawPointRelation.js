@@ -14,6 +14,8 @@
 			};
 
 			function relate(loc,rem){
+
+
 				//if it's not the same elem || it's the same point we stop
 				if(  loc.elemHash !== rem.elemHash ||
 					(loc.elemHash === rem.elemHash && loc.index === rem.index) )
@@ -34,15 +36,57 @@
 				relate.rect = relate.circle;
 
 				relate.path = function(l,r){
+
 					if(r.pathPointType === 'controlPoint')
 					return;
 					if(r.index > l.index)
 					return;
-					if(l.relative === false)
+					if(l.relative.index === false)
 					return;
-					if(r.index < l.relative)
+					if(r.index < l.relative.index)
 					return;
-				
+
+
+					//we add special cases with path commands h H v V
+					if( l.relative.direction && l.relative.direction ==='ver'  && 
+					 	(! r.relative  || l.relative.dirIndex > r.relative.dirIndex ) ) 
+					{
+						if(l.relative.dirIndex - l.relative.index > 1)
+						return;
+
+					 	return [ 
+							l.point.x ,
+							l.point.y + (r.point.y - r.start.y)
+						];
+					}
+
+
+					if( l.relative.direction && l.relative.direction ==='hor'  && 
+					 	(! r.relative  || l.relative.dirIndex > r.relative.dirIndex )   )
+					{
+						if(l.relative.dirIndex - l.relative.index > 1)
+						return;
+					
+						return [ 
+							l.point.x + (r.point.x - r.start.x),
+							l.point.y 
+						];
+					}
+
+
+
+					if(l.specialPathCom && l.specialPathCom ==='H' /*|| l.specialPathCom && l.specialPathCom ==='h'*/)
+					return [
+						l.point.x ,
+						l.point.y + (r.point.y - r.start.y)
+					];
+					if(l.specialPathCom && l.specialPathCom ==='V' /*|| l.specialPathCom && l.specialPathCom ==='v'*/ )
+					return [
+						l.point.x + (r.point.x - r.start.x),
+						l.point.y 
+					];
+
+
 					return [ 
 						l.point.x + (r.point.x - r.start.x),
 						l.point.y + (r.point.y - r.start.y)

@@ -18,7 +18,6 @@
                 'ng-attr-cx="{{point.x}}" ng-attr-cy="{{point.y}}" ' +
                 'r="3" fill="{{point.color}}" index={{$index}} />',
             link: function (scope, el, attr) {
-                // scope.point.color = (scope.point.color) ? scope.point.color : 'blue';
                 var startX, startY;
                 var sketchEl = $document;
                 var grannyIndex = scope.point.hashSvg; //scope.$parent.$parent.$index;//will use hashsvg for tracking element
@@ -55,19 +54,17 @@
                     if(scope.point.pathPointType)
                     org.pathPointType = scope.point.pathPointType;
                     if(scope.point.relative)
+                    //a reference is ok since we're not modifyng nothing
                     org.relative = scope.point.relative;
+
+                    if(scope.point.specialPathCom)
+                    org.specialPathCom = scope.point.specialPathCom;
 
                     relRes = drawPointRelation.relate(org,a);
                     
-                    if( relRes ){
-                        if( scope.point.specialPathCom ==='V' ){
-                            el.attr('cx', relRes[0])
-                        } else if ( scope.point.specialPathCom ==='H' ){
-                            el.attr('cy', relRes[1])
-                        } else {
-                            el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
-                        }
-                    }
+                    if( relRes )
+                    el.attr('cx', relRes[0]) , el.attr('cy', relRes[1]) ;
+
                 });
 
                 var res, moveX, moveY,startPoint;

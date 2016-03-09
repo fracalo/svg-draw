@@ -83,7 +83,6 @@
 			if(msg.mouseup){
 				//$timeout.cancel(changing);
 				setTimeout(function(){
-console.log('registrin mouseup')
 				changeNode.pointer = null ;
 				 drawAssemble.resetPathDiff();
 				},40);
@@ -96,8 +95,6 @@ console.log('registrin mouseup')
 		function setNode(a,str){
 			obj.string = str;
 			obj.node = serializeNode(a,str);
-console.log("validating",obj.string)
-console.log("valid nodes",obj.node)
 
 		}
 
