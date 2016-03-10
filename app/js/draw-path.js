@@ -1993,8 +1993,8 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 					return [l.point.x + (r.point.x - r.start.x), l.point.y];
 				}
 
-				if (l.specialPathCom && l.specialPathCom === 'H' /*|| l.specialPathCom && l.specialPathCom ==='h'*/) return [l.point.x, l.point.y + (r.point.y - r.start.y)];
-				if (l.specialPathCom && l.specialPathCom === 'V' /*|| l.specialPathCom && l.specialPathCom ==='v'*/) return [l.point.x + (r.point.x - r.start.x), l.point.y];
+				if (l.specialPathCom && l.specialPathCom === 'H') return [l.point.x, l.point.y + (r.point.y - r.start.y)];
+				if (l.specialPathCom && l.specialPathCom === 'V') return [l.point.x + (r.point.x - r.start.x), l.point.y];
 
 				return [l.point.x + (r.point.x - r.start.x), l.point.y + (r.point.y - r.start.y)];
 			};

@@ -19,7 +19,7 @@
               element.html(value);
               var inner = element.contents();
               $compile(inner);/*(scope) | we don't need scope as it's just reacting to external changes*/
-            
+           
             /*the setNode method sets data in drawData, we store the node that's been compiled by angular*/
              drawData.setNode(inner,value) ;
             });

@@ -75,12 +75,12 @@
 
 
 
-					if(l.specialPathCom && l.specialPathCom ==='H' /*|| l.specialPathCom && l.specialPathCom ==='h'*/)
+					if(l.specialPathCom && l.specialPathCom ==='H' )
 					return [
 						l.point.x ,
 						l.point.y + (r.point.y - r.start.y)
 					];
-					if(l.specialPathCom && l.specialPathCom ==='V' /*|| l.specialPathCom && l.specialPathCom ==='v'*/ )
+					if(l.specialPathCom && l.specialPathCom ==='V'  )
 					return [
 						l.point.x + (r.point.x - r.start.x),
 						l.point.y 
