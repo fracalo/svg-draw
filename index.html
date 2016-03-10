@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" ng-app="svgFiddle">
+<head>
+  <meta charset="utf-8">
+  <title>SVG-draw (app for sketching with scalable vector graphics)</title>
+  <link rel="stylesheet" href="app/css/bootstrap-flex.css">
+  <link rel="stylesheet" href="app/css/app.css">
+
+  <!-- js -->
+  <script src="app/js/path-data-polyfill.js"></script>
+
+  <script src="app/bower_components/angular/angular.js"></script>
+  <script src="app/bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script src="app/js/app.js"></script>
+  
+  <script src="app/js/controllers.js"></script>
+  
+  <script src="app/js/draw-path.js"></script>
+</head>
+
+<body class="container-fluid" ng-controller='RootCtrl as root'>   
+        <!-- <section class='top row' > -->
+<nav class="row top navbar navbar-full  bg-inverse">
+          <a class="navbar-brand col-xs-2" href="#"><h1>SVG draw</h1></a>
+
+
+          <!-- menu -->
+         <div class="nav navbar-nav col-xs-10 ">
+              <div class="btn-group pull-xs-right" uib-dropdown is-open="status.isopen">
+                      <button id="just-a-button" type="button" class="btn btn-side-borded" uib-dropdown-toggle ng-disabled="disabled">
+                      sample<span class="caret"></span>
+                      </button>
+
+                      <div class='uib-dropdown-menu dropdown-menu-right' role='menu' aria-labelledby='sample-button'>
+                        <div ng-repeat="sample in root.samples">
+                        <a  href ng-click='root.change(sample.code)'>{{sample.name}}</a>
+                        </div>
+
+
+      
+                      </div>
+              </div>
+              <div class="btn-group pull-xs-right">
+              <button type="button" class="btn btn-side-borded"><span>
+                about
+              </span>
+              </button>             
+              </div>
+          </div>
+          
+</nav>      
+
+     <!--  </section> -->
+
+<div class='sketch row'  >
+      
+    <!-- <svg draw-events  id="artboard"  class="artboard"> -->
+    <svg  id="artboard"  class="artboard col-sm-12">
+
+        <g draw-svg='root.code'></g>
+       <!--  <g draw-vector ></g> -->
+        <g draw-points points='root.points'></g>
+       
+ 
+  </g>
+          
+    </svg> 
+
+
+ 
+    <div class="tools col-sm-3">
+
+         <draw-points-list ></draw-points-list> 
+
+    </div>   
+
+
+        
+</div>
+
+<div class='row exception' >
+    <!-- draw-except begins validation process , points dissambilng and all that comes with it !! -->
+    <div draw-except></div>
+</div>
+<div class='bottom row' >
+  
+<section col="col-sm-12">
+
+<form name='coding' novalidate>
+<fieldset class="form-group">
+  <label name='code'>SVG-Code </label>
+  <draw-textarea  code='root.code'></draw-textarea>
+</fieldset>
+
+</form>
+              
+</section>
+
+<section>
+      
+
+              
+</section>
+</div>
+
+
+
+
+</body>
+</html>
