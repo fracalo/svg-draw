@@ -1,3 +1,5 @@
+// factory for dinamically updating the string 
+
 (function(){
 	'use strict';
 

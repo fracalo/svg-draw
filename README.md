@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/fracalo/svg-draw.svg?branch=master)](https://travis-ci.org/fracalo/svg-draw)
+
 # SVG-draw app - AngularJS 
 
 ## Overview

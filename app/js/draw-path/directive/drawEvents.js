@@ -1,17 +1,17 @@
-// directive for dealing events on artboard
+// directive for dealing events on artboard (while drawing)
 
 (function(){
-
-  angular
-    .module('draw.path')
-    .directive('drawEvents',drawEvents)
+  'use strict';
+  	angular
+    	.module('draw.path')
+    	.directive('drawEvents',drawEvents);
       
-      function drawEvents(){
+     	function drawEvents(){
               return{
                 restrict:'A',
                 controller: 'DrawEventsCtrl',
               };
-      };
+      	}
 
 
 })();

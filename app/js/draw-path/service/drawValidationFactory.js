@@ -40,13 +40,13 @@
                 basicValues:[],
                 presentational:[],
             };
+
+            // this is a shorcut to update GUI point array in case no node is set
+            // or at the beginning  of cycle
+            drawDeconstruct.parseBasic();
+
             drawData.node.forEach(x => checkItem(x) );
 
-            if(drawData.node.length === 0){
-                // this is a shorcut to update GUI point array in case no node is set
-                drawDeconstruct.parseBasic();
-            }
-            
             service.list = checkList;
             //update flatlist
             getErrors();

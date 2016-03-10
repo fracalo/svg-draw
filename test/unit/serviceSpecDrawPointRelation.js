@@ -175,55 +175,7 @@ describe('drawPointRelation',function(){
 			
 
 
-
-			// xdescribe('path nodes relation' , function(){
-			// 	beforeEach(function(){
-
-			// 		a = {
-			// 			hashSvg: 0,
-			// 			x: 67,
-			// 			y: 154,
-			// 			relative: false,
-			// 			pathPointType: "vertex"
-			// 		};
-			// 		b = {
-			// 			hashSvg: 0,
-			// 			normalized:true,
-			// 			oneAxis:"horizontal",
-			// 			pathPointType:"vertex",
-			// 			relative:{
-			// 				index:0,
-			// 				direction:"ver",
-			// 				dirIndex:1,
-			// 			},
-			// 			specialPathCom:"H",
-			// 			x: 183,
-			// 			y: 154
-			// 		};
-			// 		c = {
-			// 			hashSvg: 0,
-			// 			normalized:true,
-			// 			oneAxis:"vertical",
-			// 			pathPointType:"vertex",
-			// 			relative:{
-			// 				index:0,
-			// 				direction:"ver",
-			// 				dirIndex:1,
-			// 			},
-			// 			specialPathCom:"v",
-			// 			x: 183,
-			// 			y: 260
-			// 		}
-			// 	})
-
-			// });
-			// it('on A move it should move both B',function(){
-
-			// })
-			
-		
-
-				
+	
 
 
 

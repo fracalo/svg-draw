@@ -45,7 +45,6 @@
 			return; 
 			 }
         	
-			
 
 	          // res is piped back to drawValidation.checkItem with a boolean value 
 	          // indicating that the property-value is valid   
@@ -53,8 +52,6 @@
 
 	                //depending on the the x.propertyCheck we need to validate specifically (validity function )
 	                var test = validity( x.propertyCheck , x.item.attributes[x.propertyCheck] );
-
-
 	                
 	                /** since destructioring data to check dValue pairs is quite expensive
 	                we will preserve destructured value and  add an optional field so to pass parsed data directly to 
