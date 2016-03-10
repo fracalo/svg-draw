@@ -1,0 +1,273 @@
+@font-face {
+  font-family: 'glyphicon';
+  src: url("../fonts/glyphicons-halflings-regular.woff") format("woff"), url("../fonts/glyphicons-halflings-regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+}
+/*  no glyphs  */
+/** skinny glyphicon support**/
+.glyphicon {
+  font-family: 'glyphicon';
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glyphicon-remove:before {
+  content: "\e014";
+}
+
+.glyphicon-retweet:before {
+  content: "\e115";
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  flex-flow: column nowrap;
+}
+
+.navbar-brand {
+  padding: 0;
+  margin-right: 0;
+}
+.navbar-brand > h1 {
+  line-height: 2.1rem;
+  font-size: 3.3vmin;
+  margin-bottom: 0;
+  color: #489af5;
+}
+.navbar-brand > h1:hover {
+  color: #78b4f8;
+}
+
+.btn-side-borded {
+  font-size: 0.9rem;
+}
+.btn-side-borded ~ .dropdown-menu {
+  min-width: 100px;
+  text-align: right;
+  margin: 0;
+  border-radius: 0;
+}
+.btn-side-borded ~ .dropdown-menu a {
+  margin-right: 10px;
+  color: #3d3d3d;
+  font-size: 0.8rem;
+}
+
+.top {
+  background-color: #3d3d3d;
+  color: snow;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.top button {
+  background: transparent;
+}
+
+/* navbar */
+.navbar {
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+}
+.navbar .glyphicon {
+  line-height: 5.5vh;
+}
+
+/* template.sketch */
+.sketch {
+  flex: 2 50vh;
+}
+.sketch .tools {
+  border-left: 1px solid #3d3d3d;
+}
+.sketch .tools fieldset {
+  margin-bottom: 10px;
+}
+.sketch .tools input {
+  display: inline-block;
+}
+.sketch .artboard {
+  padding: 0;
+  flex: 1;
+}
+
+table {
+  margin-left: 10px;
+}
+table input {
+  box-sizing: border-box;
+  text-align: center;
+  -moz-appearance: none;
+  appearance: none;
+}
+table select {
+  background: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+tr p {
+  font-size: 80%;
+  font-weight: 700;
+}
+tr label {
+  color: #666;
+  font-size: 70%;
+  letter-spacing: 1px;
+  padding-left: 4px;
+}
+tr label[for='typeP'] {
+  vertical-align: top;
+}
+tr input, tr select {
+  width: 100%;
+  font-size: 80%;
+  border-width: 0;
+  padding: 0;
+}
+tr fieldset {
+  display: inline-block;
+  margin-left: 3px;
+}
+tr fieldset + fieldset {
+  margin-right: 3px;
+  margin-left: 2px;
+}
+tr > td {
+  font-size: 80%;
+  vertical-align: baseline;
+}
+tr > td fieldset {
+  width: 27px;
+}
+tr > td:nth-of-type(2) fieldset {
+  width: 15px;
+  margin-right: 8px;
+}
+
+th {
+  padding: 4px 2px;
+  font-size: 66%;
+  font-weight: 700;
+}
+
+sup {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+/* template bottom */
+.exception {
+  background-color: #eee;
+  border-top: 1px solid #3d3d3d;
+  font-size: 0.75rem;
+}
+.exception div > div:first-child {
+  padding-top: 0.25rem;
+}
+.exception p {
+  margin-bottom: 0.1rem;
+  margin-left: 0.2rem;
+}
+.exception p span.glyphicon {
+  color: #0B66CC;
+  padding-right: 0.3rem;
+}
+.exception p span.glyphicon:first-of-type {
+  padding-left: 0.4rem;
+}
+.exception p span.glyphicon:hover {
+  color: #031d3b;
+}
+
+.bottom {
+  background-color: #3d3d3d;
+  color: snow;
+  line-height: 24px;
+}
+.bottom section {
+  width: 95%;
+  margin: auto;
+}
+.bottom form {
+  width: 100%;
+}
+.bottom form textarea {
+  width: 100%;
+}
+.bottom form label {
+  font-size: 70%;
+  margin-bottom: 0;
+}
+.bottom textarea {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  color: black;
+  font-size: 0.65rem;
+  line-height: 0.85rem;
+  resize: none;
+  height: 3rem;
+}
+
+/* draw path */
+g > path {
+  pointer-events: none;
+}
+
+/* section{
+	background:#eee;
+	
+	text-align: center;
+	padding-bottom: 24px;
+	
+
+}
+
+.arrow{
+	//display:inline-block;
+	position:absolute;
+	right:18px;
+
+}
+
+.glyphicon{}
+
+.upsidedown{
+	transform: rotate(180deg);
+
+}
+
+.scaleout{
+	font-size:0;
+	margin:0;
+	transition: all 0.6s;
+}
+.repos > li{
+	list-style: none;
+	border-bottom: 1px solid #ccc;
+}
+.repos > li:last-child{
+	
+	border-bottom: 0;
+}
+
+.sketch{
+	flex:0 1;
+	needs to be set with js
+}
+.sketch > .row , .sketch > .row > .artboard{
+	height:100%;
+}
+.sketch > .row > .artboard{
+	background: tan;
+} */
+
